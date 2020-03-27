@@ -1,0 +1,32 @@
+{
+  "name": "builder",
+  "version": "0.1.0",
+  "description": "MinerId Reference Implementation document builder",
+  "main": "builder.js",
+  "scripts": {
+    "start": "node builder.js",
+    "cli": "node cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nChain Application Development Team",
+  "contributors": [
+    "Simon Ordish <simon.ordish@gmail.com>",
+    "Liam Missin <liam.missin@gmail.com>",
+    "Jad Wahab <jadfwahab@gmail.com>"
+  ],
+  "private": true,
+  "license": "OpenBSV",
+  "homepage": "https://bitbucket.org/nchteammaestro/builder#readme",
+  "dependencies": {
+    "bitcoin-promise": "^1.3.1",
+    "bsv": "^1.5.0",
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^6.0.2",
+    "express": "^4.17.1",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  },
+  "devDependencies": {
+    "standard": "^12.0.1"
+  }
+}

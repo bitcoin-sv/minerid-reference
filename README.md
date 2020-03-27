@@ -142,7 +142,7 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 1. Generate MinerId  
    ` npm run cli -- generateminerid -n testMiner`
    
-2. Generate VcTx (not needed for Regtest)
+2. Generate VcTx (not needed for Regtest)  
    `npm run cli -- generatevctx -n testMiner`
 
 3. Create coinbase transaction  

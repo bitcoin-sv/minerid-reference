@@ -21,34 +21,56 @@ afterEach(() => {
 
 describe('Coinbase Document Services', function () {
     describe('No mocking', function () {
-        describe('MinerId generation', async () => {
+        describe('Minerid', function () {
+            describe('Generate', async () => {
 
-            let getMinerId, createMinerId, saveAlias
+                let getMinerId, createMinerId, saveAlias
 
-            beforeEach(() => {
-                sandbox.stub(console, "log")
+                beforeEach(() => {
+                    sandbox.stub(console, "log")
 
-                getMinerId = sandbox.stub(fm, 'getMinerId').returns(false);
-                createMinerId = sandbox.stub(fm, 'createMinerId')
-                saveAlias = sandbox.stub(fm, 'saveAlias')
+                    getMinerId = sandbox.stub(fm, 'getMinerId').returns(false);
+                    createMinerId = sandbox.stub(fm, 'createMinerId')
+                    saveAlias = sandbox.stub(fm, 'saveAlias')
 
-                coinbaseDocService.generateMinerId("unittest")
+                    coinbaseDocService.generateMinerId("unittest")
+                })
+
+                it('calls "getMinerId" with right parameters', () => {
+                    expect(getMinerId.calledWith('unittest_1')).to.be(true);
+                })
+
+                it('calls "createMinerId" with right parameters', () => {
+                    expect(createMinerId.calledWith('unittest_1')).to.be(true);
+                })
+
+                it('calls "createMinerId" with right parameters', () => {
+                    expect(createMinerId.calledWith('unittest_1')).to.be(true);
+                })
+
+                it('calls "saveAlias" with right parameters', () => {
+                    expect(saveAlias.calledWith('unittest', 'unittest_1')).to.be(true);
+                })
             })
+            describe('Get current', async () => {
 
-            it('calls "getMinerId" with right parameters', () => {
-                expect(getMinerId.calledWith('unittest_1')).to.be(true);
-            })
+                let getCurrentAlias, getMinerId
 
-            it('calls "createMinerId" with right parameters', () => {
-                expect(createMinerId.calledWith('unittest_1')).to.be(true);
-            })
+                beforeEach(() => {
+                    getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns({});
+                    getMinerId = sandbox.stub(fm, 'getMinerId').returns({});
 
-            it('calls "createMinerId" with right parameters', () => {
-                expect(createMinerId.calledWith('unittest_1')).to.be(true);
-            })
+                    coinbaseDocService.getCurrentMinerId("unittest")
+                })
 
-            it('calls "saveAlias" with right parameters', () => {
-                expect(saveAlias.calledWith('unittest', 'unittest_1')).to.be(true);
+                it('calls "getCurrentAlias" with right parameters', () => {
+                    expect(getCurrentAlias.calledWith('unittest')).to.be(true);
+                })
+
+                it('calls "getMinerId" with right parameters', () => {
+                    expect(getMinerId.calledWith({})).to.be(true);
+                })
+
             })
         })
 

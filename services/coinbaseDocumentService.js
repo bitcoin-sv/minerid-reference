@@ -84,7 +84,7 @@ function signHash(hash, alias) {
   return signature.toString('hex')
 }
 
-async function getValididyCheckTx(aliasName, minerId, vctPrivKey) {
+async function getValididyCheckTx(aliasName, vctPrivKey) {
   let vctx = fm.getVctxFromFile(aliasName)
   if (!vctx) {
     // no vctx so create one
@@ -249,11 +249,9 @@ async function generateVcTx(aliasName) {
     return
   }
 
-  const minerId = getCurrentMinerId(aliasName)
-
   const vctPrivKey = getOrCreateVctPk(aliasName)
 
-  const vct = await getValididyCheckTx(aliasName, minerId, vctPrivKey)
+  const vct = await getValididyCheckTx(aliasName, vctPrivKey)
   return vct
 }
 

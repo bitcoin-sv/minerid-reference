@@ -20,40 +20,35 @@ afterEach(() => {
 
 
 describe('Coinbase Document Services', function () {
-    // afterEach(() => {
-    //     // Restore the default sandbox here
-    //     sinon.restore();
-    // });
-
     describe('No mocking', function () {
-        xdescribe('MinerId creation', async () => {
+        describe('MinerId generation', async () => {
 
-            let writeFileSync, mkdirSync, HDPrivateKey, priv
+            let getMinerId, createMinerId, saveAlias
 
             beforeEach(() => {
                 sandbox.stub(console, "log")
 
-                priv = new bsv.HDPrivateKey('xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ')
-
-                writeFileSync = sandbox.stub(fs, 'writeFileSync').returns({});
-                mkdirSync = sandbox.stub(fs, 'mkdirSync').returns({});
-                HDPrivateKey = sandbox.stub(bsv, 'HDPrivateKey').returns(priv);
+                getMinerId = sandbox.stub(fm, 'getMinerId').returns(false);
+                createMinerId = sandbox.stub(fm, 'createMinerId')
+                saveAlias = sandbox.stub(fm, 'saveAlias')
 
                 coinbaseDocService.generateMinerId("unittest")
             })
 
-            it('returns the right priv key', async () => {
-                assert(HDPrivateKey.returned(priv))
+            it('calls "getMinerId" with right parameters', () => {
+                expect(getMinerId.calledWith('unittest_1')).to.be(true);
             })
 
-            it('calls "writeFileSync" with the right parameters first time', async () => {
-                expect(writeFileSync.calledWith(`${homedir}/.keystore/unittest_1.key`, 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ')).to.be(true);
+            it('calls "createMinerId" with right parameters', () => {
+                expect(createMinerId.calledWith('unittest_1')).to.be(true);
             })
 
-            it('calls "writeFileSync" with the right parameters second time', async () => {
-                data = []
-                data.push({ name: 'unittest_1' })
-                expect(writeFileSync.calledWith(`${homedir}/.minerid-client/unittest/aliases`, JSON.stringify(data, null, 2))).to.be(true);
+            it('calls "createMinerId" with right parameters', () => {
+                expect(createMinerId.calledWith('unittest_1')).to.be(true);
+            })
+
+            it('calls "saveAlias" with right parameters', () => {
+                expect(saveAlias.calledWith('unittest', 'unittest_1')).to.be(true);
             })
         })
 

@@ -25,8 +25,8 @@ describe('Coinbase Document Services', function () {
     //     sinon.restore();
     // });
 
-    describe('Creation', function () {
-        describe('MinerId creation', async () => {
+    describe('No mocking', function () {
+        xdescribe('MinerId creation', async () => {
 
             let writeFileSync, mkdirSync, HDPrivateKey, priv
 
@@ -92,7 +92,36 @@ describe('Coinbase Document Services', function () {
                     expect(getValididyCheckTxStub.calledWith('unittest', {})).to.be(true);
                 })
             })
+        })
 
+        describe('MinerId Rotation', function () {
+            let aliasExists, getCurrentAlias, saveAlias, createMinerId
+            beforeEach(() => {
+
+                aliasExists = sandbox.stub(fm, 'aliasExists').returns(true);
+                getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1');
+                saveAlias = sandbox.stub(fm, 'saveAlias');
+                createMinerId = sandbox.stub(fm, 'createMinerId');
+
+                const vctx = coinbaseDocService.rotateMinerId("unittest")
+
+            })
+
+            it('calls "aliasExists" with right parameters', () => {
+                expect(aliasExists.calledWith('unittest')).to.be(true);
+            })
+
+            it('calls "getCurrentAlias" with right parameters', () => {
+                expect(getCurrentAlias.calledWith('unittest')).to.be(true);
+            })
+
+            it('calls "saveAlias" with right parameters', () => {
+                expect(saveAlias.calledWith('unittest', 'unittest_2')).to.be(true);
+            })
+
+            it('calls "createMinerId" with right parameters', () => {
+                expect(createMinerId.calledWith('unittest_2')).to.be(true);
+            })
         })
 
         describe('Coinbase document', function () {
@@ -156,7 +185,7 @@ describe('Coinbase Document Services', function () {
         })
     })
 
-    describe('Retrieval: (directories mocked: .minerid-client & .keystore)', function () {
+    describe('Directories mocked (.minerid-client & .keystore)', function () {
 
         beforeEach(() => {
             mock({
@@ -211,7 +240,7 @@ describe('Coinbase Document Services', function () {
                 })
 
                 it('signWithCurrentMinerId is calling getCurrentAlias and signHash with the right parameters', () => {
-                    const getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest');
+                    const getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1');
 
                     const hash = "b391347e78e93f05547c6a643dba2ea7df50effdf40061152fab922cbbbef072"
 
@@ -219,7 +248,7 @@ describe('Coinbase Document Services', function () {
                     const sig = signWithCurrentMinerId(hash, "unittest")
 
                     expect(getCurrentAlias.calledWith('unittest')).to.be(true);
-                    expect(signHashStub.calledWith(Buffer.from(hash, 'hex'), 'unittest')).to.be(true);
+                    expect(signHashStub.calledWith(Buffer.from(hash, 'hex'), 'unittest_1')).to.be(true);
                 })
 
                 it('sign is calling signHash with the right parameters', () => {

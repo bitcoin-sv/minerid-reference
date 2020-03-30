@@ -58,9 +58,41 @@ describe('Coinbase Document Services', function () {
         })
 
         describe('VCTX', function () {
-            it('can create vctx', async () => {
+            describe('Generate VcTx', function () {
+                let aliasExists, getOrCreateVctPkStub, unsetGetOrCreateVctPk, getValididyCheckTxStub, unsetGetValididyCheckTx
+                beforeEach(() => {
 
+                    aliasExists = sandbox.stub(fm, 'aliasExists').returns(true);
+
+                    const getOrCreateVctPkObj = { getOrCreateVctPk: coinbaseDocService.__get__('getOrCreateVctPk') };
+                    getOrCreateVctPkStub = sandbox.stub(getOrCreateVctPkObj, 'getOrCreateVctPk').returns({})
+                    unsetGetOrCreateVctPk = coinbaseDocService.__set__('getOrCreateVctPk', getOrCreateVctPkStub)
+
+                    const getValididyCheckTxObj = { getValididyCheckTx: coinbaseDocService.__get__('getValididyCheckTx') };
+                    getValididyCheckTxStub = sandbox.stub(getValididyCheckTxObj, 'getValididyCheckTx').returns({})
+                    unsetGetValididyCheckTx = coinbaseDocService.__set__('getValididyCheckTx', getValididyCheckTxStub)
+
+                    const vctx = coinbaseDocService.generateVcTx("unittest")
+
+                })
+                afterEach(() => {
+                    unsetGetOrCreateVctPk();
+                    unsetGetValididyCheckTx();
+                })
+
+                it('calls "aliasExists" with right parameters', () => {
+                    expect(aliasExists.calledWith('unittest')).to.be(true);
+                })
+
+                it('calls "getOrCreateVctPk" with right parameters', () => {
+                    expect(getOrCreateVctPkStub.calledWith('unittest')).to.be(true);
+                })
+
+                it('calls "getValididyCheckTx" with right parameters', () => {
+                    expect(getValididyCheckTxStub.calledWith('unittest', {})).to.be(true);
+                })
             })
+
         })
 
         describe('Coinbase document', function () {

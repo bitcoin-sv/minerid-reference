@@ -141,32 +141,8 @@ describe('Coinbase Document Services', function () {
             })
         })
 
-        describe('Coinbase document', async function () {
-            // describe('Script creation (full)', async function () {
-            //     let aliasExists, generateVcTxStub
-            //     beforeEach(() => {
-
-            //         aliasExists = sandbox.stub(fm, 'aliasExists').returns(true);
-            //         generateVcTxStub = sandbox.stub(coinbaseDocService, 'generateVcTx').returns({});
-
-            //         // const t = coinbaseDocService.generateVcTx('unittest')
-            //         const minerIdOpReturn = coinbaseDocService.createMinerIdOpReturn(1234, 'unittest')
-
-            //     })
-            //     afterEach(() => {
-            //     })
-
-            //     it('calls "aliasExists" with the right parameters', async () => {
-            //         expect(aliasExists.calledWith('unittest')).to.be(true);
-            //     })
-
-            //     it('calls "generateVcTx" with the right parameters', async () => {
-            //         expect(generateVcTxStub.calledWith('unittest')).to.be(true);
-            //     })
-
-            // })
-
-            describe('Script creation (final step)', function () {
+        describe('Coinbase document', function () {
+            describe('Script creation', function () {
                 it('can create coinbase OP_RETURN script from doc and sig', () => {
                     const createCoinbaseOpReturn = coinbaseDocService.__get__("createCoinbaseOpReturn")
 

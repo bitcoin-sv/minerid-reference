@@ -4,20 +4,18 @@ More details available in the [BRFC Spec](https://bitbucket.org/nchteamnch/miner
 
 
 ## Table of Contents
-- [MinerId Builder - Reference Implementation](#minerid-builder---reference-implementation)
-  - [Table of Contents](#table-of-contents)
-  - [Requirements](#requirements)
-    - [Node](#node)
-  - [Install](#install)
-  - [Configuration](#configuration)
-  - [Running the project](#running-the-project)
-  - [Testing](#testing)
-  - [CLI](#cli)
-    - [Options](#options)
-    - [Examples](#examples)
-  - [API](#api)
-  - [Implementation](#implementation)
-  - [Example Miner Code](#example-miner-code)
+- [Requirements](#requirements)
+  - [Node](#node)
+- [Install](#install)
+- [Configuration](#configuration)
+- [Running the project](#running-the-project)
+- [Testing](#testing)
+- [CLI](#cli)
+  - [Options](#options)
+  - [Examples](#examples)
+- [API](#api)
+- [Implementation](#implementation)
+- [Example Miner Code](#example-miner-code)
 
 ## Requirements
 
@@ -139,7 +137,6 @@ $ npm run cli -- config website=foo.com -n foo
 
 The **REST API** has 4 endpoints:
 
-<!-- omit in toc -->
 ### 1. `GET /opreturn/:alias/:blockHeight([0-9]+)`
 
 `alias`: MinerId alias  
@@ -147,7 +144,6 @@ The **REST API** has 4 endpoints:
 
 **returns** MinerId output (locking) script hex string for an `alias` MinerId at height `blockHeight`
 
-<!-- omit in toc -->
 #### Example
 
 ```console
@@ -156,14 +152,12 @@ $ curl localhost:9002/opreturn/testMiner/1234
 006a04ac1eed884de1017b2276657273696f6e223a22302e31222c22686569676874223a313233342c22707265764d696e65724964223a22303364383139363262316561373964306530366438653166363661323661363064346561636463323430373236326332393130633537303963613937613637623864222c22707265764d696e65724964536967223a223330343430323230313131636338383437663638636334636333346335363863376533396635333965663161663832616563613765376565633766646330653230663439393938623032323031653232376437656334623163643138626637656631323463303661653135376232623136363835313934303536623834633836616563333961643731663139222c226d696e65724964223a22303364383139363262316561373964306530366438653166363661323661363064346561636463323430373236326332393130633537303963613937613637623864222c2276637478223a7b2274784964223a2236653631363431643034613463336337353164363536663938666238343533383738376565343335393830626432323865616163386534663364646162643033222c22766f7574223a307d2c226d696e6572436f6e74616374223a7b226e616d65223a22746573744d696e6572227d7d4630440220509d60519d1508045b4629bfb748fc6d9c7e240bc6cea49d5ec084c818005e2c022069ebd520bf65b75b9bd579b7ae09559efe2b6857e64cc47ae6700aa2e6e8132e
 ```
 
-<!-- omit in toc -->
 ### 2. `GET /opreturn/:alias/rotate`
 
 `alias`: MinerId alias  
 
 rotates the MinerId key for an `alias` MinerId
 
-<!-- omit in toc -->
 #### Example
 
 ```console
@@ -172,14 +166,12 @@ $ curl localhost:9002/opreturn/testMiner/rotate
 OK
 ```
 
-<!-- omit in toc -->
 ### 3. `GET /minerid/:alias`
 
 `alias`: MinerId alias  
 
 **returns** compressed public key (33 byte) hex string for an `alias` MinerId
 
-<!-- omit in toc -->
 #### Example
 
 ```console
@@ -188,7 +180,6 @@ $ curl localhost:9002/minerid/testMiner
 02644f5000535bbc135f9c8613f86f10c66a4a773eda5e913eff64eb328bc6326a
 ```
 
-<!-- omit in toc -->
 ### 4. `GET /minerid/:alias/sign/:hash`
 
 `alias`: MinerId alias  
@@ -197,7 +188,6 @@ $ curl localhost:9002/minerid/testMiner
 
 **returns** hash signature (71-73 byte hex string) using an `alias` MinerId
 
-<!-- omit in toc -->
 #### Example
 
 ```console
@@ -211,17 +201,17 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 
 The [testMiner.js](testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (ouput) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that ouput to it's coinbase transaction.  
 
-1. Generate MinerId  
+1. Generate MinerId:
 ```console 
 $ npm run cli -- generateminerid -n testMiner
 ```
    
-2. Generate VcTx (not needed for Regtest)  
+2. Generate VcTx (not needed for Regtest):
 ```console
 $ npm run cli -- generatevctx -n testMiner
 ```
 
-3. Create coinbase transaction  
+3. Create coinbase transaction:
 ```console
 $ node examples/testMiner.js
 ```

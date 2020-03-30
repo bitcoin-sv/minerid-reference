@@ -77,7 +77,7 @@ describe('Coinbase Document Services', function () {
         describe('VCTX', function () {
             describe('Generate VcTx', function () {
                 let aliasExists, getOrCreateVctPkStub, unsetGetOrCreateVctPk, getValididyCheckTxStub, unsetGetValididyCheckTx
-                beforeEach(() => {
+                beforeEach(async () => {
 
                     aliasExists = sandbox.stub(fm, 'aliasExists').returns(true);
 
@@ -89,7 +89,7 @@ describe('Coinbase Document Services', function () {
                     getValididyCheckTxStub = sandbox.stub(getValididyCheckTxObj, 'getValididyCheckTx').returns({})
                     unsetGetValididyCheckTx = coinbaseDocService.__set__('getValididyCheckTx', getValididyCheckTxStub)
 
-                    const vctx = coinbaseDocService.generateVcTx("unittest")
+                    const vctx = await coinbaseDocService.generateVcTx("unittest")
 
                 })
                 afterEach(() => {
@@ -141,8 +141,32 @@ describe('Coinbase Document Services', function () {
             })
         })
 
-        describe('Coinbase document', function () {
-            describe('Script creation', function () {
+        describe('Coinbase document', async function () {
+            // describe('Script creation (full)', async function () {
+            //     let aliasExists, generateVcTxStub
+            //     beforeEach(() => {
+
+            //         aliasExists = sandbox.stub(fm, 'aliasExists').returns(true);
+            //         generateVcTxStub = sandbox.stub(coinbaseDocService, 'generateVcTx').returns({});
+
+            //         // const t = coinbaseDocService.generateVcTx('unittest')
+            //         const minerIdOpReturn = coinbaseDocService.createMinerIdOpReturn(1234, 'unittest')
+
+            //     })
+            //     afterEach(() => {
+            //     })
+
+            //     it('calls "aliasExists" with the right parameters', async () => {
+            //         expect(aliasExists.calledWith('unittest')).to.be(true);
+            //     })
+
+            //     it('calls "generateVcTx" with the right parameters', async () => {
+            //         expect(generateVcTxStub.calledWith('unittest')).to.be(true);
+            //     })
+
+            // })
+
+            describe('Script creation (final step)', function () {
                 it('can create coinbase OP_RETURN script from doc and sig', () => {
                     const createCoinbaseOpReturn = coinbaseDocService.__get__("createCoinbaseOpReturn")
 
@@ -162,8 +186,8 @@ describe('Coinbase Document Services', function () {
                 let getOptionalMinerData, getPreviousAlias, signStub, unset, minerIdSigPayload
                 beforeEach(() => {
 
-                    getOptionalMinerData = sandbox.stub(fm, 'getOptionalMinerData').returns({});
                     getPreviousAlias = sandbox.stub(fm, 'getPreviousAlias').returns('unittest_1');
+                    getOptionalMinerData = sandbox.stub(fm, 'getOptionalMinerData').returns({});
 
                     const signObj = { sign: coinbaseDocService.__get__('sign') };
                     signStub = sandbox.stub(signObj, 'sign').returns({})
@@ -185,7 +209,6 @@ describe('Coinbase Document Services', function () {
                 afterEach(() => {
                     unset();
                 })
-
 
                 it('calls "getPreviousAlias" with right parameters', () => {
                     expect(getPreviousAlias.calledWith('unittest')).to.be(true);
@@ -209,8 +232,12 @@ describe('Coinbase Document Services', function () {
                 [`${os.homedir()}/.minerid-client/unittest`]: {
                     'aliases': '[ { "name": "unittest_1" } ]',
                     'config': `{
-                    "email": "testMiner@testDomain.com"
-                }`
+                        "email": "testMiner@testDomain.com"
+                    }`,
+                    'vctx': `{
+                        "prv": "KxmBu7NFRxWsT6gcwBDCtthWnokPJhHDVajYAVvTwfucFKdMf1dP",
+                        "txid": "6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff"
+                      }`
                 },
                 [`${os.homedir()}/.keystore`]: {
                     'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'

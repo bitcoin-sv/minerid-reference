@@ -1,6 +1,6 @@
 # MinerId Builder - Reference Implementation
 
-More details available in the [BRFC Spec](https://bitbucket.org/nchteamnch/minerid/src/master/) for MinerId. Note that this reference does not include any of the MinerId extensions shown in the BRFCs as of now.  
+More details available in the [BRFC Spec](https://github.com/bitcoin-sv-specs/brfc-minerid) for MinerId. Note that this reference does not include any of the MinerId extensions shown in the BRFCs as of now.  
 
 
 ## Table of Contents

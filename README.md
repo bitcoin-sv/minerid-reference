@@ -32,8 +32,10 @@ Also, be sure to have `git` available in your PATH, `npm` might need it (You can
 
   You can install nodejs and npm easily with apt install, just run the following commands.
 
-      $ sudo apt install nodejs
-      $ sudo apt install npm
+    ```console
+    $ sudo apt install nodejs
+    $ sudo apt install npm
+    ```
 
 - #### Other Operating Systems
   You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
@@ -63,12 +65,12 @@ Open [config.json](config.json) and edit it with your settings:
 ## Running the project
 
 To run API server:
-```
+```console
 $ npm start
 ```
 
 To run CLI:
-```
+```console
 $ npm run cli
 ```
 
@@ -202,16 +204,16 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 The [testMiner.js](testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (ouput) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that ouput to it's coinbase transaction.  
 
 1. Generate MinerId:
-```console 
-$ npm run cli -- generateminerid -n testMiner
-```
+    ```console 
+    $ npm run cli -- generateminerid -n testMiner
+    ```
    
 2. Generate VcTx (not needed for Regtest):
-```console
-$ npm run cli -- generatevctx -n testMiner
-```
+    ```console
+    $ npm run cli -- generatevctx -n testMiner
+    ```
 
 3. Create coinbase transaction:
-```console
-$ node examples/testMiner.js
-```
+    ```console
+    $ node examples/testMiner.js
+    ```

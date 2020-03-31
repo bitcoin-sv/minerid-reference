@@ -43,8 +43,8 @@ Also, be sure to have `git` available in your PATH, `npm` might need it (You can
 ## Install
 
 ```console
-$ git clone https://github.com/bitcoin-sv/minerid
-$ cd minerid
+$ git clone https://github.com/bitcoin-sv/minerid-reference.git
+$ cd minerid-reference
 $ npm install
 ```
 

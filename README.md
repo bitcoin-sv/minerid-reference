@@ -201,7 +201,7 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 
 ## Example Miner Code
 
-The [testMiner.js](testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (ouput) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that ouput to it's coinbase transaction.  
+The [examples/testMiner.js](examples/testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (ouput) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that ouput to it's coinbase transaction.  
 
 1. Generate MinerId:
     ```console 

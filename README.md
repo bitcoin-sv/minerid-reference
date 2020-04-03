@@ -17,6 +17,10 @@ More details available in the [BRFC Spec](https://github.com/bitcoin-sv-specs/br
 - [Implementation](#implementation)
 - [Example Miner Code](#example-miner-code)
 
+## Support
+
+For support and general discussion of both standards and reference implementations please join the following telegram group: https://t.me/joinchat/JB6ZzktqwaiJX_5lzQpQIA
+
 ## Requirements
 
 For development, you will only need Node.js and a node global package, NPM, installed in your environement.

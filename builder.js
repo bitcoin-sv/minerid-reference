@@ -1,10 +1,12 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const config = require('./config.json')
 const fm = require('./utils/filemanager')
 
 const coinbaseDocService = require('./services/coinbaseDocumentService')
 
 const app = express()
+app.use(bodyParser.json())
 
 app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
@@ -16,6 +18,23 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
 
   try {
     const opReturn = await coinbaseDocService.createMinerIdOpReturn(req.params.blockHeight, req.params.alias)
+    res.send(opReturn)
+  } catch (err) {
+    res.status(500).send(`Internal error ${err.message}`)
+  }
+})
+
+app.post('/opreturn', async (req, res) => {
+  const { alias, blockHeight, extensions } = req.body
+  res.setHeader('Content-Type', 'text/plain')
+
+  if (!fm.aliasExists(alias)) {
+    res.status(400).send(`Alias "${alias}" doesn't exist`)
+    return
+  }
+
+  try {
+    const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias, extensions)
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error ${err.message}`)

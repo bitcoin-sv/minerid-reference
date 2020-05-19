@@ -33,6 +33,11 @@ app.post('/opreturn', async (req, res) => {
     return
   }
 
+  if (!extensions) {
+    res.status(400).send(`No extensions field provided`)
+    return
+  }
+
   try {
     const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias, extensions)
     res.send(opReturn)

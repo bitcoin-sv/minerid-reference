@@ -25,7 +25,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
 })
 
 app.post('/opreturn', async (req, res) => {
-  const { alias, blockHeight, extensions } = req.body
+  const { alias, blockHeight, extensions, extensionData } = req.body
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(alias)) {
@@ -33,13 +33,8 @@ app.post('/opreturn', async (req, res) => {
     return
   }
 
-  if (!extensions) {
-    res.status(400).send(`No extensions field provided`)
-    return
-  }
-
   try {
-    const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias, extensions)
+    const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias, extensions, extensionData)
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error ${err.message}`)

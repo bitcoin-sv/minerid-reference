@@ -1,9 +1,9 @@
-
 const bsv = require('bsv')
 const request = require('request-promise')
 const config = require('../config.json')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
+const addExtensions = require('./extensions')
 
 // for mainnet: "livenet"
 // for testnet: "testnet"
@@ -286,7 +286,7 @@ function rotateMinerId (aliasName) {
   }
 }
 
-function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, extensions) {
+function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, extensions, extensionData) {
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
@@ -318,14 +318,14 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, 
     doc.minerContact = optionalData
   }
 
-  if (extensions) {
-    doc.extensions = extensions
+  if (extensionData) {
+    doc.extensions = addExtensions(extensions, extensionData)
   }
 
   return doc
 }
 
-async function createMinerIdOpReturn (height, aliasName, extensions) {
+async function createMinerIdOpReturn (height, aliasName, extensions, extensionData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -347,7 +347,7 @@ async function createMinerIdOpReturn (height, aliasName, extensions) {
   const minerId = getCurrentMinerId(aliasName)
   const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
 
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, extensions)
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, extensions, extensionData)
 
   const payload = JSON.stringify(doc)
 

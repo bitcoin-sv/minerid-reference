@@ -1,18 +1,18 @@
 const addext = require('./services/extensions')
 
 const miningCandidate = {
-  'id': '7304003d-cb8e-4b4f-9695-0f2b1844f261',
-  'prevhash': '35d696d221acbf046283f501f7a7cbc52a147d8d9c97ce1739e76933bbdf7a1a',
-  'coinbaseValue': 5000000792,
+  'id': 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
+  'prevhash': '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa',
+  'coinbaseValue': 5000000974,
   'version': 536870912,
   'nBits': '207fffff',
-  'time': 1590063803,
-  'height': 103,
+  'time': 1590152467,
+  'height': 106,
   'num_tx': 4,
-  'sizeWithoutCoinbase': 871,
+  'sizeWithoutCoinbase': 1052,
   'merkleProof': [
-    '3f5281c83887757b52af54e5855626a1012f864183cd28fc05d1aff6f0357dd9',
-    'e842e282b7d244b3468bbf7b53fb48ff5eba29b2fd53e02db5a90cd2b57b6bcb'
+    '9bd12ce6508574b3163aadb14eab7bd862306da85b221eb284fb41d6012db98f',
+    '56f04cc78ac493defced65dd58f4437c67bcc697b59778b0cd96c3c64c1b0bbf'
   ]
 }
 

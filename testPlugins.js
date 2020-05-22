@@ -16,7 +16,7 @@ const miningCandidate = {
   ]
 }
 
-const getinfo = {
+const getInfo = {
   'version': 101000300,
   'protocolversion': 70015,
   'walletversion': 160300,
@@ -39,7 +39,7 @@ const getinfo = {
   'maxstackmemoryusageconsensus': 9223372036854775807 //
 }
 
-const feespec = {
+const feeSpec = {
   'defaultFee': [
     {
       'feeType': 'standard',
@@ -68,8 +68,8 @@ const feespec = {
 
 let extensionData = {}
 extensionData.miningCandidate = miningCandidate
-extensionData.feespec = feespec
-extensionData.getinfo = getinfo
+extensionData.feeSpec = feeSpec
+extensionData.getInfo = getInfo
 
 const extensions = addext({}, extensionData)
 console.log(extensions)

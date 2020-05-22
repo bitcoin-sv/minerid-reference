@@ -1,10 +1,12 @@
 function addBlockInfo (extensionData) {
   // TODO: estimate coinbase size
 
-  // TODO: get data from extensiondata
+  if (!extensionData || !extensionData.hasOwnProperty('miningCandidate')) {
+    return
+  }
   return {
-    txCount: 0,
-    blockSize: 0
+    txCount: extensionData.miningCandidate.num_tx,
+    blockSize: extensionData.miningCandidate.sizeWithoutCoinbase
   }
 }
 

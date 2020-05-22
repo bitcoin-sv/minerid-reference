@@ -11,6 +11,7 @@ describe('Extensions', function () {
 
       const coinbaseHash = '7f598b52740073005bd2f4f9cabfc30ce60198c3627cd4671477d26921962753'
       const merkleBranches = [ // merkleProof in getminingcandidate BitCoin RPC call
+        // see: https://github.com/bitcoin-sv-specs/protocol/blob/master/rpc/GetMiningCandidate.md
         '9bd12ce6508574b3163aadb14eab7bd862306da85b221eb284fb41d6012db98f',
         '56f04cc78ac493defced65dd58f4437c67bcc697b59778b0cd96c3c64c1b0bbf'
       ]
@@ -26,6 +27,7 @@ describe('Extensions', function () {
 
       const coinbaseHash = '66140d22ba975c50f7383618a4ac7ca5dab919ae4e43f88b0ee79b7cbcccb25a'
       const merkleBranches = [ // merkleProof in getminingcandidate BitCoin RPC call
+        // see: https://github.com/bitcoin-sv-specs/protocol/blob/master/rpc/GetMiningCandidate.md
         '801fc07c69466a2216c55c185b69138fd98eb640abced94114868eada3adf180',
         'c1d8cec3243f0c689bc48545cf843e59c1efc859811024587defb9948fd76c18',
         'ffa3bf57d06df2dcf4158245b94f1211ea6b7e07690a099a6efd794eb7dbd5c4',

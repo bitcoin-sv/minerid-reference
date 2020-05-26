@@ -1,8 +1,8 @@
-function addBlockInfo ({ extensions = {}, extensionData = {} }) {
-  if (extensionData.miningCandidate) {
+function addBlockInfo ({ extensions = {}, jobData = {} }) {
+  if (jobData.miningCandidate) {
     extensions.blockinfo = {
-      txCount: extensionData.miningCandidate.num_tx,
-      blockSize: extensionData.miningCandidate.sizeWithoutCoinbase // TODO: estimate coinbase size
+      txCount: jobData.miningCandidate.num_tx,
+      blockSize: jobData.miningCandidate.sizeWithoutCoinbase // TODO: estimate coinbase size
     }
   }
 }

@@ -1,13 +1,13 @@
-function addMinerParams ({ extensions = {}, extensionData = {} }) {
-  if (extensionData.getInfo) {
+function addMinerParams ({ extensions = {}, jobData = {} }) {
+  if (jobData.getInfo) {
     extensions.minerparams = {
       policy: {
-        blockmaxsize: extensionData.getInfo.maxblocksize,
-        maxstackmemoryusagepolicy: extensionData.getInfo.maxstackmemoryusagepolicy
+        blockmaxsize: jobData.getInfo.maxblocksize,
+        maxstackmemoryusagepolicy: jobData.getInfo.maxstackmemoryusagepolicy
       },
       consensus: {
-        excessiveblocksize: extensionData.getInfo.maxminedblocksize,
-        maxstackmemoryusageconsensus: extensionData.getInfo.maxstackmemoryusageconsensus
+        excessiveblocksize: jobData.getInfo.maxminedblocksize,
+        maxstackmemoryusageconsensus: jobData.getInfo.maxstackmemoryusageconsensus
       }
     }
   }

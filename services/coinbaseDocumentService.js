@@ -286,7 +286,7 @@ function rotateMinerId (aliasName) {
   }
 }
 
-function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, extensionData) {
+function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, jobData) {
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
@@ -318,17 +318,10 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, 
     doc.minerContact = optionalData
   }
 
-  if (extensionData) {
-    const extensions = addExtensions(extensionData)
-    if (extensions !== {}) {
-      doc.extensions = extensions
-    }
-  }
-
   return doc
 }
 
-async function createMinerIdOpReturn (height, aliasName, extensionData) {
+async function createMinerIdOpReturn (height, aliasName, jobData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -350,7 +343,46 @@ async function createMinerIdOpReturn (height, aliasName, extensionData) {
   const minerId = getCurrentMinerId(aliasName)
   const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
 
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, extensionData)
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, jobData)
+
+  const payload = JSON.stringify(doc)
+
+  const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
+
+  const opReturnScript = createCoinbaseOpReturn(payload, signature)
+  return opReturnScript
+}
+
+async function createCoinbase2 (height, aliasName, jobData) {
+  if (!aliasName || aliasName === '') {
+    console.log('Must supply an alias')
+    return
+  }
+  if (!fm.aliasExists(aliasName)) {
+    console.log(`Name "${aliasName}" doesn't exist.`)
+    return
+  }
+  if (height < 1) {
+    console.log('Must enter a valid height')
+    return
+  }
+
+  const vctx = await generateVcTx(aliasName)
+  if (!vctx) {
+    return
+  }
+
+  const minerId = getCurrentMinerId(aliasName)
+  const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
+
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, jobData)
+
+  if (jobData) {
+    const extensions = addExtensions(doc, jobData)
+    if (extensions !== {}) {
+      doc.extensions = extensions
+    }
+  }
 
   const payload = JSON.stringify(doc)
 
@@ -361,6 +393,7 @@ async function createMinerIdOpReturn (height, aliasName, extensionData) {
 }
 
 module.exports = {
+  createCoinbase2,
   createMinerIdOpReturn,
   generateMinerId,
   generateVcTx,

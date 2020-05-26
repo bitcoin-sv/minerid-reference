@@ -1,8 +1,8 @@
 const bsv = require('bsv')
 const { swapEndianness } = require('buffer-swap-endianness')
 
-function addBlockBind (extensionData) {
-  if (!extensionData || !extensionData.hasOwnProperty('miningCandidate')) {
+function addBlockBind ({ extensions = {}, extensionData = {} }) {
+  if (!extensionData.miningCandidate) {
     return
   }
 
@@ -20,12 +20,12 @@ function addBlockBind (extensionData) {
 
   const tx = new bsv.Transaction()
     .uncheckedAddInput(coinbaseInput)
-    // .to(address, 625000000) // TODO: add minerAddress
+    // .to(address, extensionData.miningCandidate.coinbaseValue) // TODO: add minerAddress
     .addOutput(emptyDataOutput)
 
   const modifiedMerkleRoot = buildMerkleRootFromCoinbase(tx.id, extensionData.miningCandidate.merkleProof)
 
-  return {
+  extensions.blockbind = {
     prevBlockHash: extensionData.miningCandidate.prevhash,
     modifiedMerkleRoot: modifiedMerkleRoot
   }

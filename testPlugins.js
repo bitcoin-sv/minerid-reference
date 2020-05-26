@@ -71,5 +71,5 @@ extensionData.miningCandidate = miningCandidate
 extensionData.feeSpec = feeSpec
 extensionData.getInfo = getInfo
 
-const extensions = addext({}, extensionData)
+const extensions = addext(extensionData)
 console.log(extensions)

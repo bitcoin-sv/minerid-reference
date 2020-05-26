@@ -3,22 +3,19 @@ const path = require('path')
 
 const pluginPath = 'plugins'
 
-function addExtensions (extensions, extensionData) {
-  if (!extensions) {
-    extensions = {}
+function addExtensions (extensionData) {
+  if (!extensionData) {
+    extensionData = {}
   }
+
   const pluginFiles = fs.readdirSync(pluginPath)
+  const extensions = {}
 
+  // run each extension plugin in order to add data to the extensions object
+  // if the data needed for that extension is provided in extensionData
   pluginFiles.forEach(pluginFile => {
-    const pluginName = pluginFile.split('.')[0]
     const pluginFilePath = path.join(__dirname, '../', pluginPath, pluginFile)
-
-    const plugin = require(pluginFilePath)
-    const pluginData = plugin(extensionData)
-
-    if (pluginData) {
-      extensions[pluginName] = pluginData
-    }
+    require(pluginFilePath)({ extensions, extensionData })
   })
 
   return extensions

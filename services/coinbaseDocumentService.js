@@ -286,7 +286,7 @@ function rotateMinerId (aliasName) {
   }
 }
 
-function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, extensions, extensionData) {
+function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, extensionData) {
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
@@ -319,13 +319,16 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, 
   }
 
   if (extensionData) {
-    doc.extensions = addExtensions(extensions, extensionData)
+    const extensions = addExtensions(extensionData)
+    if (extensions !== {}) {
+      doc.extensions = extensions
+    }
   }
 
   return doc
 }
 
-async function createMinerIdOpReturn (height, aliasName, extensions, extensionData) {
+async function createMinerIdOpReturn (height, aliasName, extensionData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -347,7 +350,7 @@ async function createMinerIdOpReturn (height, aliasName, extensions, extensionDa
   const minerId = getCurrentMinerId(aliasName)
   const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
 
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, extensions, extensionData)
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, extensionData)
 
   const payload = JSON.stringify(doc)
 

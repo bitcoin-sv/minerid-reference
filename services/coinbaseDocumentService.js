@@ -286,7 +286,7 @@ function rotateMinerId (aliasName) {
   }
 }
 
-function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, jobData) {
+function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) {
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
@@ -298,8 +298,7 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, 
   const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))
 
   const optionalData = fm.getOptionalMinerData(aliasName)
-  const doc =
-  {
+  const doc = {
     version: cbdVersion,
     height: height,
 
@@ -321,7 +320,7 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx, 
   return doc
 }
 
-async function createMinerIdOpReturn (height, aliasName, jobData) {
+async function createMinerIdOpReturn (height, aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -343,7 +342,7 @@ async function createMinerIdOpReturn (height, aliasName, jobData) {
   const minerId = getCurrentMinerId(aliasName)
   const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
 
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, jobData)
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx)
 
   const payload = JSON.stringify(doc)
 
@@ -353,7 +352,7 @@ async function createMinerIdOpReturn (height, aliasName, jobData) {
   return opReturnScript
 }
 
-async function createCoinbase2 (height, aliasName, jobData) {
+async function createCoinbase2 (height, aliasName, coinbase1, coinbase2, jobData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -375,14 +374,9 @@ async function createCoinbase2 (height, aliasName, jobData) {
   const minerId = getCurrentMinerId(aliasName)
   const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
 
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx, jobData)
+  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx)
 
-  if (jobData) {
-    const extensions = addExtensions(doc, jobData)
-    if (extensions !== {}) {
-      doc.extensions = extensions
-    }
-  }
+  addExtensions(doc, coinbase1, coinbase2, jobData)
 
   const payload = JSON.stringify(doc)
 

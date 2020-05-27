@@ -1,14 +1,36 @@
 function addMinerParams ({ extensions = {}, jobData = {} }) {
-  if (jobData.getInfo) {
-    extensions.minerparams = {
-      policy: {
-        blockmaxsize: jobData.getInfo.maxblocksize,
-        maxstackmemoryusagepolicy: jobData.getInfo.maxstackmemoryusagepolicy
-      },
-      consensus: {
-        excessiveblocksize: jobData.getInfo.maxminedblocksize,
-        maxstackmemoryusageconsensus: jobData.getInfo.maxstackmemoryusageconsensus
-      }
+  const { getInfo } = jobData
+
+  if (!getInfo) {
+    return
+  }
+
+  const { maxblocksize, maxstackmemoryusagepolicy, maxminedblocksize, maxstackmemoryusageconsensus } = getInfo
+
+  if (!maxblocksize) {
+    return
+  }
+
+  if (!maxstackmemoryusagepolicy) {
+    return
+  }
+
+  if (!maxminedblocksize) {
+    return
+  }
+
+  if (!maxstackmemoryusageconsensus) {
+    return
+  }
+
+  extensions.minerparams = {
+    policy: {
+      blockmaxsize: maxblocksize,
+      maxstackmemoryusagepolicy: maxstackmemoryusagepolicy
+    },
+    consensus: {
+      excessiveblocksize: maxminedblocksize,
+      maxstackmemoryusageconsensus: maxstackmemoryusageconsensus
     }
   }
 }

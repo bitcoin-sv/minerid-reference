@@ -4,6 +4,7 @@ const config = require('../config.json')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
 const addExtensions = require('./extensions')
+const getPadding = require('../utils/getPadding')
 
 // for mainnet: "livenet"
 // for testnet: "testnet"
@@ -240,7 +241,7 @@ function getOrCreateVctPk (aliasName) {
 
 function createCoinbaseOpReturn (doc, sig) {
   doc = Buffer.from(doc).toString('hex')
-  return bsv.Script.buildSafeDataOut([protocolName, doc, sig], 'hex').toHex()
+  return bsv.Script.buildSafeDataOut([protocolName, doc, sig], 'hex')
 }
 
 async function generateVcTx (aliasName) {
@@ -348,7 +349,7 @@ async function createMinerIdOpReturn (height, aliasName) {
 
   const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
 
-  const opReturnScript = createCoinbaseOpReturn(payload, signature)
+  const opReturnScript = createCoinbaseOpReturn(payload, signature).toHex()
   return opReturnScript
 }
 
@@ -382,8 +383,27 @@ async function createCoinbase2 (height, aliasName, coinbase1, coinbase2, jobData
 
   const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
 
-  const opReturnScript = createCoinbaseOpReturn(payload, signature)
-  return opReturnScript
+  if (!Buffer.isBuffer(coinbase1)) {
+    coinbase1 = Buffer.from(coinbase1, 'hex')
+  }
+
+  if (!Buffer.isBuffer(coinbase2)) {
+    coinbase2 = Buffer.from(coinbase2, 'hex')
+  }
+
+  const padding = getPadding(coinbase1)
+
+  const cb = Buffer.concat([coinbase1, padding, coinbase2])
+
+  const tx = new bsv.Transaction(cb)
+
+  tx.addOutput(new bsv.Transaction.Output({
+    script: createCoinbaseOpReturn(payload, signature),
+    satoshis: 0
+  }))
+
+  // Now we only want to return coinbase2
+  return tx.toBuffer().slice(coinbase1.length + padding.length).toString('hex')
 }
 
 module.exports = {

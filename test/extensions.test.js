@@ -6,23 +6,46 @@ const assert = require('assert')
 
 describe('Extensions', function () {
   describe('Blockbind', function () {
-    it('can create a Merkle root from coinbase tx and 2 Merkle branches', () => {
-      const expectedRoot = '4feefbd7dc07a34f4138a1d934d3d2115fcff632a9a5bbde79ad9313c60cd8b4'
+    it('can create a Merkle root from coinbase1 and coinbase2 and no merkle branches', () => {
+      const jobData = {
+        coinbase1: '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d3b6092f7376706f6f6c2e636f6d2f',
+        coinbase2: 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000',
+        miningCandidate: {
+          prevhash: '000000000000000002d9865865d4d7b9dea7f3d09cf0ad51082a91c5d5acbd47',
+          merkleProof: []
+        }
+      }
 
-      const coinbaseHash = '7f598b52740073005bd2f4f9cabfc30ce60198c3627cd4671477d26921962753'
-      const merkleBranches = [ // merkleProof in getminingcandidate BitCoin RPC call
-        // see: https://github.com/bitcoin-sv-specs/protocol/blob/master/rpc/GetMiningCandidate.md
-        '9bd12ce6508574b3163aadb14eab7bd862306da85b221eb284fb41d6012db98f',
-        '56f04cc78ac493defced65dd58f4437c67bcc697b59778b0cd96c3c64c1b0bbf'
-      ]
+      const addBlockBind = blockbind.__get__('addBlockBind')
+      const extensions = {}
+      addBlockBind({ extensions, jobData })
 
-      const buildMerkleRootFromCoinbase = blockbind.__get__('buildMerkleRootFromCoinbase')
-      const merkleRoot = buildMerkleRootFromCoinbase(coinbaseHash, merkleBranches)
-
-      assert.strict.equal(merkleRoot, expectedRoot)
+      const expectedRoot = '6cbb34f7965514786ed041e021f447d228bb2a24531e225da1450b0ebbcf01bf'
+      assert.strict.equal(extensions.blockbind.modifiedMerkleRoot, expectedRoot)
     })
 
-    it('can create a Merkle root from coinbase tx and 5 Merkle branches', () => {
+    it('can create a Merkle root from coinbase1 and coinbase2 and 2 Merkle branches', () => {
+      const jobData = {
+        coinbase1: '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d3b6092f7376706f6f6c2e636f6d2f',
+        coinbase2: 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000',
+        miningCandidate: {
+          prevhash: '000000000000000002d9865865d4d7b9dea7f3d09cf0ad51082a91c5d5acbd47',
+          merkleProof: [
+            'd4298cf4e2199228af168ad6a998e5bd656cdc7776b8151c37066983b6367a45',
+            '887ed2c1fcabb86c70fbfdf2bed3fe8760448ca3cac10ed203e67225505fc750'
+          ]
+        }
+      }
+
+      const addBlockBind = blockbind.__get__('addBlockBind')
+      const extensions = {}
+      addBlockBind({ extensions, jobData })
+
+      const expectedRoot = '7aeea7a526c87d4dc4c56634bcaf19d7cdd1cdeb7f37db0cf8402b94f69462cd'
+      assert.strict.equal(extensions.blockbind.modifiedMerkleRoot, expectedRoot)
+    })
+
+    it('can create a Merkle root from coinbase hash and 5 Merkle branches', () => {
       const expectedRoot = '4613bbcb10e2d0192bc2f226baf2a973842bdb47053ecca90d8d4540ec5ec4c0'
 
       const coinbaseHash = '66140d22ba975c50f7383618a4ac7ca5dab919ae4e43f88b0ee79b7cbcccb25a'

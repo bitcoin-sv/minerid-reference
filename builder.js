@@ -36,8 +36,18 @@ app.post('/opreturn', async (req, res) => {
 
   res.setHeader('Content-Type', 'text/plain')
 
+  if (!blockHeight) {
+    res.status(400).send(`blockHeight must be supplied`)
+    return
+  }
+
   if (blockHeight < 1) {
-    res.status(400).send('Must enter a valid height')
+    res.status(400).send('blockHeight must be positive')
+    return
+  }
+
+  if (!alias) {
+    res.status(400).send(`Alias must be supplied`)
     return
   }
 
@@ -46,8 +56,13 @@ app.post('/opreturn', async (req, res) => {
     return
   }
 
-  if (!(coinbase1 && coinbase2)) {
-    res.status(400).send('Coinbase 1 and 2 must be supplied')
+  if (!coinbase1) {
+    res.status(400).send('Coinbase 1 must be supplied')
+    return
+  }
+
+  if (!coinbase2) {
+    res.status(400).send('Coinbase 2 must be supplied')
     return
   }
 
@@ -55,7 +70,7 @@ app.post('/opreturn', async (req, res) => {
     const cb2 = await coinbaseDocService.createCoinbase2(blockHeight, alias, coinbase1, coinbase2, jobData)
     res.send(cb2)
   } catch (err) {
-    res.status(500).send(`Internal error ${err.message}`)
+    res.status(500).send(`Internal error: ${err.message}`)
   }
 })
 

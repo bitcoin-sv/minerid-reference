@@ -124,4 +124,117 @@ describe('Extensions', function () {
       assert.strict.deepEqual(extensions.blockinfo, expectedBlockInfo)
     })
   })
+
+  describe('FeeSpec', function () {
+    it('can create a proper feespec extension', () => {
+      const feeSpec = {
+        'defaultFee': [
+          {
+            'feeType': 'standard',
+            'miningFee': {
+              'satoshis': 1,
+              'bytes': 1
+            },
+            'relayFee': {
+              'satoshis': 1,
+              'bytes': 10
+            }
+          },
+          {
+            'feeType': 'data',
+            'miningFee': {
+              'satoshis': 2,
+              'bytes': 1000
+            },
+            'relayFee': {
+              'satoshis': 1,
+              'bytes': 10000
+            }
+          }
+        ]
+      }
+      const jobData = {
+        feeSpec: feeSpec
+      }
+
+      const addFeeSpec = feespec.__get__('addFeeSpec')
+      const extensions = {}
+      addFeeSpec({ extensions, jobData })
+
+      const expectedFeeSpec = {
+        'defaultFee': [
+          {
+            'feeType': 'standard',
+            'miningFee': {
+              'satoshis': 1,
+              'bytes': 1
+            },
+            'relayFee': {
+              'satoshis': 1,
+              'bytes': 10
+            }
+          },
+          {
+            'feeType': 'data',
+            'miningFee': {
+              'satoshis': 2,
+              'bytes': 1000
+            },
+            'relayFee': {
+              'satoshis': 1,
+              'bytes': 10000
+            }
+          }
+        ]
+      }
+      assert.strict.deepEqual(extensions.feeSpec, expectedFeeSpec)
+    })
+  })
+
+  describe('MinerParams', function () {
+    it('can create a proper minerparams extension', () => {
+      const getInfo = {
+        'version': 101000300,
+        'protocolversion': 70015,
+        'walletversion': 160300,
+        'balance': 199.99997068,
+        'blocks': 104,
+        'timeoffset': 0,
+        'connections': 4,
+        'proxy': '',
+        'difficulty': 4.656542373906925e-10,
+        'testnet': false,
+        'stn': false,
+        'keypoololdest': 1575386196,
+        'keypoolsize': 1999,
+        'paytxfee': 0.00000000,
+        'relayfee': 0.00000250,
+        'errors': '',
+        'maxblocksize': 9223372036854775807,
+        'maxminedblocksize': 128000000,
+        'maxstackmemoryusagepolicy': 100000000,
+        'maxstackmemoryusageconsensus': 9223372036854775807
+      }
+
+      const jobData = {
+        getInfo: getInfo
+      }
+
+      const addMinerParams = minerparams.__get__('addMinerParams')
+      const extensions = {}
+      addMinerParams({ extensions, jobData })
+
+      const expectedMinerParams = {
+        policy: {
+          blockmaxsize: 9223372036854776000,
+          maxstackmemoryusagepolicy: 100000000
+        },
+        consensus: {
+          excessiveblocksize: 128000000,
+          maxstackmemoryusageconsensus: 9223372036854776000
+        }
+      }
+      assert.strict.deepEqual(extensions.minerparams, expectedMinerParams)
+    })
+  })
 })

@@ -17,7 +17,7 @@ function addExtensions (doc, coinbase1, coinbase2, jobData = {}) {
     require(pluginFilePath)({ extensions, jobData })
   })
 
-  if (extensions !== {}) {
+  if (Object.keys(extensions).length !== 0) {
     doc.extensions = extensions
   }
 }

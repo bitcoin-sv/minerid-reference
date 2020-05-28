@@ -1,6 +1,6 @@
 function addFeeSpec ({ extensions = {}, jobData = {} }) {
   if (jobData.feeSpec) {
-    extensions.defaultFee = jobData.feeSpec
+    extensions.feeSpec = jobData.feeSpec
   }
 }
 

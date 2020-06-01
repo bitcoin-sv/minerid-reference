@@ -31,7 +31,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
   }
 })
 
-app.post('/coinb2', async (req, res) => {
+app.post('/coinbase2', async (req, res) => {
   const { blockHeight, alias, coinbase1, coinbase2, jobData } = req.body
 
   res.setHeader('Content-Type', 'text/plain')

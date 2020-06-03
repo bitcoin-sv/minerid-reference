@@ -3,7 +3,7 @@ const blockbind = rewire('../plugins/blockbind')
 const blockinfo = rewire('../plugins/blockinfo')
 const feespec = rewire('../plugins/feespec')
 const minerparams = rewire('../plugins/minerparams')
-const addExtensions = require('../services/extensions')
+const { addExtensions } = require('../services/extensions')
 
 const clonedeep = require('lodash.clonedeep')
 
@@ -12,9 +12,8 @@ const assert = require('assert')
 
 describe('Extensions', function () {
   describe('BlockBind', function () {
-    it('can create a Merkle root from coinbase1 and coinbase2 and no merkle branches', () => {
+    it('can create a Merkle root from coinbase2 and no merkle branches', () => {
       const jobData = {
-        coinbase1: '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d3b6092f7376706f6f6c2e636f6d2f',
         coinbase2: 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000',
         miningCandidate: {
           prevhash: '000000000000000002d9865865d4d7b9dea7f3d09cf0ad51082a91c5d5acbd47',
@@ -30,9 +29,8 @@ describe('Extensions', function () {
       assert.strict.equal(extensions.blockbind.modifiedMerkleRoot, expectedRoot)
     })
 
-    it('can create a Merkle root from coinbase1 and coinbase2 and 2 Merkle branches', () => {
+    it('can create a Merkle root from coinbase2 and 2 Merkle branches', () => {
       const jobData = {
-        coinbase1: '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d3b6092f7376706f6f6c2e636f6d2f',
         coinbase2: 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000',
         miningCandidate: {
           prevhash: '000000000000000002d9865865d4d7b9dea7f3d09cf0ad51082a91c5d5acbd47',
@@ -72,7 +70,6 @@ describe('Extensions', function () {
 
     it('can create a proper blockbind extension', () => {
       const jobData = {
-        coinbase1: '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d3b6092f7376706f6f6c2e636f6d2f',
         coinbase2: 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000',
         miningCandidate: {
           prevhash: '000000000000000002d9865865d4d7b9dea7f3d09cf0ad51082a91c5d5acbd47',
@@ -254,8 +251,7 @@ describe('Extensions', function () {
       }
     }
 
-    const exampleCoinbase1 = '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03deb7092f7376706f6f6c2e636f6d2f'
-    const exampleCoinbase2 = 'ffffffff02a1705625000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac0000000000000000fd1302006a04ac1eed884dc1017b2276657273696f6e223a22302e31222c22686569676874223a22363336383934222c22707265764d696e65724964223a22303262336335636535326539646139633334363663353865656438383566343839653430346138386135656262626538663738623533616232366333636338613834222c22707265764d696e65724964536967223a223330343430323230376438623462666661663639303566356362626635623836643534646531326366383761366162383066353766633636386365666232643536646530616330303032323033313366343266666361653333343334646163636330376433303036376664343034623563616663626261373266383765666632343736386561333136313731222c226d696e65724964223a22303262336335636535326539646139633334363663353865656438383566343839653430346138386135656262626538663738623533616232366333636338613834222c2276637478223a7b2274784964223a2230346563613165333964393830653964376630613961323365656430386263656134663766313931613864336233383262393137363864343531636637396633222c22766f7574223a307d7d47304502210097adcb9e874c747ee9c821c0dbeb03a4ef9cf8dcaaba35783d71e762430063bc022017eb54ecb6b9f5fb175191c9c576ec86586d5f3496ebce8e91cdaf870c77743200000000'
+    const exampleCoinbase2 = 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000'
 
     const miningCandidate = {
       'id': 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
@@ -326,7 +322,7 @@ describe('Extensions', function () {
     it('makes no changes to the coinbase document when no jobData is included', () => {
       let doc = clonedeep(exampleDoc)
 
-      addExtensions(doc, '', '', {})
+      addExtensions(doc, '', {})
 
       assert.strict.deepEqual(doc, exampleDoc)
     })
@@ -337,7 +333,7 @@ describe('Extensions', function () {
         miningCandidate: miningCandidate
       }
 
-      addExtensions(doc, '', '', jobData)
+      addExtensions(doc, '', jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -356,7 +352,7 @@ describe('Extensions', function () {
         getInfo: getInfo
       }
 
-      addExtensions(doc, '', '', jobData)
+      addExtensions(doc, '', jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -381,7 +377,7 @@ describe('Extensions', function () {
         feeSpec: feeSpec
       }
 
-      addExtensions(doc, '', '', jobData)
+      addExtensions(doc, '', jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -397,7 +393,7 @@ describe('Extensions', function () {
         miningCandidate: miningCandidate
       }
 
-      addExtensions(doc, exampleCoinbase1, exampleCoinbase2, jobData)
+      addExtensions(doc, exampleCoinbase2, jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -406,7 +402,7 @@ describe('Extensions', function () {
           txCount: 4
         },
         blockbind: {
-          modifiedMerkleRoot: '112bc2f7714b5723d765453acb72399ffb70c8dcfabb3e9de7701da3a35d7849',
+          modifiedMerkleRoot: 'ece95dadf5b58378281461657a2b1e12041c3c2dc3a4b1886d93d66b6f5d189b',
           prevBlockHash: '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa'
         }
       }
@@ -414,13 +410,13 @@ describe('Extensions', function () {
       assert.strict.deepEqual(doc, expectedDoc)
     })
 
-    it('adds minerparams extension when cb1, cb2, and getInfo data are included in jobData', () => {
+    it('adds minerparams extension when cb2, and getInfo data are included in jobData', () => {
       let doc = clonedeep(exampleDoc)
       let jobData = {
         getInfo: getInfo
       }
 
-      addExtensions(doc, exampleCoinbase1, exampleCoinbase2, jobData)
+      addExtensions(doc, exampleCoinbase2, jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -439,13 +435,13 @@ describe('Extensions', function () {
       assert.strict.deepEqual(doc, expectedDoc)
     })
 
-    it('adds feespec extension when cb1, cb2, and feeSpec data are included in jobData', () => {
+    it('adds feespec extension when cb2, and feeSpec data are included in jobData', () => {
       let doc = clonedeep(exampleDoc)
       let jobData = {
         feeSpec: feeSpec
       }
 
-      addExtensions(doc, exampleCoinbase1, exampleCoinbase2, jobData)
+      addExtensions(doc, exampleCoinbase2, jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -455,7 +451,7 @@ describe('Extensions', function () {
       assert.strict.deepEqual(doc, expectedDoc)
     })
 
-    it('adds all extensions when cb1, cb2, getInfo, miningCandidate, and feeSpec data are included in jobData', () => {
+    it('adds all extensions when cb2, getInfo, miningCandidate, and feeSpec data are included in jobData', () => {
       let doc = clonedeep(exampleDoc)
       let jobData = {
         getInfo: getInfo,
@@ -463,7 +459,7 @@ describe('Extensions', function () {
         feeSpec: feeSpec
       }
 
-      addExtensions(doc, exampleCoinbase1, exampleCoinbase2, jobData)
+      addExtensions(doc, exampleCoinbase2, jobData)
 
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
@@ -483,7 +479,7 @@ describe('Extensions', function () {
           txCount: 4
         },
         blockbind: {
-          modifiedMerkleRoot: '112bc2f7714b5723d765453acb72399ffb70c8dcfabb3e9de7701da3a35d7849',
+          modifiedMerkleRoot: 'ece95dadf5b58378281461657a2b1e12041c3c2dc3a4b1886d93d66b6f5d189b',
           prevBlockHash: '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa'
         }
       }

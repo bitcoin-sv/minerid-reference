@@ -1,13 +1,9 @@
 const bsv = require('bsv')
 const { swapEndianness } = require('buffer-swap-endianness')
-const getPadding = require('../utils/getPadding')
+const { placeholderCB1 } = require('../services/extensions')
 
 function addBlockBind ({ extensions = {}, jobData = {} }) {
-  let { coinbase1, coinbase2, miningCandidate } = jobData
-
-  if (!coinbase1) {
-    return
-  }
+  let { coinbase2, miningCandidate } = jobData
 
   if (!coinbase2) {
     return
@@ -17,27 +13,19 @@ function addBlockBind ({ extensions = {}, jobData = {} }) {
     return
   }
 
-  if (!Buffer.isBuffer(coinbase1)) {
-    coinbase1 = Buffer.from(coinbase1, 'hex')
-  }
-
   if (!Buffer.isBuffer(coinbase2)) {
     coinbase2 = Buffer.from(coinbase2, 'hex')
   }
 
-  const padding = getPadding(coinbase1)
+  // placeholderCB1 is the zeroed out initial part of the coinbase shown in the blockbind BRFC
+  // see: https://github.com/bitcoin-sv-specs/brfc-minerid/tree/master/extensions/blockbind
+  const phCB1Buf = Buffer.from(placeholderCB1, 'hex')
 
-  const cb = Buffer.concat([coinbase1, padding, coinbase2])
-
+  const cb = Buffer.concat([phCB1Buf, coinbase2])
   const tx = new bsv.Transaction(cb)
 
-  // Create modified coinbase tx
-  tx.inputs[0] = new bsv.Transaction.Input({
-    prevTxId: '0000000000000000000000000000000000000000000000000000000000000000',
-    outputIndex: 0xFFFFFFFF,
-    script: new bsv.Script('0000000000000000')
-  })
-
+  // check if OP_RETURN output exists and replace if so - if not, add
+  // empty OP_RETURN output where the coinbase document (CBD) would go
   let cbdExists = false
   tx.outputs.forEach((o, i) => {
     if (o.satoshis === 0 && o.script.toHex().match(/^(00){0,1}6a/)) { // find op return output

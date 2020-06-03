@@ -3,8 +3,7 @@ const request = require('request-promise')
 const config = require('../config.json')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
-const addExtensions = require('./extensions')
-const getPadding = require('../utils/getPadding')
+const { addExtensions, placeholderCB1 } = require('./extensions')
 
 // for mainnet: "livenet"
 // for testnet: "testnet"
@@ -353,7 +352,7 @@ async function createMinerIdOpReturn (height, aliasName) {
   return opReturnScript
 }
 
-async function createCoinbase2 (height, aliasName, coinbase1, coinbase2, jobData) {
+async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -377,24 +376,17 @@ async function createCoinbase2 (height, aliasName, coinbase1, coinbase2, jobData
 
   const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx)
 
-  addExtensions(doc, coinbase1, coinbase2, jobData)
+  addExtensions(doc, coinbase2, jobData)
 
   const payload = JSON.stringify(doc)
 
   const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
 
-  if (!Buffer.isBuffer(coinbase1)) {
-    coinbase1 = Buffer.from(coinbase1, 'hex')
-  }
-
   if (!Buffer.isBuffer(coinbase2)) {
     coinbase2 = Buffer.from(coinbase2, 'hex')
   }
 
-  const padding = getPadding(coinbase1)
-
-  const cb = Buffer.concat([coinbase1, padding, coinbase2])
-
+  const cb = Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2])
   const tx = new bsv.Transaction(cb)
 
   tx.addOutput(new bsv.Transaction.Output({
@@ -402,12 +394,12 @@ async function createCoinbase2 (height, aliasName, coinbase1, coinbase2, jobData
     satoshis: 0
   }))
 
-  // Now we only want to return coinbase2
-  return tx.toBuffer().slice(coinbase1.length + padding.length).toString('hex')
+  // Now we only want to return coinbase2 so remove first part of the coinbase (cb1)
+  return tx.toString().substring(placeholderCB1.length)
 }
 
 module.exports = {
-  createCoinbase2,
+  createNewCoinbase2: createCoinbase2,
   createMinerIdOpReturn,
   generateMinerId,
   generateVcTx,

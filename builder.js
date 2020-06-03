@@ -32,7 +32,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
 })
 
 app.post('/coinbase2', async (req, res) => {
-  const { blockHeight, alias, coinbase1, coinbase2, jobData } = req.body
+  const { blockHeight, alias, coinbase2, jobData } = req.body
 
   res.setHeader('Content-Type', 'text/plain')
 
@@ -56,18 +56,13 @@ app.post('/coinbase2', async (req, res) => {
     return
   }
 
-  if (!coinbase1) {
-    res.status(400).send('Coinbase 1 must be supplied')
-    return
-  }
-
   if (!coinbase2) {
     res.status(400).send('Coinbase 2 must be supplied')
     return
   }
 
   try {
-    const cb2 = await coinbaseDocService.createCoinbase2(blockHeight, alias, coinbase1, coinbase2, jobData)
+    const cb2 = await coinbaseDocService.createNewCoinbase2(blockHeight, alias, coinbase2, jobData)
     res.send(cb2)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)

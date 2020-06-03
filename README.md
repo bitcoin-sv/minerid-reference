@@ -183,7 +183,7 @@ body:
 | `blockHeight` 	| Height of the block which the coinbase transaction will be in 	|
 | `alias` 	| Alias of the Miner ID 	|
 | `coinbase1` 	| First part of the coinbase (`coinb1`) as shown in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) 	|
-| `coinbase2` 	| Second part of the coinbase (`coinbase2`) as shown in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) 	|
+| `coinbase2` 	| Second part of the coinbase (`coinb2`) as shown in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) 	|
 | `jobData` 	| Data specific to a mining job to be added to the MinerId coinbase document throught the extensions 	|
 | `miningCandidate` 	| BitCoin RPC `getminingcandidate` response 	|
 | `getInfo` 	| BitCoin RPC `getinfo` response 	|

@@ -119,7 +119,7 @@ describe('Extensions', function () {
 
       const expectedBlockInfo = {
         txCount: 4,
-        blockSize: 1052
+        sizeWithoutCoinbase: 1052
       }
       assert.strict.deepEqual(extensions.blockinfo, expectedBlockInfo)
     })
@@ -128,7 +128,7 @@ describe('Extensions', function () {
   describe('FeeSpec', function () {
     it('can create a proper feespec extension', () => {
       const feeSpec = {
-        'defaultFee': [
+        'fees': [
           {
             'feeType': 'standard',
             'miningFee': {
@@ -162,7 +162,7 @@ describe('Extensions', function () {
       addFeeSpec({ extensions, jobData })
 
       const expectedFeeSpec = {
-        'defaultFee': [
+        'fees': [
           {
             'feeType': 'standard',
             'miningFee': {
@@ -293,7 +293,7 @@ describe('Extensions', function () {
     }
 
     const feeSpec = {
-      'defaultFee': [
+      'fees': [
         {
           'feeType': 'standard',
           'miningFee': {
@@ -338,7 +338,7 @@ describe('Extensions', function () {
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         blockinfo: {
-          blockSize: 1052,
+          sizeWithoutCoinbase: 1052,
           txCount: 4
         }
       }
@@ -398,7 +398,7 @@ describe('Extensions', function () {
       let expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         blockinfo: {
-          blockSize: 1052,
+          sizeWithoutCoinbase: 1052,
           txCount: 4
         },
         blockbind: {
@@ -475,7 +475,7 @@ describe('Extensions', function () {
           }
         },
         blockinfo: {
-          blockSize: 1052,
+          sizeWithoutCoinbase: 1052,
           txCount: 4
         },
         blockbind: {

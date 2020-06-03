@@ -15,7 +15,7 @@ function addBlockInfo ({ extensions = {}, jobData = {} }) {
 
   extensions.blockinfo = {
     txCount: miningCandidate.num_tx,
-    blockSize: miningCandidate.sizeWithoutCoinbase // TODO: estimate coinbase size
+    sizeWithoutCoinbase: miningCandidate.sizeWithoutCoinbase
   }
 }
 

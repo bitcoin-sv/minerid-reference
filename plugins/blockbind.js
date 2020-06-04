@@ -24,25 +24,11 @@ function addBlockBind ({ extensions = {}, jobData = {} }) {
   const cb = Buffer.concat([phCB1Buf, coinbase2])
   const tx = new bsv.Transaction(cb)
 
-  // check if OP_RETURN output exists and replace if so - if not, add
-  // empty OP_RETURN output where the coinbase document (CBD) would go
-  let cbdExists = false
-  tx.outputs.forEach((o, i) => {
-    if (o.satoshis === 0 && o.script.toHex().match(/^(00){0,1}6a/)) { // find op return output
-      cbdExists = true
-      tx.outputs[i] = new bsv.Transaction.Output({
-        script: bsv.Script('006a'),
-        satoshis: 0
-      })
-    }
-  })
-
-  if (!cbdExists) {
-    tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script('006a'),
-      satoshis: 0
-    }))
-  }
+  // add empty OP_RETURN output where the coinbase document (CBD) would go
+  tx.addOutput(new bsv.Transaction.Output({
+    script: bsv.Script('006a'),
+    satoshis: 0
+  }))
 
   const modifiedMerkleRoot = buildMerkleRootFromCoinbase(tx.id, jobData.miningCandidate.merkleProof)
 

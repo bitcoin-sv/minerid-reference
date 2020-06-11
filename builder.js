@@ -15,12 +15,12 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (blockHeight < 1) {
-    res.status(400).send('Must enter a valid height')
+    res.status(422).send('Must enter a valid height')
     return
   }
 
   if (!fm.aliasExists(alias)) {
-    res.status(400).send(`Alias "${alias}" doesn't exist`)
+    res.status(422).send(`Alias "${alias}" doesn't exist`)
     return
   }
 
@@ -38,22 +38,22 @@ app.post('/coinbase2', async (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!blockHeight) {
-    res.status(400).send(`blockHeight must be supplied`)
+    res.status(400).send('Block height must be supplied')
     return
   }
 
   if (blockHeight < 1) {
-    res.status(400).send('blockHeight must be positive')
+    res.status(422).send('Block height must be positive')
     return
   }
 
   if (!alias) {
-    res.status(400).send(`Alias must be supplied`)
+    res.status(400).send('Alias must be supplied')
     return
   }
 
   if (!fm.aliasExists(alias)) {
-    res.status(400).send(`Alias "${alias}" doesn't exist`)
+    res.status(422).send(`Alias "${alias}" doesn't exist`)
     return
   }
 
@@ -66,7 +66,7 @@ app.post('/coinbase2', async (req, res) => {
     // try to create a BitCoin transaction using Coinbase 2
     bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2]))
   } catch (error) {
-    res.status(400).send('Invalid Coinbase 2')
+    res.status(422).send('Invalid Coinbase 2')
     return
   }
 
@@ -82,7 +82,7 @@ app.get('/opreturn/:alias/rotate', (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
-    res.status(400).send(`Alias "${req.params.alias}" doesn't exist`)
+    res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
     return
   }
 
@@ -98,7 +98,7 @@ app.get('/minerid/:alias', (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
-    res.status(400).send(`Alias "${req.params.alias}" doesn't exist`)
+    res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
     return
   }
 
@@ -114,12 +114,12 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
-    res.status(400).send(`Alias "${req.params.alias}" doesn't exist`)
+    res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
     return
   }
 
   if (req.params.hash.length !== 64) {
-    res.status(400).send('Hash must be 64 characters (32 byte hex string)')
+    res.status(422).send('Hash must be 64 characters (32 byte hex string)')
     return
   }
 

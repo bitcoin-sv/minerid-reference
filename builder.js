@@ -16,11 +16,13 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
 
   if (blockHeight < 1) {
     res.status(422).send('Must enter a valid height')
+    console.log('Bad request: invalid height: ', blockHeight)
     return
   }
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', alias)
     return
   }
 
@@ -28,7 +30,8 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
     const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias)
     res.send(opReturn)
   } catch (err) {
-    res.status(500).send(`Internal error ${err.message}`)
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
   }
 })
 
@@ -39,26 +42,31 @@ app.post('/coinbase2', async (req, res) => {
 
   if (!blockHeight) {
     res.status(400).send('Block height must be supplied')
+    console.log('Bad request: no height supplied')
     return
   }
 
   if (blockHeight < 1) {
     res.status(422).send('Block height must be positive')
+    console.log('Bad request: invalid height: ', blockHeight)
     return
   }
 
   if (!alias) {
     res.status(400).send('Alias must be supplied')
+    console.log('Bad request: no alias supplied')
     return
   }
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', alias)
     return
   }
 
   if (!coinbase2) {
     res.status(400).send('Coinbase 2 must be supplied')
+    console.log('Bad request: no coinbase2 supplied')
     return
   }
 
@@ -67,6 +75,7 @@ app.post('/coinbase2', async (req, res) => {
     bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2]))
   } catch (error) {
     res.status(422).send('Invalid Coinbase 2')
+    console.log('Bad request: invalid coinbase2: ', coinbase2)
     return
   }
 
@@ -74,7 +83,8 @@ app.post('/coinbase2', async (req, res) => {
     const cb2 = await coinbaseDocService.createNewCoinbase2(blockHeight, alias, coinbase2, jobData)
     res.send(cb2)
   } catch (err) {
-    res.status(500).send(`Internal error: ${err.message}`)
+    res.status(500).send(`Internal error:: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
   }
 })
 
@@ -83,6 +93,7 @@ app.get('/opreturn/:alias/rotate', (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
@@ -90,7 +101,8 @@ app.get('/opreturn/:alias/rotate', (req, res) => {
     coinbaseDocService.rotateMinerId(req.params.alias)
     res.send('OK')
   } catch (err) {
-    res.status(500).send(`Internal error ${err.message}`)
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
   }
 })
 
@@ -99,6 +111,7 @@ app.get('/minerid/:alias', (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
@@ -106,7 +119,8 @@ app.get('/minerid/:alias', (req, res) => {
     const currentAlias = coinbaseDocService.getCurrentMinerId(req.params.alias)
     res.send(currentAlias)
   } catch (err) {
-    res.status(500).send(`Internal error ${err.message}`)
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
   }
 })
 
@@ -115,11 +129,13 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
   if (req.params.hash.length !== 64) {
     res.status(422).send('Hash must be 64 characters (32 byte hex string)')
+    console.log('Bad request: invalid hash: ', req.params.hash)
     return
   }
 
@@ -127,7 +143,8 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
     const signature = coinbaseDocService.signWithCurrentMinerId(req.params.hash, req.params.alias)
     res.send(signature)
   } catch (err) {
-    res.status(500).send(`Internal error ${err.message}`)
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
   }
 })
 

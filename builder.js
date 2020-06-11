@@ -2,8 +2,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const config = require('./config.json')
 const fm = require('./utils/filemanager')
-
+const { placeholderCB1 } = require('./services/extensions')
 const coinbaseDocService = require('./services/coinbaseDocumentService')
+const bsv = require('bsv')
 
 const app = express()
 app.use(bodyParser.json())
@@ -58,6 +59,14 @@ app.post('/coinbase2', async (req, res) => {
 
   if (!coinbase2) {
     res.status(400).send('Coinbase 2 must be supplied')
+    return
+  }
+
+  try {
+    // try to create a BitCoin transaction using Coinbase 2
+    bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2]))
+  } catch (error) {
+    res.status(400).send('Invalid Coinbase 2')
     return
   }
 

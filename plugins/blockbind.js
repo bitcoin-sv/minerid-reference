@@ -22,7 +22,14 @@ function addBlockBind ({ extensions = {}, jobData = {} }) {
   const phCB1Buf = Buffer.from(placeholderCB1, 'hex')
 
   const cb = Buffer.concat([phCB1Buf, coinbase2])
-  const tx = new bsv.Transaction(cb)
+
+  let tx
+  try {
+    tx = new bsv.Transaction(cb)
+  } catch (error) {
+    console.error('Error: invalid coinbase2: ', coinbase2)
+    return
+  }
 
   // add empty OP_RETURN output where the coinbase document (CBD) would go
   tx.addOutput(new bsv.Transaction.Output({

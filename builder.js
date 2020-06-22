@@ -72,7 +72,7 @@ app.post('/coinbase2', async (req, res) => {
 
   try {
     // try to create a BitCoin transaction using Coinbase 2
-    bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2]))
+    bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), Buffer.from(coinbase2, 'hex')]))
   } catch (error) {
     res.status(422).send('Invalid Coinbase 2')
     console.log('Bad request: invalid coinbase2: ', coinbase2)

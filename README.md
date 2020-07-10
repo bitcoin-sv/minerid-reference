@@ -23,7 +23,7 @@ For support and general discussion of both standards and reference implementatio
 
 ## Requirements
 
-For development, you will only need Node.js and a node global package, NPM, installed in your environement.
+For development, you will only need Node.js (minimum 10.12.0) and a node global package, NPM, installed in your environement.
 
 ### Node
 

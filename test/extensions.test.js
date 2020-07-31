@@ -240,7 +240,7 @@ describe('Extensions', function () {
 
   describe('All Extensions', function () {
     const exampleDoc = {
-      'version': '0.1',
+      'version': '0.2',
       'height': 624455,
       'prevMinerId': '022604665d3a186be9690231a279f8e18b800f4ce78caac2d51940c8c1c92a8354',
       'prevMinerIdSig': '3044022067452f9d9baeef327183e2f565c8c4d76299287d6c0253aa133c75150d78d307022029c9d93ac08c19e20a03dc32307c4f0a023e79a505c02b01857c84d49670acf6',

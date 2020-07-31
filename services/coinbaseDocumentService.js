@@ -26,7 +26,7 @@ switch (network) {
 }
 
 const vcTxFilename = 'vctx'
-const cbdVersion = '0.1'
+const cbdVersion = '0.2'
 const fee = 300
 const dustLimit = 546 // satoshis
 const protocolName = 'ac1eed88'
@@ -289,9 +289,9 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) 
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
-    Buffer.from(prevMinerId),
-    Buffer.from(minerId),
-    Buffer.from(vcTx)
+    Buffer.from(prevMinerId, 'hex'),
+    Buffer.from(minerId, 'hex'),
+    Buffer.from(vcTx, 'hex')
   ])
 
   const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))

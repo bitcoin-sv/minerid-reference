@@ -290,9 +290,9 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) 
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
-    Buffer.from(prevMinerId),
-    Buffer.from(minerId),
-    Buffer.from(vcTx)
+    Buffer.from(prevMinerId, 'hex'),
+    Buffer.from(minerId, 'hex'),
+    Buffer.from(vcTx, 'hex')
   ])
 
   const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))

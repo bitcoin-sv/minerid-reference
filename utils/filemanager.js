@@ -11,7 +11,7 @@ const vcTxFilename = 'vctx'
 
 const aliasFilename = 'aliases'
 
-function aliasExists(aliasName) {
+function aliasExists (aliasName) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName)
 
@@ -21,7 +21,7 @@ function aliasExists(aliasName) {
   return false
 }
 
-function createMinerId(alias) {
+function createMinerId (alias) {
   const xpriv = bsv.HDPrivateKey()
 
   const dir = path.join(process.env.HOME, keystorePath)
@@ -31,7 +31,7 @@ function createMinerId(alias) {
   fs.writeFileSync(filePath, xpriv.toString())
 }
 
-function getPrivateKey(alias) {
+function getPrivateKey (alias) {
   const dir = path.join(process.env.HOME, keystorePath)
   makeDirIfNotExists(dir)
 
@@ -48,7 +48,7 @@ function getPrivateKey(alias) {
   }
 }
 
-function getMinerId(alias) {
+function getMinerId (alias) {
   const privateKey = getPrivateKey(alias)
   if (privateKey) {
     return privateKey.publicKey.toString()
@@ -56,7 +56,7 @@ function getMinerId(alias) {
   return null
 }
 
-function getOrCreatePrivKey(aliasName, filename) {
+function getOrCreatePrivKey (aliasName, filename) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, filename)
   let data
@@ -78,7 +78,7 @@ function getOrCreatePrivKey(aliasName, filename) {
 }
 
 // the file should store an array of private keys or an xpub and a path.
-function writePrivKeyToFile(aliasName, filename, privKey) {
+function writePrivKeyToFile (aliasName, filename, privKey) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, filename)
   let data
@@ -90,7 +90,7 @@ function writePrivKeyToFile(aliasName, filename, privKey) {
   }
 }
 
-function copyPrivKey(aliasName, sourceFilename, destinationFilename) {
+function copyPrivKey (aliasName, sourceFilename, destinationFilename) {
   const homeDir = process.env.HOME
   const sourceFilePath = path.join(homeDir, filedir, aliasName, sourceFilename)
   const destinationFilePath = path.join(homeDir, filedir, aliasName, destinationFilename)
@@ -100,11 +100,11 @@ function copyPrivKey(aliasName, sourceFilename, destinationFilename) {
   })
 }
 
-function getVctxFromFile(aliasName) {
+function getVctxFromFile (aliasName) {
   return _getVctxFromFile(aliasName, vcTxFilename)
 }
 
-function _getVctxFromFile(aliasName, filename) {
+function _getVctxFromFile (aliasName, filename) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, filename)
   let data
@@ -117,7 +117,7 @@ function _getVctxFromFile(aliasName, filename) {
   return data ? data.txid : null
 }
 
-function writeVctxToFile(aliasName, vtcx) {
+function writeVctxToFile (aliasName, vtcx) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, vcTxFilename)
   let data
@@ -134,7 +134,7 @@ function writeVctxToFile(aliasName, vtcx) {
   }
 }
 
-function getCurrentAlias(aliasName) {
+function getCurrentAlias (aliasName) {
   const data = _getAliases(aliasName)
   if (data && data.length > 0) {
     return data[data.length - 1].name
@@ -142,7 +142,7 @@ function getCurrentAlias(aliasName) {
   return null
 }
 
-function getPreviousAlias(aliasName) {
+function getPreviousAlias (aliasName) {
   const data = _getAliases(aliasName)
   if (!data) {
     return null
@@ -154,7 +154,7 @@ function getPreviousAlias(aliasName) {
   }
 }
 
-function _getAliases(aliasName) {
+function _getAliases (aliasName) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, aliasFilename)
   let data
@@ -167,7 +167,7 @@ function _getAliases(aliasName) {
   return data
 }
 
-function makeDirIfNotExists(folderPath) {
+function makeDirIfNotExists (folderPath) {
   try {
     if (fs.existsSync(folderPath)) {
       return
@@ -177,7 +177,7 @@ function makeDirIfNotExists(folderPath) {
   fs.mkdirSync(folderPath, { recursive: true })
 }
 
-function saveAlias(aliasName, alias) {
+function saveAlias (aliasName, alias) {
   const homeDir = process.env.HOME
   const folderPath = path.join(homeDir, filedir, aliasName)
   const filePath = path.join(folderPath, aliasFilename)
@@ -205,7 +205,7 @@ function saveAlias(aliasName, alias) {
   }
 }
 
-function updateOptionalMinerData(aliasName, name, value) {
+function updateOptionalMinerData (aliasName, name, value) {
   if (!aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
     return
@@ -214,7 +214,7 @@ function updateOptionalMinerData(aliasName, name, value) {
   writeOptionalMinerDataToFile(aliasName, name, value)
 }
 
-function writeOptionalMinerDataToFile(aliasName, name, value) {
+function writeOptionalMinerDataToFile (aliasName, name, value) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, configFilename)
   let data = {}
@@ -229,7 +229,7 @@ function writeOptionalMinerDataToFile(aliasName, name, value) {
   }
 }
 
-function getOptionalMinerData(aliasName) {
+function getOptionalMinerData (aliasName) {
   if (!aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
     return

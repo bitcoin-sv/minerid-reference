@@ -31,7 +31,7 @@ const fee = 300
 const dustLimit = 546 // satoshis
 const protocolName = 'ac1eed88'
 
-function generateMinerId(aliasName) {
+function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment
   const alias = aliasName + '_1'
   try {
@@ -53,12 +53,12 @@ function generateMinerId(aliasName) {
   }
 }
 
-function getCurrentMinerId(alias) {
+function getCurrentMinerId (alias) {
   const currentMinerId = fm.getMinerId(fm.getCurrentAlias(alias))
   return currentMinerId
 }
 
-function signWithCurrentMinerId(hash, alias) {
+function signWithCurrentMinerId (hash, alias) {
   const currentAlias = fm.getCurrentAlias(alias)
 
   if (currentAlias === null) {
@@ -67,7 +67,7 @@ function signWithCurrentMinerId(hash, alias) {
   return signHash(Buffer.from(hash, 'hex'), currentAlias)
 }
 
-function sign(payload, alias) {
+function sign (payload, alias) {
   if (typeof payload === 'string') {
     payload = Buffer.from(payload, 'hex')
   }
@@ -77,14 +77,14 @@ function sign(payload, alias) {
   return signHash(hash, alias)
 }
 
-function signHash(hash, alias) {
+function signHash (hash, alias) {
   const privateKey = fm.getPrivateKey(alias)
 
   const signature = bsv.crypto.ECDSA.sign(hash, privateKey)
   return signature.toString('hex')
 }
 
-async function getValididyCheckTx(aliasName, vctPrivKey) {
+async function getValididyCheckTx (aliasName, vctPrivKey) {
   let vctx = fm.getVctxFromFile(aliasName)
   if (!vctx) {
     // no vctx so create one
@@ -101,11 +101,10 @@ async function getValididyCheckTx(aliasName, vctPrivKey) {
 }
 
 // we create a validity check transaction. It only has one output.
-async function createValidityCheckTx(vctPrivKey, aliasName) {
+async function createValidityCheckTx (vctPrivKey, aliasName) {
   const vcTxAddress = bsv.Address.fromPrivateKey(vctPrivKey, network)
   // Now we have decide how to fund it.
   if (network === 'regtest') {
-
     try {
       let vctx = fm.getVctxFromFile(aliasName)
       if (!vctx) {
@@ -170,7 +169,7 @@ async function createValidityCheckTx(vctPrivKey, aliasName) {
   }
 }
 
-async function getUtxos(address, network) {
+async function getUtxos (address, network) {
   const options = {
     method: 'GET',
     headers: {
@@ -210,7 +209,7 @@ async function getUtxos(address, network) {
   }
 }
 
-async function sendTX(hex) {
+async function sendTX (hex) {
   const uri = `https://api.whatsonchain.com/v1/bsv/${networkName}/tx/raw`
 
   const options = {
@@ -234,16 +233,16 @@ async function sendTX(hex) {
   }
 }
 
-function getOrCreateVctPk(aliasName) {
+function getOrCreateVctPk (aliasName) {
   return fm.getOrCreatePrivKey(aliasName, vcTxFilename)
 }
 
-function createCoinbaseOpReturn(doc, sig) {
+function createCoinbaseOpReturn (doc, sig) {
   doc = Buffer.from(doc).toString('hex')
   return bsv.Script.buildSafeDataOut([protocolName, doc, sig], 'hex')
 }
 
-async function generateVcTx(aliasName) {
+async function generateVcTx (aliasName) {
   if (!fm.aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
     return
@@ -258,7 +257,7 @@ async function generateVcTx(aliasName) {
 /* Create a new minerId
    Don't return anything but the subsequent coinbase documents will contain both minerIds (now including the new one)
 */
-function rotateMinerId(aliasName) {
+function rotateMinerId (aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -286,7 +285,7 @@ function rotateMinerId(aliasName) {
   }
 }
 
-function createCoinbaseDocument(aliasName, height, minerId, prevMinerId, vcTx) {
+function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) {
   prevMinerId = prevMinerId || minerId
 
   const minerIdSigPayload = Buffer.concat([
@@ -320,7 +319,7 @@ function createCoinbaseDocument(aliasName, height, minerId, prevMinerId, vcTx) {
   return doc
 }
 
-async function createMinerIdOpReturn(height, aliasName) {
+async function createMinerIdOpReturn (height, aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -352,7 +351,7 @@ async function createMinerIdOpReturn(height, aliasName) {
   return opReturnScript
 }
 
-async function createCoinbase2(height, aliasName, coinbase2, jobData) {
+async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return

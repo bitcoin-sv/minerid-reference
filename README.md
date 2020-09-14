@@ -54,7 +54,7 @@ $ npm install
 
 ## Configuration
 
-Open [config.json](config.json) and edit it with your settings:  
+Open [config/default.json](config/default.json) and edit it with your settings:  
 
 - change `port`
 - change `minerIdDataPath` which stores user's minerids  
@@ -65,6 +65,21 @@ Open [config.json](config.json) and edit it with your settings:
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
+
+If you need to change the settings dynamically from the enviroment variables, you overwrite them using the enviroment variable *NODE_CONFIG*. Such as this:
+
+```
+export NODE_CONFIG='{"port": 9003}'
+npm start
+```
+
+Or for docker:
+
+```
+docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:1.3
+```
+
+For more information, you can read the [https://github.com/lorenwest/node-config/wiki/Environment-Variables#node_config](documentation) of the config package.
 
 ## Running the project
 

@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  minerid:
+    build: .
+    ports:
+      - 9002:9002
+    restart: always
+    environment:
+      network: regtest
+      NODE_CONFIG: '{"bitcoin":{"rpcHost":"host.docker.internal"}}'
+    volumes:
+      - minerid:/root/.keystore
+      - minerid:/root/.minerid-client
+volumes:
+  minerid:
+    external: false

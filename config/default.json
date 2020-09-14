@@ -1,9 +1,9 @@
 {
-    "port":9002,
+    "port": 9002,
     "minerIdDataPath": ".minerid-client",
     "keystorePath": ".keystore",
     "network": "regtest",
-    "bitcoin" : {
+    "bitcoin": {
         "rpcHost": "localhost",
         "rpcPort": 18332,
         "rpcUser": "bitcoin",

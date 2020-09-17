@@ -180,7 +180,8 @@ async function getUtxos (address, network) {
   }
 
   try {
-    const utxos = await request(options)
+    const utxosRes = await request(options)
+    const utxos = JSON.parse(utxosRes)
 
     // Sort these in descending order of confirmation (oldest first)...
     utxos.sort((a, b) => b.confirmations - a.confirmations)

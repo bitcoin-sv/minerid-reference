@@ -2,7 +2,7 @@
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
 const config = require('config')
-const network = config.get('network') // "main" or "test"
+const network = config.get('network')
 
 const coinbaseDocService = require('./services/coinbaseDocumentService')
 const fm = require('./utils/filemanager')

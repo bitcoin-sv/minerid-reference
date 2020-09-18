@@ -160,12 +160,11 @@ async function createValidityCheckTx (vctPrivKey, aliasName) {
   tx.sign(vctPrivKey)
 
   try {
-    const res = await sendTX(tx.toString())
-    const vctx = JSON.parse(res)
-    console.log('VCTx transaction ID:', vctx)
-    return vctx
+    const vctxid = await sendTX(tx.toString())
+    console.log('VCTx transaction ID:', vctxid)
+    return vctxid
   } catch (e) {
-    console.log('error sending tx: ', e)
+    console.log('error sending tx: ', e.message)
   }
 }
 

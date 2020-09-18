@@ -76,12 +76,14 @@ npm start
 Or for docker:
 
 ```
-docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:1.3
+docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:1.1.1
 ```
 
 For more information, you can read the [https://github.com/lorenwest/node-config/wiki/Environment-Variables#node_config](documentation) of the config package.
 
 ## Running the project
+
+### Nodejs
 
 To run API server:
 ```console
@@ -91,6 +93,43 @@ $ npm start
 To run CLI:
 ```console
 $ npm run cli
+```
+
+### Docker
+
+You can find the public Docker Hub repository for MinerId [here](https://hub.docker.com/r/bitcoinsv/minerid).
+
+#### Build Image
+
+```console
+$ docker build . -t minerid_reference:1.1.1
+```
+
+
+#### Run
+
+To run MinerId you need to specify which network to run on (mainnet="livenet" | testnet="testnet" | regtest="regtest"), and if [`regtest`](https://github.com/jadwahab/regtest), then you will need to specify the Bitcoin RPC credentials in order to MinerId to have access to it.  
+
+By default, it will run on regtest:
+
+```console
+docker run --publish 9002:9002 \
+    --name minerid \
+    --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' \
+    --detach \
+    bitcoinsv/minerid:1.1.1
+```
+
+#### Volumes
+
+Since MinerId is essentially a service built around a private key (MinerId) we recommend running the container with volumes in order to avoid the situation where the container falls over for some reason and the private key is lost. In the environment variables, we are specifying which network (`livenet` (or mainnet), `testnet`, or `regtest`) and what Bitcoin node RPC parameters and credentials to use by passing them to `NODE_CONFIG`.  
+
+#### Run with [docker-compose](docker-compose.yml)
+
+Change any settings in the [docker-compose](docker-compose.yml) to fit your configuration, then run the container.
+
+```console
+$ docker-compose up -d
 ```
 
 ## Testing

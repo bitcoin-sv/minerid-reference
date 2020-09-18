@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
-const config = require('./config.json')
-const network = config.network // "main" or "test"
+const config = require('config')
+const network = config.get('network')
 
 const coinbaseDocService = require('./services/coinbaseDocumentService')
 const fm = require('./utils/filemanager')

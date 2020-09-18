@@ -1,6 +1,6 @@
 const bsv = require('bsv')
 const request = require('request-promise')
-const config = require('../config.json')
+const config = require('config')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
 const { addExtensions, placeholderCB1 } = require('./extensions')
@@ -8,7 +8,7 @@ const { addExtensions, placeholderCB1 } = require('./extensions')
 // for mainnet: "livenet"
 // for testnet: "testnet"
 // for regtest: "testnet"
-const network = config.network
+const network = config.get('network')
 let networkName
 switch (network) {
   case 'livenet':
@@ -104,16 +104,15 @@ async function getValididyCheckTx (aliasName, vctPrivKey) {
 async function createValidityCheckTx (vctPrivKey, aliasName) {
   const vcTxAddress = bsv.Address.fromPrivateKey(vctPrivKey, network)
   // Now we have decide how to fund it.
-
   if (network === 'regtest') {
     try {
       let vctx = fm.getVctxFromFile(aliasName)
       if (!vctx) {
         const bitcoinClient = new bitcoin.Client({
-          host: config.bitcoin.rpcHost,
-          port: config.bitcoin.rpcPort,
-          user: config.bitcoin.rpcUser,
-          pass: config.bitcoin.rpcPassword,
+          host: config.get('bitcoin.rpcHost'),
+          port: config.get('bitcoin.rpcPort'),
+          user: config.get('bitcoin.rpcUser'),
+          pass: config.get('bitcoin.rpcPassword'),
           timeout: 10000
         })
 
@@ -161,12 +160,11 @@ async function createValidityCheckTx (vctPrivKey, aliasName) {
   tx.sign(vctPrivKey)
 
   try {
-    const res = await sendTX(tx.toString())
-    const vctx = JSON.parse(res)
-    console.log('VCTx transaction ID:', vctx)
-    return vctx
+    const vctxid = await sendTX(tx.toString())
+    console.log('VCTx transaction ID:', vctxid)
+    return vctxid
   } catch (e) {
-    console.log('error sending tx: ', e)
+    console.log('error sending tx: ', e.message)
   }
 }
 
@@ -181,7 +179,8 @@ async function getUtxos (address, network) {
   }
 
   try {
-    const utxos = await request(options)
+    const utxosRes = await request(options)
+    const utxos = JSON.parse(utxosRes)
 
     // Sort these in descending order of confirmation (oldest first)...
     utxos.sort((a, b) => b.confirmations - a.confirmations)

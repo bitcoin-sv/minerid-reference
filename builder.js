@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const config = require('./config.json')
+const config = require('config')
 const fm = require('./utils/filemanager')
 const { placeholderCB1 } = require('./services/extensions')
 const coinbaseDocService = require('./services/coinbaseDocumentService')
@@ -148,6 +148,6 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
   }
 })
 
-app.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`)
+app.listen(config.get('port'), () => {
+  console.log(`Server running on port ${config.get('port')}`)
 })

@@ -4,9 +4,9 @@ const bsv = require('bsv')
 
 const configFilename = 'config'
 
-const config = require('../config.json')
-var filedir = config.minerIdDataPath
-const keystorePath = config.keystorePath
+const config = require('config')
+var filedir = config.get('minerIdDataPath')
+const keystorePath = config.get('keystorePath')
 const vcTxFilename = 'vctx'
 
 const aliasFilename = 'aliases'
@@ -172,7 +172,7 @@ function makeDirIfNotExists (folderPath) {
     if (fs.existsSync(folderPath)) {
       return
     }
-  } catch (err) {}
+  } catch (err) { }
 
   fs.mkdirSync(folderPath, { recursive: true })
 }

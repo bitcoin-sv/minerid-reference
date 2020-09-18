@@ -6,8 +6,12 @@ services:
       - 9002:9002
     restart: always
     environment:
-      network: regtest
-      NODE_CONFIG: '{"bitcoin":{"rpcHost":"host.docker.internal"}}'
+      NODE_CONFIG: '{
+        "bitcoin": {
+        "rpcHost":"host.docker.internal"
+        },
+        "network": "livenet"
+        }'
     volumes:
       - minerid:/root/.keystore
       - minerid:/root/.minerid-client

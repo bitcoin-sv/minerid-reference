@@ -23,7 +23,7 @@ For support and general discussion of both standards and reference implementatio
 
 ## Requirements
 
-For development, you will only need Node.js (minimum 10.12.0) and a node global package, NPM, installed in your environement.
+For development, you will only need Node.js (minimum 10.12.0) and a node global package, NPM, installed in your environment.
 
 ### Node
 
@@ -66,7 +66,7 @@ Open [config/default.json](config/default.json) and edit it with your settings:
   - `rpcUser`
   - `rpcPassword`
 
-If you need to change the settings dynamically from the enviroment variables, you overwrite them using the enviroment variable *NODE_CONFIG*. Such as this:
+If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 
 ```
 export NODE_CONFIG='{"port": 9003}'
@@ -373,7 +373,7 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 
 ## Example Miner Code
 
-The [examples/testMiner.js](examples/testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (ouput) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that ouput to it's coinbase transaction.  
+The [examples/testMiner.js](examples/testMiner.js) file contains basic code needed to generate a coinbase transaction that has a MinerId (output) in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that output to it's coinbase transaction.  
 
 1. Generate MinerId:
     ```console

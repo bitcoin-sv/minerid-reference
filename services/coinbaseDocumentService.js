@@ -21,7 +21,7 @@ switch (network) {
     break
 
   default:
-    console.log('Network cofigutation not properly set in config.json file')
+    console.log('Network configuration not properly set in config.json file')
     break
 }
 

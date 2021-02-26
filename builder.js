@@ -148,6 +148,32 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
   }
 })
 
+app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', (req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+
+  if (!fm.aliasExists(req.params.alias)) {
+    res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', req.params.alias)
+    return
+  }
+
+  if (req.params.hash.length !== 64) {
+    res.status(422).send('Hash must be 64 characters (32 byte hex string)')
+    console.log('Bad request: invalid hash: ', req.params.hash)
+    return
+  }
+
+  try {
+    const currentAlias = coinbaseDocService.getCurrentMinerId(req.params.alias)
+    const signature = coinbaseDocService.signWithCurrentMinerId(req.params.hash, req.params.alias)
+
+    res.send({ publicKey: currentAlias, signature })
+  } catch (err) {
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
+  }
+})
+
 app.listen(config.get('port'), () => {
   console.log(`Server running on port ${config.get('port')}`)
 })

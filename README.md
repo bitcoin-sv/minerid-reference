@@ -357,10 +357,10 @@ $ curl localhost:9002/minerid/testMiner
 ### 5. `GET /minerid/:alias/sign/:hash`
 
 `alias`: MinerId alias  
-`hash`: SHA256 hash (32 byte hex string) to be fed to ECDSA signing agorithm
+`hash`: SHA256 hash (32 byte hex string) to be fed to ECDSA signing algorithm
 
 
-**returns** hash signature (71-73 byte hex string) using an `alias` MinerId
+**returns**  signature (71-73 byte hex string) using an `alias` MinerId
 
 #### Example
 
@@ -368,6 +368,29 @@ $ curl localhost:9002/minerid/testMiner
 $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66a4a773eda5e913eff64eb328bc632
 
 3045022100e0f86a5b1748ae48b0d10ea305202769d754071272cba0fbb82f74f8e8da8b530220494351742f3ba9e51b155df15b13f27c927d21956822aedcbb7d179c66d4d4c0
+```
+
+### 6. `GET /minerid/:alias/pksign/:hash`
+
+`alias`: MinerId alias  
+`hash`: SHA256 hash (32 byte hex string) to be fed to ECDSA signing agorithm
+
+
+**returns** signature (71-73 byte hex string) using an `alias` MinerId and public key used
+
+#### Example
+
+```console
+$ curl localhost:9002/minerid/testMiner/pksign/02644f5000535bbc135f9c8613f86f10c66a4a773eda5e913eff64eb328bc632
+```
+
+response:
+
+```json
+{
+  "publicKey": "02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab",
+  "signature": "3044022033e2617bb214368abca8cd977029b349182142a6261b9aef168130a9cf158f9402206f1fe64d57b819edc29c0a26352850545bb343c1acb7cd1ce18a77e0f866f6d6"
+}
 ```
 
 

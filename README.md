@@ -65,6 +65,9 @@ Open [config/default.json](config/default.json) and edit it with your settings:
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
+- change authentication parameters:
+  - `enabled` which enables authentication checks on the api endpoints
+  - `jwtKey` the key used to generate the jwt
 
 If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 

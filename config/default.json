@@ -8,5 +8,9 @@
         "rpcPort": 18332,
         "rpcUser": "bitcoin",
         "rpcPassword": "bitcoin"
+    },
+    "authentication": {
+        "enabled": false,
+        "jwtKey": "e4ef52bbc43782bcbb1dc6ac11bdfe978abccecb180ebd90820ea850fd3ff245"
     }
 }

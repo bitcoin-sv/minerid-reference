@@ -65,6 +65,9 @@ Open [config/default.json](config/default.json) and edit it with your settings:
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
+- change authentication parameters (see [Authentication](#Authentication)):
+  - `enabled` which enables authentication checks on the api endpoints
+  - `jwtKey` the key used to generate the jwt
 
 If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 
@@ -130,6 +133,42 @@ Change any settings in the [docker-compose](docker-compose.yml) to fit your conf
 
 ```console
 $ docker-compose up -d
+```
+
+#### Initial Setup
+
+Once the docker container is running, you will need to setup and configure your Miner ID by generating a Miner ID private key as well as setting up your [Validity Check Transaction output (VCTx)](https://github.com/bitcoin-sv-specs/brfc-minerid#323-key-design-decisions). You can do that using `docker exec`:
+
+```console
+$ docker exec -it <CONTAINER> bash
+
+root@2623e1f4ed4e:/app#
+```
+
+Then run the cli commands to setup and configure the above:
+
+```console
+root@2623e1f4ed4e:/app# npm run cli -- generateminerid --name testMiner
+```
+
+```console
+root@2623e1f4ed4e:/app#  npm run cli -- generatevctx --name testMiner
+```
+
+If you are running on `livenet` (mainnet), follow the instructions to fund your VCTx.
+
+## Authentication
+
+This service uses [JWT tokens](https://tools.ietf.org/html/rfc7519) for authentication. The `authentication.jwtKey` [config](config/default.json) is used for all tokens.  To revoke all tokens, change this key. To generate a new `jwtKey`, run the following script:
+
+```console
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'));"
+```
+
+To generate a JTW token for a user of MinerId, run the `generate_jwt` npm command (you can also set the expiry time in the [generateJWT](config/generateJWT.js) file):
+
+```console
+$ npm run generate_jwt <USER_NAME>
 ```
 
 ## Testing

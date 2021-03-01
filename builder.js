@@ -4,12 +4,13 @@ const config = require('config')
 const fm = require('./utils/filemanager')
 const { placeholderCB1 } = require('./services/extensions')
 const coinbaseDocService = require('./services/coinbaseDocumentService')
+const { authenticateToken } = require('./utils/authentication')
 const bsv = require('bsv')
 
 const app = express()
 app.use(bodyParser.json())
 
-app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
+app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, res) => {
   const { blockHeight, alias } = req.params
 
   res.setHeader('Content-Type', 'text/plain')
@@ -27,15 +28,19 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', async (req, res) => {
   }
 
   try {
-    const opReturn = await coinbaseDocService.createMinerIdOpReturn(blockHeight, alias)
+    const opReturn = await coinbaseDocService.createMinerIdOpReturn(
+      blockHeight,
+      alias
+    )
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
     console.warn(`Internal error: ${err.message}`)
   }
-})
+}
+)
 
-app.post('/coinbase2', async (req, res) => {
+app.post('/coinbase2', authenticateToken, async (req, res) => {
   const { blockHeight, alias, coinbase2, jobData } = req.body
 
   res.setHeader('Content-Type', 'text/plain')
@@ -72,7 +77,12 @@ app.post('/coinbase2', async (req, res) => {
 
   try {
     // try to create a BitCoin transaction using Coinbase 2
-    bsv.Transaction(Buffer.concat([Buffer.from(placeholderCB1, 'hex'), Buffer.from(coinbase2, 'hex')]))
+    bsv.Transaction(
+      Buffer.concat([
+        Buffer.from(placeholderCB1, 'hex'),
+        Buffer.from(coinbase2, 'hex')
+      ])
+    )
   } catch (error) {
     res.status(422).send('Invalid Coinbase 2')
     console.log('Bad request: invalid coinbase2: ', coinbase2)
@@ -80,7 +90,12 @@ app.post('/coinbase2', async (req, res) => {
   }
 
   try {
-    const cb2 = await coinbaseDocService.createNewCoinbase2(blockHeight, alias, coinbase2, jobData)
+    const cb2 = await coinbaseDocService.createNewCoinbase2(
+      blockHeight,
+      alias,
+      coinbase2,
+      jobData
+    )
     res.send(cb2)
   } catch (err) {
     res.status(500).send(`Internal error:: ${err.message}`)
@@ -88,7 +103,7 @@ app.post('/coinbase2', async (req, res) => {
   }
 })
 
-app.get('/opreturn/:alias/rotate', (req, res) => {
+app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -106,7 +121,7 @@ app.get('/opreturn/:alias/rotate', (req, res) => {
   }
 })
 
-app.get('/minerid/:alias', (req, res) => {
+app.get('/minerid/:alias', authenticateToken, (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -124,7 +139,7 @@ app.get('/minerid/:alias', (req, res) => {
   }
 })
 
-app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
+app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -140,15 +155,19 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', (req, res) => {
   }
 
   try {
-    const signature = coinbaseDocService.signWithCurrentMinerId(req.params.hash, req.params.alias)
+    const signature = coinbaseDocService.signWithCurrentMinerId(
+      req.params.hash,
+      req.params.alias
+    )
     res.send(signature)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
     console.warn(`Internal error: ${err.message}`)
   }
-})
+}
+)
 
-app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', (req, res) => {
+app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res) => {
   res.setHeader('Content-Type', 'application/json')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -164,15 +183,21 @@ app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', (req, res) => {
   }
 
   try {
-    const currentAlias = coinbaseDocService.getCurrentMinerId(req.params.alias)
-    const signature = coinbaseDocService.signWithCurrentMinerId(req.params.hash, req.params.alias)
+    const currentAlias = coinbaseDocService.getCurrentMinerId(
+      req.params.alias
+    )
+    const signature = coinbaseDocService.signWithCurrentMinerId(
+      req.params.hash,
+      req.params.alias
+    )
 
     res.send({ publicKey: currentAlias, signature })
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
     console.warn(`Internal error: ${err.message}`)
   }
-})
+}
+)
 
 app.listen(config.get('port'), () => {
   console.log(`Server running on port ${config.get('port')}`)

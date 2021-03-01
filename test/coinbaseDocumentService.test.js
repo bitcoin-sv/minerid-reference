@@ -198,11 +198,11 @@ describe('Coinbase Document Services', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          'aliases': '[ { "name": "unittest_1" } ]',
-          'config': `{
+          aliases: '[ { "name": "unittest_1" } ]',
+          config: `{
                         "email": "testMiner@testDomain.com"
                     }`,
-          'vctx': `{
+          vctx: `{
                         "prv": "KxmBu7NFRxWsT6gcwBDCtthWnokPJhHDVajYAVvTwfucFKdMf1dP",
                         "txid": "6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff"
                       }`

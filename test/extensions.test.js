@@ -95,16 +95,16 @@ describe('Extensions', function () {
   describe('BlockInfo', function () {
     it('can create a proper blockinfo extension', () => {
       const miningCandidate = {
-        'id': 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
-        'prevhash': '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa',
-        'coinbaseValue': 5000000974,
-        'version': 536870912,
-        'nBits': '207fffff',
-        'time': 1590152467,
-        'height': 106,
-        'num_tx': 4,
-        'sizeWithoutCoinbase': 1052,
-        'merkleProof': [
+        id: 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
+        prevhash: '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa',
+        coinbaseValue: 5000000974,
+        version: 536870912,
+        nBits: '207fffff',
+        time: 1590152467,
+        height: 106,
+        num_tx: 4,
+        sizeWithoutCoinbase: 1052,
+        merkleProof: [
           '9bd12ce6508574b3163aadb14eab7bd862306da85b221eb284fb41d6012db98f',
           '56f04cc78ac493defced65dd58f4437c67bcc697b59778b0cd96c3c64c1b0bbf'
         ]
@@ -128,27 +128,27 @@ describe('Extensions', function () {
   describe('FeeSpec', function () {
     it('can create a proper feespec extension', () => {
       const feeSpec = {
-        'fees': [
+        fees: [
           {
-            'feeType': 'standard',
-            'miningFee': {
-              'satoshis': 1,
-              'bytes': 1
+            feeType: 'standard',
+            miningFee: {
+              satoshis: 1,
+              bytes: 1
             },
-            'relayFee': {
-              'satoshis': 1,
-              'bytes': 10
+            relayFee: {
+              satoshis: 1,
+              bytes: 10
             }
           },
           {
-            'feeType': 'data',
-            'miningFee': {
-              'satoshis': 2,
-              'bytes': 1000
+            feeType: 'data',
+            miningFee: {
+              satoshis: 2,
+              bytes: 1000
             },
-            'relayFee': {
-              'satoshis': 1,
-              'bytes': 10000
+            relayFee: {
+              satoshis: 1,
+              bytes: 10000
             }
           }
         ]
@@ -162,27 +162,27 @@ describe('Extensions', function () {
       addFeeSpec({ extensions, jobData })
 
       const expectedFeeSpec = {
-        'fees': [
+        fees: [
           {
-            'feeType': 'standard',
-            'miningFee': {
-              'satoshis': 1,
-              'bytes': 1
+            feeType: 'standard',
+            miningFee: {
+              satoshis: 1,
+              bytes: 1
             },
-            'relayFee': {
-              'satoshis': 1,
-              'bytes': 10
+            relayFee: {
+              satoshis: 1,
+              bytes: 10
             }
           },
           {
-            'feeType': 'data',
-            'miningFee': {
-              'satoshis': 2,
-              'bytes': 1000
+            feeType: 'data',
+            miningFee: {
+              satoshis: 2,
+              bytes: 1000
             },
-            'relayFee': {
-              'satoshis': 1,
-              'bytes': 10000
+            relayFee: {
+              satoshis: 1,
+              bytes: 10000
             }
           }
         ]
@@ -194,26 +194,26 @@ describe('Extensions', function () {
   describe('MinerParams', function () {
     it('can create a proper minerparams extension', () => {
       const getInfo = {
-        'version': 101000300,
-        'protocolversion': 70015,
-        'walletversion': 160300,
-        'balance': 199.99997068,
-        'blocks': 104,
-        'timeoffset': 0,
-        'connections': 4,
-        'proxy': '',
-        'difficulty': 4.656542373906925e-10,
-        'testnet': false,
-        'stn': false,
-        'keypoololdest': 1575386196,
-        'keypoolsize': 1999,
-        'paytxfee': 0.00000000,
-        'relayfee': 0.00000250,
-        'errors': '',
-        'maxblocksize': 9223372036854775807,
-        'maxminedblocksize': 128000000,
-        'maxstackmemoryusagepolicy': 100000000,
-        'maxstackmemoryusageconsensus': 9223372036854775807
+        version: 101000300,
+        protocolversion: 70015,
+        walletversion: 160300,
+        balance: 199.99997068,
+        blocks: 104,
+        timeoffset: 0,
+        connections: 4,
+        proxy: '',
+        difficulty: 4.656542373906925e-10,
+        testnet: false,
+        stn: false,
+        keypoololdest: 1575386196,
+        keypoolsize: 1999,
+        paytxfee: 0.00000000,
+        relayfee: 0.00000250,
+        errors: '',
+        maxblocksize: 9223372036854775807,
+        maxminedblocksize: 128000000,
+        maxstackmemoryusagepolicy: 100000000,
+        maxstackmemoryusageconsensus: 9223372036854775807
       }
 
       const jobData = {
@@ -240,87 +240,87 @@ describe('Extensions', function () {
 
   describe('All Extensions', function () {
     const exampleDoc = {
-      'version': '0.2',
-      'height': 624455,
-      'prevMinerId': '022604665d3a186be9690231a279f8e18b800f4ce78caac2d51940c8c1c92a8354',
-      'prevMinerIdSig': '3044022067452f9d9baeef327183e2f565c8c4d76299287d6c0253aa133c75150d78d307022029c9d93ac08c19e20a03dc32307c4f0a023e79a505c02b01857c84d49670acf6',
-      'minerId': '022604665d3a186be9690231a279f8e18b800f4ce78caac2d51940c8c1c92a8354',
-      'vctx': {
-        'txid': '6584f53e13216d34979098362bda34bd3677058c8b4e0621b24395c576b6baad',
-        'vout': 0
+      version: '0.2',
+      height: 624455,
+      prevMinerId: '022604665d3a186be9690231a279f8e18b800f4ce78caac2d51940c8c1c92a8354',
+      prevMinerIdSig: '3044022067452f9d9baeef327183e2f565c8c4d76299287d6c0253aa133c75150d78d307022029c9d93ac08c19e20a03dc32307c4f0a023e79a505c02b01857c84d49670acf6',
+      minerId: '022604665d3a186be9690231a279f8e18b800f4ce78caac2d51940c8c1c92a8354',
+      vctx: {
+        txid: '6584f53e13216d34979098362bda34bd3677058c8b4e0621b24395c576b6baad',
+        vout: 0
       }
     }
 
     const exampleCoinbase2 = 'ffffffff011a0a5325000000001976a9145deb9155942e7d38febc15de8870222fd24d080e88ac00000000'
 
     const miningCandidate = {
-      'id': 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
-      'prevhash': '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa',
-      'coinbaseValue': 5000000974,
-      'version': 536870912,
-      'nBits': '207fffff',
-      'time': 1590152467,
-      'height': 106,
-      'num_tx': 4,
-      'sizeWithoutCoinbase': 1052,
-      'merkleProof': [
+      id: 'e706b0e6-793b-448f-a1ae-8ef54459eb72',
+      prevhash: '70f5701644897c92b60e98dbbfe72e1cfd7a2728c6fa3a29c4b4f6e986b0ccaa',
+      coinbaseValue: 5000000974,
+      version: 536870912,
+      nBits: '207fffff',
+      time: 1590152467,
+      height: 106,
+      num_tx: 4,
+      sizeWithoutCoinbase: 1052,
+      merkleProof: [
         '9bd12ce6508574b3163aadb14eab7bd862306da85b221eb284fb41d6012db98f',
         '56f04cc78ac493defced65dd58f4437c67bcc697b59778b0cd96c3c64c1b0bbf'
       ]
     }
 
     const getInfo = {
-      'version': 101000300,
-      'protocolversion': 70015,
-      'walletversion': 160300,
-      'balance': 199.99997068,
-      'blocks': 104,
-      'timeoffset': 0,
-      'connections': 4,
-      'proxy': '',
-      'difficulty': 4.656542373906925e-10,
-      'testnet': false,
-      'stn': false,
-      'keypoololdest': 1575386196,
-      'keypoolsize': 1999,
-      'paytxfee': 0.00000000,
-      'relayfee': 0.00000250,
-      'errors': '',
-      'maxblocksize': 9223372036854775807, //
-      'maxminedblocksize': 128000000, //
-      'maxstackmemoryusagepolicy': 100000000, //
-      'maxstackmemoryusageconsensus': 9223372036854775807 //
+      version: 101000300,
+      protocolversion: 70015,
+      walletversion: 160300,
+      balance: 199.99997068,
+      blocks: 104,
+      timeoffset: 0,
+      connections: 4,
+      proxy: '',
+      difficulty: 4.656542373906925e-10,
+      testnet: false,
+      stn: false,
+      keypoololdest: 1575386196,
+      keypoolsize: 1999,
+      paytxfee: 0.00000000,
+      relayfee: 0.00000250,
+      errors: '',
+      maxblocksize: 9223372036854775807, //
+      maxminedblocksize: 128000000, //
+      maxstackmemoryusagepolicy: 100000000, //
+      maxstackmemoryusageconsensus: 9223372036854775807 //
     }
 
     const feeSpec = {
-      'fees': [
+      fees: [
         {
-          'feeType': 'standard',
-          'miningFee': {
-            'satoshis': 1,
-            'bytes': 1
+          feeType: 'standard',
+          miningFee: {
+            satoshis: 1,
+            bytes: 1
           },
-          'relayFee': {
-            'satoshis': 1,
-            'bytes': 10
+          relayFee: {
+            satoshis: 1,
+            bytes: 10
           }
         },
         {
-          'feeType': 'data',
-          'miningFee': {
-            'satoshis': 2,
-            'bytes': 1000
+          feeType: 'data',
+          miningFee: {
+            satoshis: 2,
+            bytes: 1000
           },
-          'relayFee': {
-            'satoshis': 1,
-            'bytes': 10000
+          relayFee: {
+            satoshis: 1,
+            bytes: 10000
           }
         }
       ]
     }
 
     it('makes no changes to the coinbase document when no jobData is included', () => {
-      let doc = clonedeep(exampleDoc)
+      const doc = clonedeep(exampleDoc)
 
       addExtensions(doc, '', {})
 
@@ -328,14 +328,14 @@ describe('Extensions', function () {
     })
 
     it('adds blockinfo extension when ONLY miningCandidate data is included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         miningCandidate: miningCandidate
       }
 
       addExtensions(doc, '', jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         blockinfo: {
           sizeWithoutCoinbase: 1052,
@@ -347,14 +347,14 @@ describe('Extensions', function () {
     })
 
     it('adds minerparams extension when ONLY getInfo data is included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         getInfo: getInfo
       }
 
       addExtensions(doc, '', jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         minerparams: {
           policy: {
@@ -372,14 +372,14 @@ describe('Extensions', function () {
     })
 
     it('adds feespec extension when ONLY feeSpec data is included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         feeSpec: feeSpec
       }
 
       addExtensions(doc, '', jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         feeSpec: feeSpec
       }
@@ -388,14 +388,14 @@ describe('Extensions', function () {
     })
 
     it('adds blockinfo and blockbind extensions when cb1, cb2, and miningCandidate data are included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         miningCandidate: miningCandidate
       }
 
       addExtensions(doc, exampleCoinbase2, jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         blockinfo: {
           sizeWithoutCoinbase: 1052,
@@ -411,14 +411,14 @@ describe('Extensions', function () {
     })
 
     it('adds minerparams extension when cb2, and getInfo data are included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         getInfo: getInfo
       }
 
       addExtensions(doc, exampleCoinbase2, jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         minerparams: {
           policy: {
@@ -436,14 +436,14 @@ describe('Extensions', function () {
     })
 
     it('adds feespec extension when cb2, and feeSpec data are included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         feeSpec: feeSpec
       }
 
       addExtensions(doc, exampleCoinbase2, jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         feeSpec: feeSpec
       }
@@ -452,8 +452,8 @@ describe('Extensions', function () {
     })
 
     it('adds all extensions when cb2, getInfo, miningCandidate, and feeSpec data are included in jobData', () => {
-      let doc = clonedeep(exampleDoc)
-      let jobData = {
+      const doc = clonedeep(exampleDoc)
+      const jobData = {
         getInfo: getInfo,
         miningCandidate: miningCandidate,
         feeSpec: feeSpec
@@ -461,7 +461,7 @@ describe('Extensions', function () {
 
       addExtensions(doc, exampleCoinbase2, jobData)
 
-      let expectedDoc = clonedeep(exampleDoc)
+      const expectedDoc = clonedeep(exampleDoc)
       expectedDoc.extensions = {
         feeSpec: feeSpec,
         minerparams: {

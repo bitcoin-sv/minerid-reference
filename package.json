@@ -7,7 +7,7 @@
     "start": "node builder.js",
     "cli": "node cli.js",
     "test": "mocha",
-    "generate_jwt": "node generateJWT.js"
+    "generate_jwt": "node config/generateJWT.js"
   },
   "author": "nChain Application Development Team",
   "contributors": [

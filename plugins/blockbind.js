@@ -50,7 +50,7 @@ function buildMerkleRootFromCoinbase (coinbaseHash, merkleBranches) {
 
   merkleBranches.forEach(merkleBranch => {
     merkleBranch = swapEndianness(Buffer.from(merkleBranch, 'hex')) // swap endianness before concatenating
-    let concat = Buffer.concat([res, merkleBranch])
+    const concat = Buffer.concat([res, merkleBranch])
     res = bsv.crypto.Hash.sha256sha256(concat)
   })
 

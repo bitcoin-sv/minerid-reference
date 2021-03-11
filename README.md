@@ -82,7 +82,7 @@ Or for docker:
 docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:1.1.1
 ```
 
-For more information, you can read the [https://github.com/lorenwest/node-config/wiki/Environment-Variables#node_config](documentation) of the config package.
+For more information, you can read the [documentation](https://github.com/lorenwest/node-config/wiki/Environment-Variables#node_config) of the config package.
 
 ## Running the project
 

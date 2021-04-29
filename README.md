@@ -69,6 +69,11 @@ Open [config/default.json](config/default.json) and edit it with your settings:
   - `enabled` which enables authentication checks on the api endpoints
   - `jwtKey` the key used to generate the jwt
 
+If you are running a private node (different magic number), then change/add "privateNetwork" and set it to `true`.
+This configuration option is optional, and if not present, then `false` is assumed.
+
+- change/add `privateNetwork` (false="not running a private network" | true="running a private network, no external calls will be made to any public services")
+
 If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 
 ```

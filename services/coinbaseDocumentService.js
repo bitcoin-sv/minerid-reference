@@ -8,7 +8,11 @@ const { addExtensions, placeholderCB1 } = require('./extensions')
 // for mainnet: "livenet"
 // for testnet: "testnet"
 // for regtest: "testnet"
+// for stn:     "stn"
 const network = config.get('network')
+
+const privateNetwork = config.get('privateNetwork')
+
 let networkName
 switch (network) {
   case 'livenet':
@@ -18,6 +22,10 @@ switch (network) {
   case 'testnet':
   case 'regtest':
     networkName = 'test'
+    break
+
+  case 'stn':
+    networkName = 'stn'
     break
 
   default:
@@ -103,8 +111,15 @@ async function getValididyCheckTx (aliasName, vctPrivKey) {
 // we create a validity check transaction. It only has one output.
 async function createValidityCheckTx (vctPrivKey, aliasName) {
   const vcTxAddress = bsv.Address.fromPrivateKey(vctPrivKey, network)
+
+  // If privateNetwork is set to true then no calls are made to external services to validate transactions
+  // It acts similar to regtest but it is up to the individual to mine the transaction.
+  const isPrivateNetwork = privateNetwork === 'true'
+
+  const isRegTest = network === 'regtest'
+
   // Now we have decide how to fund it.
-  if (network === 'regtest') {
+  if (isRegTest || isPrivateNetwork) {
     try {
       let vctx = fm.getVctxFromFile(aliasName)
       if (!vctx) {
@@ -117,9 +132,15 @@ async function createValidityCheckTx (vctPrivKey, aliasName) {
         })
 
         vctx = await bitcoinClient.sendToAddress(vcTxAddress.toString(), 1)
-        const blockHash = await bitcoinClient.generate(1)
-        console.log(`New block mined with hash: ${blockHash}`)
-        console.log('VCTx transaction ID:', vctx)
+
+        if (isRegTest) {
+          const blockHash = await bitcoinClient.generate(1)
+          console.log(`New block mined with hash: ${blockHash}`)
+          console.log('VCTx transaction ID:', vctx)
+        }else {
+          console.log('As you are using a private network, please mine the following transaction')
+          console.log('VCTx transaction ID:', vctx)
+        }
       }
 
       return vctx
@@ -251,6 +272,7 @@ async function generateVcTx (aliasName) {
   const vctPrivKey = getOrCreateVctPk(aliasName)
 
   const vct = await getValididyCheckTx(aliasName, vctPrivKey)
+
   return vct
 }
 

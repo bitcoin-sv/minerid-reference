@@ -104,6 +104,10 @@ const fm = require('./utils/filemanager')
       console.log('--- REGTEST ---')
       break
 
+    case 'stn':
+      console.log('--- STN NETWORK ---')
+      break
+
     default:
       console.log('Network cofiguration not properly set in config.json file')
       break

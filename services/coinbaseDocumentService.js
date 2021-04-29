@@ -11,7 +11,9 @@ const { addExtensions, placeholderCB1 } = require('./extensions')
 // for stn:     "stn"
 const network = config.get('network')
 
-const privateNetwork = config.get('privateNetwork')
+if (config.has("privateNetwork")) {
+  privateNetwork = config.get('privateNetwork', false)
+}
 
 let networkName
 switch (network) {
@@ -114,7 +116,7 @@ async function createValidityCheckTx (vctPrivKey, aliasName) {
 
   // If privateNetwork is set to true then no calls are made to external services to validate transactions
   // It acts similar to regtest but it is up to the individual to mine the transaction.
-  const isPrivateNetwork = privateNetwork === 'true'
+  const isPrivateNetwork = privateNetwork === true
 
   const isRegTest = network === 'regtest'
 
@@ -145,9 +147,11 @@ async function createValidityCheckTx (vctPrivKey, aliasName) {
 
       return vctx
     } catch (err) {
-      console.log('Connection to regtest ERROR!')
-      console.log('Please check that there is a proper connection to regtest node')
-      console.log('and the node has sufficient funds (generate 101)\n')
+      console.log('Connection to bitcoind ERROR!')
+      console.log('Please check that there is a proper connection to the node')
+      if (isRegTest === true) {
+        console.log('and the node has sufficient funds (generate 101)\n')
+      }
       throw err
     }
   }

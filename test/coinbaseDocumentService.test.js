@@ -271,5 +271,87 @@ describe('Coinbase Document Services', function () {
         })
       })
     })
+
+    describe('Verification', function () {
+      let docHex, sigHex
+      before(async () => {
+        const opReturn = await coinbaseDocService.createMinerIdOpReturn(
+          100,
+          'testMiner'
+        )
+        const script = bsv.Script.fromHex(opReturn)
+        const outputParts = script.toASM().split(' ')
+        // ignore first 3 parts: OP_FALSE OP_RETURN -149757612 (minerId prefix)
+        docHex = outputParts[3]
+        sigHex = outputParts[4]
+      })
+
+      describe('PrevMinerIdSig', function () {
+        it('can verify using v0.1 rules', () => {
+          const sampleDoc = {
+            'version': '0.1',
+            'height': 702461,
+            'prevMinerId': '03e92d3e5c3f7bd945dfbf48e7a99393b1bfb3f11f380ae30d286e7ff2aec5a270',
+            'prevMinerIdSig': '3045022100d76360e4d21331ca86f018c046e57c938f1977507473335360be37048cae1af302200be660454021bf9464e99f5a9581a98c9cf495407598c59b4734b2fdb482bf97',
+            'minerId': '03e92d3e5c3f7bd945dfbf48e7a99393b1bfb3f11f380ae30d286e7ff2aec5a270',
+            'vctx': {
+              'txId': '579b435925a90ee39a37be3b00b9061e74c30c82413f6d0a2098e1bea7a2515f',
+              'vout': 0
+            },
+            'minerContact': {
+              'email': 'info@taal.com',
+              'name': 'TAAL Distributed Information Technologies',
+              'merchantAPIEndPoint': 'https://merchantapi.taal.com/'
+            }
+          }
+
+          const minerIdSigPayload = Buffer.concat([
+            Buffer.from(sampleDoc.prevMinerId),
+            Buffer.from(sampleDoc.minerId),
+            Buffer.from(sampleDoc.vctx.txId)
+          ])
+
+          const hashbuf = bsv.crypto.Hash.sha256(minerIdSigPayload)
+          const sig = bsv.crypto.Signature.fromString(sampleDoc.prevMinerIdSig)
+          const pubkey = bsv.PublicKey.fromString(sampleDoc.prevMinerId)
+          const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
+
+          assert.strictEqual(verified, true)
+        })
+
+        it('can verify using v0.2 rules', () => {
+          const doc = Buffer.from(docHex, 'hex')
+          const docJson = JSON.parse(doc.toString())
+
+          const minerIdSigPayload = Buffer.concat([
+            Buffer.from(docJson.prevMinerId, 'hex'),
+            Buffer.from(docJson.minerId, 'hex'),
+            Buffer.from(docJson.vctx.txId, 'hex')
+          ])
+
+          const hashbuf = bsv.crypto.Hash.sha256(minerIdSigPayload)
+          const sig = bsv.crypto.Signature.fromString(docJson.prevMinerIdSig)
+          const pubkey = bsv.PublicKey.fromString(docJson.prevMinerId)
+          const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
+
+          assert.strictEqual(verified, true)
+        })
+      })
+
+      describe('MinerId document', function () {
+        it('can verify using the full minerId document', async () => {
+          const doc = Buffer.from(docHex, 'hex')
+          const docJson = JSON.parse(doc.toString())
+          const minerId = docJson.minerId
+
+          const hashbuf = bsv.crypto.Hash.sha256(doc)
+          const sig = bsv.crypto.Signature.fromString(sigHex)
+          const pubkey = bsv.PublicKey.fromString(minerId)
+          const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
+
+          assert.strictEqual(verified, true)
+        })
+      })
+    })
   })
 })

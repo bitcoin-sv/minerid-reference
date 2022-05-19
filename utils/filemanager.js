@@ -7,6 +7,7 @@ const configFilename = 'config'
 const config = require('config')
 var filedir = config.get('minerIdDataPath')
 const keystorePath = config.get('keystorePath')
+const revocationKeystorePath = config.get('revocationKeystorePath')
 const vcTxFilename = 'vctx'
 
 const aliasFilename = 'aliases'
@@ -21,18 +22,21 @@ function aliasExists (aliasName) {
   return false
 }
 
-function createMinerId (alias) {
+/**
+ * Common non-exported functions.
+ */
+function _createKey (alias, keyPath) {
   const xpriv = bsv.HDPrivateKey()
 
-  const dir = path.join(process.env.HOME, keystorePath)
+  const dir = path.join(process.env.HOME, keyPath)
   makeDirIfNotExists(dir)
 
   const filePath = path.join(dir, alias + '.key')
   fs.writeFileSync(filePath, xpriv.toString())
 }
 
-function getPrivateKey (alias) {
-  const dir = path.join(process.env.HOME, keystorePath)
+function _getPrivateKey (alias, keyPath) {
+  const dir = path.join(process.env.HOME, keyPath)
   makeDirIfNotExists(dir)
 
   const filePath = path.join(dir, alias + '.key')
@@ -48,14 +52,46 @@ function getPrivateKey (alias) {
   }
 }
 
-function getMinerId (alias) {
-  const privateKey = getPrivateKey(alias)
+function _getPublicKey (privateKey) {
   if (privateKey) {
     return privateKey.publicKey.toString()
   }
   return null
 }
 
+/**
+ * Basic MinerId key exported functions.
+ */
+function createMinerId (alias) {
+  _createKey(alias, keystorePath)
+}
+
+function getPrivateKey (alias) {
+  return _getPrivateKey(alias, keystorePath)
+}
+
+function getMinerId (alias) {
+  return _getPublicKey(getPrivateKey(alias))
+}
+
+/**
+ * Basic revocation key exported functions.
+ */
+function createRevocationKey (alias) {
+  _createKey(alias, revocationKeystorePath)
+}
+
+function getRevocationKeyPrivateKey (alias) {
+  return _getPrivateKey(alias, revocationKeystorePath)
+}
+
+function getRevocationKeyPublicKey (alias) {
+  return _getPublicKey(getRevocationKeyPrivateKey(alias))
+}
+
+/**
+ * Other utility functions.
+ */
 function getOrCreatePrivKey (aliasName, filename) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, filename)
@@ -252,6 +288,11 @@ module.exports = {
   createMinerId,
   getPrivateKey,
   getMinerId,
+
+  createRevocationKey,
+  getRevocationKeyPrivateKey,
+  getRevocationKeyPublicKey,
+
   getOrCreatePrivKey,
   writePrivKeyToFile,
   copyPrivKey,

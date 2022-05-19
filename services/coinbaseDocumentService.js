@@ -35,6 +35,7 @@ function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment
   const alias = aliasName + '_1'
   try {
+    // Check if aliasName is unused.
     const existsMinerId = fm.getMinerId(alias)
     if (existsMinerId) {
       console.log(`miner alias "${aliasName}" already exists: `)
@@ -42,10 +43,23 @@ function generateMinerId (aliasName) {
       console.log('Please choose another one.')
       return
     }
+    const existsRevocationKey = fm.getRevocationKeyPublicKey(alias)
+    if (existsRevocationKey) {
+      console.log(`miner alias "${aliasName}" is linked to the existing revocationKey: `)
+      console.log(existsRevocationKey)
+      console.log('Please choose another one.')
+      return
+    }
 
+    // Create minerId key.
     fm.createMinerId(alias)
     const minerId = fm.getMinerId(alias)
     console.log('Generated new minerId: ', minerId)
+    // Create revocationKey key.
+    fm.createRevocationKey(alias)
+    const revocationKeyPublicKey = fm.getRevocationKeyPublicKey(alias)
+    console.log('Generated new revocationKey: ', revocationKeyPublicKey)
+    // Save the current alias.
     fm.saveAlias(aliasName, alias)
   } catch (err) {
     console.log('Please check that the signing_service is running properly...')

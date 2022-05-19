@@ -24,18 +24,22 @@ describe('Coinbase Document Services', function () {
   describe('No mocking', function () {
     describe('Minerid', function () {
       describe('Generate', async () => {
-        let getMinerId, createMinerId, saveAlias
+        let getMinerId, createMinerId, getRevocationKeyPublicKey, createRevocationKey, saveAlias
 
         beforeEach(() => {
           sandbox.stub(console, 'log')
 
           getMinerId = sandbox.stub(fm, 'getMinerId').returns(false)
           createMinerId = sandbox.stub(fm, 'createMinerId')
+
+          getRevocationKeyPublicKey = sandbox.stub(fm, 'getRevocationKeyPublicKey').returns(false)
+          createRevocationKey = sandbox.stub(fm, 'createRevocationKey')
+
           saveAlias = sandbox.stub(fm, 'saveAlias')
 
           coinbaseDocService.generateMinerId('unittest')
         })
-
+	// Checks if the expected functions were called.
         it('calls "getMinerId" with right parameters', () => {
           expect(getMinerId.calledWith('unittest_1')).to.be(true)
         })
@@ -46,6 +50,14 @@ describe('Coinbase Document Services', function () {
 
         it('calls "createMinerId" with right parameters', () => {
           expect(createMinerId.calledWith('unittest_1')).to.be(true)
+        })
+
+        it('calls "getRevocationKeyPublicKey" with right parameters', () => {
+          expect(getRevocationKeyPublicKey.calledWith('unittest_1')).to.be(true)
+        })
+
+        it('calls "createRevocationKey" with right parameters', () => {
+          expect(createRevocationKey.calledOnceWith('unittest_1')).to.be(true)
         })
 
         it('calls "saveAlias" with right parameters', () => {
@@ -191,6 +203,29 @@ describe('Coinbase Document Services', function () {
           expect(signStub.calledWith(minerIdSigPayload, 'unittest_1')).to.be(true)
         })
       })
+    })
+  })
+
+  describe('Directories mocked (.minerid-client & .revocationkeystore)', function () {
+    beforeEach(() => {
+      mock({
+        [`${os.homedir()}/.minerid-client/unittest`]: {
+          aliases: '[ { "name": "unittest_1" } ]'
+        },
+        [`${os.homedir()}/.revocationkeystore`]: {
+          'unittest_1.key': 'xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY'
+        }
+      })
+    })
+    afterEach(() => {
+      mock.restore()
+    })
+
+    it('can get the initial revocationKey public key for "unittest"', async () => {
+      const priv = new bsv.HDPrivateKey('xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY').privateKey
+      const currentAlias = fm.getCurrentAlias('unittest')
+      assert.strict.equal('unittest_1', currentAlias)
+      assert.strict.deepEqual(fm.getRevocationKeyPublicKey(currentAlias), priv.publicKey.toString())
     })
   })
 

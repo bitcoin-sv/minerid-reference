@@ -56,18 +56,20 @@ $ npm install
 
 Open [config/default.json](config/default.json) and edit it with your settings:  
 
-- change `port`
-- change `minerIdDataPath` which stores user's minerids  
-- change `keystore` which stores minerId private keys  
-- change `network` (mainnet="livenet" | testnet="testnet" | regtest="regtest")  
-- change Bitcoin RPC parameters:
+- change (or leave) the default `port`
+- set `debug=true` to enable debug logging
+- change (or leave) the default `minerIdDataPath` config which points to the user's minerIds location (interpreted as `~/${minerIdDataPath}`)
+- change (or leave) the default `keystorePath` config which points to the minerId private keys keystore (interpreted as `~/${keystorePath}`)
+- change (or leave) the default `revocationKeystorePath` config which points to the revocation private keys keystore (interpreted as `~/${revocationKeystorePath}`)
+- change the default `network` (mainnet="livenet" | testnet="testnet" | regtest="regtest")
+- change the default Bitcoin RPC parameters:
   - `rpcHost`
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
-- change authentication parameters (see [Authentication](#Authentication)):
+- change the default authentication parameters (see [Authentication](#Authentication)):
   - `enabled` which enables authentication checks on the api endpoints
-  - `jwtKey` the key used to generate the jwt
+  - `jwtKey` the ECDSA private key (32 bytes hex-string) used to generate the JSON Web Token (JWT)
 
 If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 

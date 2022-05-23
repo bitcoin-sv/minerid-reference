@@ -206,29 +206,6 @@ describe('Coinbase Document Services', function () {
     })
   })
 
-  describe('Directories mocked (.minerid-client & .revocationkeystore)', function () {
-    beforeEach(() => {
-      mock({
-        [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]'
-        },
-        [`${os.homedir()}/.revocationkeystore`]: {
-          'unittest_1.key': 'xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY'
-        }
-      })
-    })
-    afterEach(() => {
-      mock.restore()
-    })
-
-    it('can get the initial revocationKey public key for "unittest"', async () => {
-      const priv = new bsv.HDPrivateKey('xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY').privateKey
-      const currentAlias = fm.getCurrentAlias('unittest')
-      assert.strict.equal('unittest_1', currentAlias)
-      assert.strict.deepEqual(fm.getRevocationKeyPublicKey(currentAlias), priv.publicKey.toString())
-    })
-  })
-
   describe('Directories mocked (.minerid-client & .keystore)', function () {
     beforeEach(() => {
       mock({

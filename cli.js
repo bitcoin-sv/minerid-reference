@@ -120,7 +120,9 @@ const fm = require('./utils/filemanager')
         break
       }
       case 'generateminerid':
-        coinbaseDocService.generateMinerId(options.name)
+        if (coinbaseDocService.generateMinerId(options.name)) {
+          fm.writeRevocationKeyDataToFile(options.name)
+	}
         break
       case 'generatevctx':
         await coinbaseDocService.generateVcTx(options.name)

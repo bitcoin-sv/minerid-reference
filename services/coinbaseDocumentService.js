@@ -41,14 +41,14 @@ function generateMinerId (aliasName) {
       console.log(`miner alias "${aliasName}" already exists: `)
       console.log(existsMinerId)
       console.log('Please choose another one.')
-      return
+      return false
     }
     const existsRevocationKey = fm.getRevocationKeyPublicKey(alias)
     if (existsRevocationKey) {
       console.log(`miner alias "${aliasName}" is linked to the existing revocationKey: `)
       console.log(existsRevocationKey)
       console.log('Please choose another one.')
-      return
+      return false
     }
 
     // Create minerId key.
@@ -64,7 +64,9 @@ function generateMinerId (aliasName) {
   } catch (err) {
     console.log('Please check that the signing_service is running properly...')
     console.log('generateMinerId error: ', err)
+    return false
   }
+  return true
 }
 
 function getCurrentMinerId (alias) {

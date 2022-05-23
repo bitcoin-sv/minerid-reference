@@ -12,6 +12,8 @@ const vcTxFilename = 'vctx'
 
 const aliasFilename = 'aliases'
 
+const REVOCATION_KEY_DATA_FILENAME = 'revocationKeyData'
+
 function aliasExists (aliasName) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName)
@@ -57,6 +59,35 @@ function _getPublicKey (privateKey) {
     return privateKey.publicKey.toString()
   }
   return null
+}
+
+function _readDataFromJsonFile (aliasName, fileName) {
+  if (!aliasExists(aliasName)) {
+    console.log(`Name "${aliasName}" doesn't exist.`)
+    return
+  }
+  const filePath = path.join(process.env.HOME, filedir, aliasName, fileName)
+  if (!fs.existsSync(filePath)) {
+    console.log(`File "${filePath}" doesn't exist.`)
+    return
+  }
+  let data
+  try {
+    data = JSON.parse(fs.readFileSync(filePath))
+  } catch (err) {
+    console.log(`Error: Reading data from the file ${filePath}`, err)
+    return
+  }
+  return data
+}
+
+function _writeJsonDataToFile (aliasName, data, fileName) {
+  const filePath = path.join(process.env.HOME, filedir, aliasName, fileName)
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+  } catch (err) {
+    throw new Error(`Error: Writing json data to the file ${filePath}`)
+  }
 }
 
 /**
@@ -168,6 +199,55 @@ function writeVctxToFile (aliasName, vtcx) {
   } catch (e) {
     console.log('writeVctxToFile: file doesn\'t exist')
   }
+}
+
+// Read 'prevRevocationKey' public key from the config file.
+function readPrevRevocationKeyPublicKeyFromFile (aliasName) {
+  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
+  if (!data.hasOwnProperty('prevRevocationKey')) {
+    throw new Error(`Missing "prevRevocationKey" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
+  }
+  return data["prevRevocationKey"]
+}
+
+// Read 'revocationKey' public key from the config file.
+function readRevocationKeyPublicKeyFromFile (aliasName) {
+  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
+  if (!data.hasOwnProperty('revocationKey')) {
+    throw new Error(`Missing "revocationKey" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
+  }
+  return data["revocationKey"]
+}
+
+// Write 'prevRevocationKey', 'revocationKey' public keys and 'prevRevocationKeySig' to the file.
+function writeRevocationKeyDataToFile (aliasName) {
+  let revocationKeyData = {}
+  // prevRevocationKey
+  const prevRevocationKeyPublicKey = getRevocationKeyPublicKey(getPreviousAlias(aliasName))
+  revocationKeyData["prevRevocationKey"] = prevRevocationKeyPublicKey.toString('hex')
+  // revocationKey
+  const revocationKeyPublicKey = getRevocationKeyPublicKey(getCurrentAlias(aliasName))
+  revocationKeyData["revocationKey"] = revocationKeyPublicKey.toString('hex')
+  // prevRevocationKeySig
+  const payload = Buffer.concat([
+    Buffer.from(prevRevocationKeyPublicKey, 'hex'),
+    Buffer.from(revocationKeyPublicKey, 'hex')
+  ])
+  const hash = bsv.crypto.Hash.sha256(payload)
+  const privateKey = getRevocationKeyPrivateKey(getPreviousAlias(aliasName))
+  const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
+  revocationKeyData["prevRevocationKeySig"] = prevRevocationKeySig.toString('hex')
+  // Write revocationKeyData to the file.
+  _writeJsonDataToFile(aliasName, revocationKeyData, REVOCATION_KEY_DATA_FILENAME)
+}
+
+// Read 'prevRevocationKeySig' signature from the config file.
+function readPrevRevocationKeySigFromFile (aliasName) {
+  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
+  if (!data.hasOwnProperty('prevRevocationKeySig')) {
+    throw new Error(`Missing "prevRevocationKeySig" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
+  }
+  return data["prevRevocationKeySig"]
 }
 
 function getCurrentAlias (aliasName) {
@@ -299,6 +379,11 @@ module.exports = {
 
   getVctxFromFile,
   writeVctxToFile,
+
+  readPrevRevocationKeyPublicKeyFromFile,
+  readRevocationKeyPublicKeyFromFile,
+  readPrevRevocationKeySigFromFile,
+  writeRevocationKeyDataToFile,
 
   getCurrentAlias,
   getPreviousAlias,

@@ -29,7 +29,7 @@ const vcTxFilename = 'vctx'
 const cbdVersion = '0.2'
 const fee = 300
 const dustLimit = 546 // satoshis
-const protocolName = 'ac1eed88'
+const protocolName = '601dface'
 
 function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment

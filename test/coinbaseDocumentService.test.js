@@ -5,7 +5,7 @@ const fm = require('../utils/filemanager')
 const bsv = require('bsv')
 const os = require('os')
 
-const { describe, before, beforeEach, afterEach, it } = require('mocha')
+const { describe, before, after, beforeEach, afterEach, it } = require('mocha')
 const mock = require('mock-fs')
 const assert = require('assert')
 const sinon = require('sinon')
@@ -148,51 +148,77 @@ describe('Coinbase Document Services', function () {
       })
     })
 
-    describe('Coinbase document', function () {
+    describe('Miner-info document', function () {
       describe('Script creation', function () {
-        it('can create coinbase OP_RETURN script from doc and sig', () => {
-          const createCoinbaseOpReturn = coinbaseDocService.__get__('createCoinbaseOpReturn')
+        it('can create miner-info OP_RETURN script from doc and sig', () => {
+          const createMinerInfoOpReturnScript = coinbaseDocService.__get__('createMinerInfoOpReturnScript')
 
-          const doc = '{"version":"0.2","height":1234,"prevMinerId":"02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab","prevMinerIdSig":"3045022100f705b13ef5cd9b0f27ef92ce8db087e968ba4a71b695cac821827caa4a9db6fd02203905bcf845f554067b1d1529d46c598fc15741b2a2c6eadf819ee18b40a5f879","minerId":"02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab","vctx":{"txId":"6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff","vout":0}}'
-          const sig = '3045022100ac053cc88d0286691532282641e3613ec80c90563b508ead03adf91ebbc3ec7f02202b3b79a032e4be25abb6b3c2749597ff5b6284deb09da540609e1aefc9444073'
+          const doc = '{"version":"0.3","height":1234,"prevMinerId":"0257b61d90a166f7cc968ecb7c88101b90065f89d90254d9a7322dac1b43f30c2e","prevMinerIdSig":"30440220519b09620bac825803181cdfd6286b6ed56af688c21407d3401212ec6499c8cc02201cb903b622da00eb3d1d631fac66ec79f44f9c96dcbf3ad7c8dfd0ed4bcfe5ee","minerId":"0257b61d90a166f7cc968ecb7c88101b90065f89d90254d9a7322dac1b43f30c2e","prevRevocationKey":"02d1d4b1c72efa37158eb6d1298303a3b65924af03a481705e76ee405fd9b0207d","revocationKey":"02d1d4b1c72efa37158eb6d1298303a3b65924af03a481705e76ee405fd9b0207d","prevRevocationKeySig":"3045022100d1d5084912fa27f5e9e6bd5f465cb8790760934094daab060d7f677653fb5268022061b5a4bf45baa73e2e033122075d3a1077468397065a113d71969864387f7395"}'
+          const sig = '3044022014bfe3df4d4e28ee2985373a3f791bbc52116b13d602b9610cdf139170bea69e02202156e6447f7ce70562695b5ab45e50856201ae812179a1818152f52f7a877750'
 
-          const script = createCoinbaseOpReturn(doc, sig).toHex()
+          const script = createMinerInfoOpReturnScript(doc, sig).toHex()
 
-          const expectedScript = '006a04ac1eed884dbf017b2276657273696f6e223a22302e32222c22686569676874223a313233342c22707265764d696e65724964223a22303237353962383332613362386563383138343931316435333364386234623466646332303236653538643466626130333033353837636562626336386432316162222c22707265764d696e65724964536967223a2233303435303232313030663730356231336566356364396230663237656639326365386462303837653936386261346137316236393563616338323138323763616134613964623666643032323033393035626366383435663535343036376231643135323964343663353938666331353734316232613263366561646638313965653138623430613566383739222c226d696e65724964223a22303237353962383332613362386563383138343931316435333364386234623466646332303236653538643466626130333033353837636562626336386432316162222c2276637478223a7b2274784964223a2236383339303038313939303236303938636337386266356633346339613662646637613830303963396630313966383339396337636131393435623461346666222c22766f7574223a307d7d473045022100ac053cc88d0286691532282641e3613ec80c90563b508ead03adf91ebbc3ec7f02202b3b79a032e4be25abb6b3c2749597ff5b6284deb09da540609e1aefc9444073'
+	  const expectedScript = '006a04601dface004db7027b2276657273696f6e223a22302e33222c22686569676874223a313233342c22707265764d696e65724964223a22303235376236316439306131363666376363393638656362376338383130316239303036356638396439303235346439613733323264616331623433663330633265222c22707265764d696e65724964536967223a223330343430323230353139623039363230626163383235383033313831636466643632383662366564353661663638386332313430376433343031323132656336343939633863633032323031636239303362363232646130306562336431643633316661633636656337396634346639633936646362663361643763386466643065643462636665356565222c226d696e65724964223a22303235376236316439306131363666376363393638656362376338383130316239303036356638396439303235346439613733323264616331623433663330633265222c22707265765265766f636174696f6e4b6579223a22303264316434623163373265666133373135386562366431323938333033613362363539323461663033613438313730356537366565343035666439623032303764222c227265766f636174696f6e4b6579223a22303264316434623163373265666133373135386562366431323938333033613362363539323461663033613438313730356537366565343035666439623032303764222c22707265765265766f636174696f6e4b6579536967223a2233303435303232313030643164353038343931326661323766356539653662643566343635636238373930373630393334303934646161623036306437663637373635336662353236383032323036316235613462663435626161373365326530333331323230373564336131303737343638333937303635613131336437313936393836343338376637333935227d463044022014bfe3df4d4e28ee2985373a3f791bbc52116b13d602b9610cdf139170bea69e02202156e6447f7ce70562695b5ab45e50856201ae812179a1818152f52f7a877750'
 
           assert.strict.equal(script, expectedScript)
         })
       })
 
       describe('Document creation', () => {
-        let getOptionalMinerData, getPreviousAlias, signStub, unset, minerIdSigPayload
+	let getCurrentAlias, getMinerId, getPreviousAlias
+	let readPrevRevocationKeyPublicKeyFromFile, readRevocationKeyPublicKeyFromFile
+	let readPrevRevocationKeySigFromFile, getOptionalMinerData
+	let signStub, unset, minerIdSigPayload
+
         beforeEach(() => {
+          getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1')
+          getMinerId = sandbox.stub(fm, 'getMinerId').returns('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab')
           getPreviousAlias = sandbox.stub(fm, 'getPreviousAlias').returns('unittest_1')
+	  readPrevRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readPrevRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
+	  readRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
+	  readPrevRevocationKeySigFromFile = sandbox.stub(fm, 'readPrevRevocationKeySigFromFile').returns('30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee')
           getOptionalMinerData = sandbox.stub(fm, 'getOptionalMinerData').returns({})
 
           const signObj = { sign: coinbaseDocService.__get__('sign') }
           signStub = sandbox.stub(signObj, 'sign').returns({})
           unset = coinbaseDocService.__set__('sign', signStub)
 
-          const createCoinbaseDocument = coinbaseDocService.__get__('createCoinbaseDocument')
+          const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
 
-          const minerId = '02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab'
-          const prevMinerId = '02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab'
-          const vcTx = '6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff'
-          createCoinbaseDocument('unittest', 1234, minerId, minerId, vcTx)
+          createMinerInfoDocument('unittest', 1234)
 
           minerIdSigPayload = Buffer.concat([
-            Buffer.from(prevMinerId, 'hex'),
-            Buffer.from(minerId, 'hex'),
-            Buffer.from(vcTx, 'hex')
+            Buffer.from('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab', 'hex'),
+            Buffer.from('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab', 'hex')
           ])
         })
         afterEach(() => {
           unset()
         })
 
+	// Checks if the expected functions were called.
+        it('calls "getCurrentAlias" with right parameters', () => {
+          expect(getCurrentAlias.calledWith('unittest')).to.be(true)
+        })
+
+        it('calls "getMinerId" with right parameters', () => {
+          expect(getMinerId.calledWith('unittest_1')).to.be(true)
+        })
+
         it('calls "getPreviousAlias" with right parameters', () => {
           expect(getPreviousAlias.calledWith('unittest')).to.be(true)
+        })
+
+        it('calls "readPrevRevocationKeyPublicKeyFromFile" with right parameters', () => {
+          expect(readPrevRevocationKeyPublicKeyFromFile.calledWith('unittest')).to.be(true)
+        })
+
+        it('calls "readRevocationKeyPublicKeyFromFile" with right parameters', () => {
+          expect(readRevocationKeyPublicKeyFromFile.calledWith('unittest')).to.be(true)
+        })
+
+        it('calls "readPrevRevocationKeySigFromFile" with right parameters', () => {
+          expect(readPrevRevocationKeySigFromFile.calledWith('unittest')).to.be(true)
         })
 
         it('calls "getOptionalMinerData" with right parameters', () => {
@@ -203,6 +229,36 @@ describe('Coinbase Document Services', function () {
           expect(signStub.calledWith(minerIdSigPayload, 'unittest_1')).to.be(true)
         })
       })
+    })
+  })
+
+  /**
+   * Dynamic document creation.
+   */
+  describe('Dynamic document creation / Directories mocked (.minerid-client, .keystore & .revocationkeystore)', function () {
+    beforeEach(() => {
+      mock({
+        [`${os.homedir()}/.minerid-client/unittest`]: {
+          aliases: '[ { "name": "unittest_1" } ]',
+	  revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
+        },
+        [`${os.homedir()}/.keystore`]: {
+          'unittest_1.key': 'xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk'
+        },
+        [`${os.homedir()}/.revocationkeystore`]: {
+          'unittest_1.key': 'xprv9s21ZrQH143K2MuFMBEMccXsxoz5ShrhQceN32Ycm9j1NrjgRR6AEtocCS83miARoEXpU9rC4UqRvyUjmjvaHzZECZdSYzxSfxAeykBsg92'
+        }
+      })
+
+      sinon.stub(console, "log")
+    })
+    afterEach(() => {
+      mock.restore()
+      console.log.restore()
+    })
+
+    it('can create miner-info OP_RETURN script for "unittest"', async () => {
+      assert.strict.deepEqual(await coinbaseDocService.createMinerInfoOpReturn(100, 'unittest'),'006a04601dface004db4027b2276657273696f6e223a22302e33222c22686569676874223a3130302c22707265764d696e65724964223a22303366613538633234643334666564666436623366643034393066653362636233366462326264643664636363643666383437353361633664613865393164653566222c22707265764d696e65724964536967223a2233303435303232313030626461356539633630373230313637363437386138386565303733316162313465343865366661643833323133383662343134616432366536343035363730653032323036636435373266393962643263356366386466346337303736383237316562326365333364393532636234663430346432376161623864313265366136323035222c226d696e65724964223a22303366613538633234643334666564666436623366643034393066653362636233366462326264643664636363643666383437353361633664613865393164653566222c22707265765265766f636174696f6e4b6579223a22303266613463613036326534306539633930396161376430353339616237623037393065353534353035643761323939326266393762316664633761346133343131222c227265766f636174696f6e4b6579223a22303266613463613036326534306539633930396161376430353339616237623037393065353534353035643761323939326266393762316664633761346133343131222c22707265765265766f636174696f6e4b6579536967223a22333034333032323033373763396266613531323930646435376635363536383732326338663865396436353232393737323436636236396335653862643366346365386331666430303231663063646235643937396463303833616661616232373033383533383666643462356463366431363535393461656461666530616664356638643161366565227d473045022100819a03d3838bec280be1105c290c29dcab49d9a458f429eb2ed4f696733958ec02207e599b50e88bc555f9db840f2707b3e3105df5dd97d09a8501f506c8e0019c64')
     })
   })
 
@@ -286,73 +342,87 @@ describe('Coinbase Document Services', function () {
 
     describe('Verification', function () {
       let docHex, sigHex
+      const sampleDoc = {
+        'version': '0.3',
+        'height': 100,
+        'prevMinerId': '03fa58c24d34fedfd6b3fd0490fe3bcb36db2bdd6dcccd6f84753ac6da8e91de5f',
+        'prevMinerIdSig': '3045022100bda5e9c607201676478a88ee0731ab14e48e6fad8321386b414ad26e6405670e02206cd572f99bd2c5cf8df4c70768271eb2ce33d952cb4f404d27aab8d12e6a6205',
+        'minerId': '03fa58c24d34fedfd6b3fd0490fe3bcb36db2bdd6dcccd6f84753ac6da8e91de5f',
+        'prevRevocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
+        'revocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
+        'prevRevocationKeySig': '30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee'
+      }
+
       before(async () => {
-        const opReturn = await coinbaseDocService.createMinerIdOpReturn(
+        sinon.stub(console, "log")
+        sinon.stub(console, "debug")
+
+        mock({
+          [`${os.homedir()}/.minerid-client/unittest`]: {
+            aliases: '[ { "name": "unittest_1" } ]',
+            revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
+          },
+          [`${os.homedir()}/.keystore`]: {
+            'unittest_1.key': 'xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk'
+          },
+          [`${os.homedir()}/.revocationkeystore`]: {
+            'unittest_1.key': 'xprv9s21ZrQH143K2MuFMBEMccXsxoz5ShrhQceN32Ycm9j1NrjgRR6AEtocCS83miARoEXpU9rC4UqRvyUjmjvaHzZECZdSYzxSfxAeykBsg92'
+          }
+        })
+
+        const opReturn = await coinbaseDocService.createMinerInfoOpReturn(
           100,
-          'testMiner'
+          'unittest'
         )
         const script = bsv.Script.fromHex(opReturn)
         const outputParts = script.toASM().split(' ')
-        // ignore first 3 parts: OP_FALSE OP_RETURN -149757612 (minerId prefix)
-        docHex = outputParts[3]
-        sigHex = outputParts[4]
+        // ignore first 4 parts: OP_FALSE OP_RETURN -149757612 (minerId prefix) 0x00 (protocol-id-version)
+        docHex = outputParts[4]
+        sigHex = outputParts[5]
       })
 
-      describe('PrevMinerIdSig', function () {
-        it('can verify using v0.1 rules', () => {
-          const sampleDoc = {
-            'version': '0.1',
-            'height': 702461,
-            'prevMinerId': '03e92d3e5c3f7bd945dfbf48e7a99393b1bfb3f11f380ae30d286e7ff2aec5a270',
-            'prevMinerIdSig': '3045022100d76360e4d21331ca86f018c046e57c938f1977507473335360be37048cae1af302200be660454021bf9464e99f5a9581a98c9cf495407598c59b4734b2fdb482bf97',
-            'minerId': '03e92d3e5c3f7bd945dfbf48e7a99393b1bfb3f11f380ae30d286e7ff2aec5a270',
-            'vctx': {
-              'txId': '579b435925a90ee39a37be3b00b9061e74c30c82413f6d0a2098e1bea7a2515f',
-              'vout': 0
-            },
-            'minerContact': {
-              'email': 'info@taal.com',
-              'name': 'TAAL Distributed Information Technologies',
-              'merchantAPIEndPoint': 'https://merchantapi.taal.com/'
-            }
+      after(async () => {
+        mock.restore()
+        console.log.restore()
+        console.debug.restore()
+      })
+
+      describe('prevMinerIdSig & prevRevocationKeySig', function () {
+        it('can verify signatures', () => {
+          // prevMinerIdSig
+          {
+             const minerIdSigPayload = Buffer.concat([
+                Buffer.from(sampleDoc.prevMinerId, 'hex'),
+                Buffer.from(sampleDoc.minerId, 'hex')
+             ])
+
+             const hashbuf = bsv.crypto.Hash.sha256(minerIdSigPayload)
+             const sig = bsv.crypto.Signature.fromString(sampleDoc.prevMinerIdSig)
+             const pubkey = bsv.PublicKey.fromString(sampleDoc.prevMinerId)
+             const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
+
+             assert.strictEqual(verified, true)
           }
-
-          const minerIdSigPayload = Buffer.concat([
-            Buffer.from(sampleDoc.prevMinerId),
-            Buffer.from(sampleDoc.minerId),
-            Buffer.from(sampleDoc.vctx.txId)
-          ])
-
-          const hashbuf = bsv.crypto.Hash.sha256(minerIdSigPayload)
-          const sig = bsv.crypto.Signature.fromString(sampleDoc.prevMinerIdSig)
-          const pubkey = bsv.PublicKey.fromString(sampleDoc.prevMinerId)
-          const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
-
-          assert.strictEqual(verified, true)
-        })
-
-        it('can verify using v0.2 rules', () => {
-          const doc = Buffer.from(docHex, 'hex')
-          const docJson = JSON.parse(doc.toString())
-
-          const minerIdSigPayload = Buffer.concat([
-            Buffer.from(docJson.prevMinerId, 'hex'),
-            Buffer.from(docJson.minerId, 'hex'),
-            Buffer.from(docJson.vctx.txId, 'hex')
-          ])
-
-          const hashbuf = bsv.crypto.Hash.sha256(minerIdSigPayload)
-          const sig = bsv.crypto.Signature.fromString(docJson.prevMinerIdSig)
-          const pubkey = bsv.PublicKey.fromString(docJson.prevMinerId)
-          const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
-
-          assert.strictEqual(verified, true)
+          // prevRevocationKeySig
+          {
+             const revocationKeySigPayload = Buffer.concat([
+                Buffer.from(sampleDoc.prevRevocationKey, 'hex'),
+                Buffer.from(sampleDoc.revocationKey, 'hex')
+             ])
+             const hashbuf = bsv.crypto.Hash.sha256(revocationKeySigPayload)
+             const sig = bsv.crypto.Signature.fromString(sampleDoc.prevRevocationKeySig)
+             const pubkey = bsv.PublicKey.fromString(sampleDoc.prevRevocationKey)
+             const verified = bsv.crypto.ECDSA.verify(hashbuf, sig, pubkey)
+             assert.strictEqual(verified, true)
+          }
         })
       })
 
-      describe('MinerId document', function () {
-        it('can verify using the full minerId document', async () => {
+      describe('Miner-info document', function () {
+        it('can verify using the full miner info document', async () => {
           const doc = Buffer.from(docHex, 'hex')
+          assert.strictEqual(doc.toString(), JSON.stringify(sampleDoc))
+
           const docJson = JSON.parse(doc.toString())
           const minerId = docJson.minerId
 

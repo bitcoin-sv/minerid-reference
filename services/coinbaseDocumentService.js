@@ -26,10 +26,11 @@ switch (network) {
 }
 
 const vcTxFilename = 'vctx'
-const cbdVersion = '0.2'
+const cbdVersion = '0.3'
 const fee = 300
 const dustLimit = 546 // satoshis
 const protocolName = '601dface'
+const protocolIdVersion = 0
 
 function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment
@@ -258,6 +259,11 @@ function createCoinbaseOpReturn (doc, sig) {
   return bsv.Script.buildSafeDataOut([protocolName, doc, sig], 'hex')
 }
 
+function createMinerInfoOpReturnScript (doc, sig) {
+  doc = Buffer.from(doc).toString('hex')
+  return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), doc, sig], 'hex')
+}
+
 async function generateVcTx (aliasName) {
   if (!fm.aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
@@ -335,7 +341,46 @@ function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) 
   return doc
 }
 
-async function createMinerIdOpReturn (height, aliasName) {
+function createMinerInfoDocument (aliasName, height) {
+  const minerId = fm.getMinerId(fm.getCurrentAlias(aliasName))
+  const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
+
+  const prevRevocationKey = fm.readPrevRevocationKeyPublicKeyFromFile(aliasName)
+  const revocationKey = fm.readRevocationKeyPublicKeyFromFile(aliasName)
+
+  const minerIdSigPayload = Buffer.concat([
+    Buffer.from(prevMinerId, 'hex'),
+    Buffer.from(minerId, 'hex')
+  ])
+
+  const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))
+
+  const prevRevocationKeySig = fm.readPrevRevocationKeySigFromFile(aliasName)
+
+  const optionalData = fm.getOptionalMinerData(aliasName)
+
+  const doc = {
+    version: cbdVersion,
+    height: height,
+
+    prevMinerId: prevMinerId,
+    prevMinerIdSig: prevMinerIdSig,
+
+    minerId: minerId,
+
+    prevRevocationKey: prevRevocationKey,
+    revocationKey: revocationKey,
+    prevRevocationKeySig: prevRevocationKeySig
+  }
+
+  if (optionalData) {
+    doc.minerContact = optionalData
+  }
+
+  return doc
+}
+
+async function createMinerInfoOpReturn (height, aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -349,21 +394,14 @@ async function createMinerIdOpReturn (height, aliasName) {
     return
   }
 
-  const vctx = await generateVcTx(aliasName)
-  if (!vctx) {
-    return
-  }
-
-  const minerId = getCurrentMinerId(aliasName)
-  const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
-
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx)
+  const doc = createMinerInfoDocument(aliasName, parseInt(height))
+  console.debug('Miner-info doc:\n' + JSON.stringify(doc))
 
   const payload = JSON.stringify(doc)
-
   const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
+  console.debug('Miner-info-doc sig:\n' + signature.toString('hex'))
 
-  const opReturnScript = createCoinbaseOpReturn(payload, signature).toHex()
+  const opReturnScript = createMinerInfoOpReturnScript(payload, signature).toHex()
   return opReturnScript
 }
 
@@ -415,7 +453,7 @@ async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
 
 module.exports = {
   createNewCoinbase2: createCoinbase2,
-  createMinerIdOpReturn,
+  createMinerInfoOpReturn,
   generateMinerId,
   generateVcTx,
   rotateMinerId,

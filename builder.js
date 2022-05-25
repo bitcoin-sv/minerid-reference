@@ -28,7 +28,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
   }
 
   try {
-    const opReturn = await coinbaseDocService.createMinerIdOpReturn(
+    const opReturn = await coinbaseDocService.createMinerInfoOpReturn(
       blockHeight,
       alias
     )

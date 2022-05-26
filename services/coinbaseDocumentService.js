@@ -254,9 +254,8 @@ function getOrCreateVctPk (aliasName) {
   return fm.getOrCreatePrivKey(aliasName, vcTxFilename)
 }
 
-function createCoinbaseOpReturn (doc, sig) {
-  doc = Buffer.from(doc).toString('hex')
-  return bsv.Script.buildSafeDataOut([protocolName, doc, sig], 'hex')
+function createCoinbaseOpReturnScript (minerInfoTxId) {
+  return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), minerInfoTxId], 'hex')
 }
 
 function createMinerInfoOpReturnScript (doc, sig) {
@@ -305,40 +304,6 @@ function rotateMinerId (aliasName) {
   } catch (err) {
     console.log('error rotating minerId: ', err)
   }
-}
-
-function createCoinbaseDocument (aliasName, height, minerId, prevMinerId, vcTx) {
-  prevMinerId = prevMinerId || minerId
-
-  const minerIdSigPayload = Buffer.concat([
-    Buffer.from(prevMinerId, 'hex'),
-    Buffer.from(minerId, 'hex'),
-    Buffer.from(vcTx, 'hex')
-  ])
-
-  const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))
-
-  const optionalData = fm.getOptionalMinerData(aliasName)
-  const doc = {
-    version: cbdVersion,
-    height: height,
-
-    prevMinerId: prevMinerId,
-    prevMinerIdSig: prevMinerIdSig,
-
-    minerId: minerId,
-
-    vctx: {
-      txId: vcTx,
-      vout: 0
-    }
-  }
-
-  if (optionalData) {
-    doc.minerContact = optionalData
-  }
-
-  return doc
 }
 
 function createMinerInfoDocument (aliasName, height) {
@@ -405,7 +370,7 @@ async function createMinerInfoOpReturn (height, aliasName) {
   return opReturnScript
 }
 
-async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
+async function createCoinbase2 (aliasName, minerInfoTxId, coinbase2) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -414,26 +379,11 @@ async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
     console.log(`Name "${aliasName}" doesn't exist.`)
     return
   }
-  if (height < 1) {
-    console.log('Must enter a valid height')
+  if (!minerInfoTxId || !/^[A-F0-9]{64}$/i.test(minerInfoTxId)) {
+    console.log('Must supply a valid TxId: ' + minerInfoTxId)
     return
   }
-
-  const vctx = await generateVcTx(aliasName)
-  if (!vctx) {
-    return
-  }
-
-  const minerId = getCurrentMinerId(aliasName)
-  const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
-
-  const doc = createCoinbaseDocument(aliasName, parseInt(height), minerId, prevMinerId, vctx)
-
-  addExtensions(doc, coinbase2, jobData)
-
-  const payload = JSON.stringify(doc)
-
-  const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
+  console.debug('Miner-info-txid:\n' + minerInfoTxId)
 
   if (!Buffer.isBuffer(coinbase2)) {
     coinbase2 = Buffer.from(coinbase2, 'hex')
@@ -443,7 +393,7 @@ async function createCoinbase2 (height, aliasName, coinbase2, jobData) {
   const tx = new bsv.Transaction(cb)
 
   tx.addOutput(new bsv.Transaction.Output({
-    script: createCoinbaseOpReturn(payload, signature),
+    script: createCoinbaseOpReturnScript(minerInfoTxId),
     satoshis: 0
   }))
 

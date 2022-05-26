@@ -10,6 +10,12 @@ const bsv = require('bsv')
 const app = express()
 app.use(bodyParser.json())
 
+if (!config.hasOwnProperty('debug') || !config.get('debug')) {
+  console.debug = function () {};
+} else {
+  console.log('Debug print enabled ')
+}
+
 app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, res) => {
   const { blockHeight, alias } = req.params
 
@@ -41,21 +47,9 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
 )
 
 app.post('/coinbase2', authenticateToken, async (req, res) => {
-  const { blockHeight, alias, coinbase2, jobData } = req.body
+  const { alias, minerInfoTxId, coinbase2 } = req.body
 
   res.setHeader('Content-Type', 'text/plain')
-
-  if (!blockHeight) {
-    res.status(400).send('Block height must be supplied')
-    console.log('Bad request: no height supplied')
-    return
-  }
-
-  if (blockHeight < 1) {
-    res.status(422).send('Block height must be positive')
-    console.log('Bad request: invalid height: ', blockHeight)
-    return
-  }
 
   if (!alias) {
     res.status(400).send('Alias must be supplied')
@@ -66,6 +60,18 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
     console.log('Bad request: non-existent alias: ', alias)
+    return
+  }
+
+  if (!minerInfoTxId) {
+    res.status(400).send('Miner-info txid must be supplied')
+    console.log('Bad request: no miner-info txid supplied')
+    return
+  }
+
+  if (!/^[A-F0-9]{64}$/i.test(minerInfoTxId)) {
+    res.status(422).send('Miner-info txid must be a 64-characters hexadecimal string')
+    console.log('Bad request: invalid miner-info txid: ', minerInfoTxId)
     return
   }
 
@@ -91,10 +97,9 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
 
   try {
     const cb2 = await coinbaseDocService.createNewCoinbase2(
-      blockHeight,
       alias,
-      coinbase2,
-      jobData
+      minerInfoTxId,
+      coinbase2
     )
     res.send(cb2)
   } catch (err) {

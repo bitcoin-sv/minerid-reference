@@ -324,7 +324,7 @@ function createMinerInfoDocument (aliasName, height) {
 
   const optionalData = fm.getOptionalMinerData(aliasName)
 
-  const doc = {
+  let doc = {
     version: cbdVersion,
     height: height,
 
@@ -339,7 +339,7 @@ function createMinerInfoDocument (aliasName, height) {
   }
 
   if (optionalData) {
-    doc.minerContact = optionalData
+    doc = { ...doc, ...optionalData}
   }
 
   return doc

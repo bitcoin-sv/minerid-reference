@@ -321,24 +321,29 @@ function saveAlias (aliasName, alias) {
   }
 }
 
-function updateOptionalMinerData (aliasName, name, value) {
+function updateMinerContactData (aliasName, name, value) {
   if (!aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
     return
   }
-  console.log(`updateOptionalMinerData: ${name}, ${value}`)
-  writeOptionalMinerDataToFile(aliasName, name, value)
+  console.log(`updateMinerContactData: ${name}, ${value}`)
+  writeMinerContactDataToFile(aliasName, name, value)
 }
 
-function writeOptionalMinerDataToFile (aliasName, name, value) {
+function writeMinerContactDataToFile (aliasName, name, value) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, configFilename)
   let data = {}
   try {
     if (fs.existsSync(filePath)) {
       data = JSON.parse(fs.readFileSync(filePath))
+      if (!data.hasOwnProperty('minerContact')) {
+        data.minerContact = {}
+      }
+    } else {
+      data.minerContact = {}
     }
-    data[name] = value
+    data.minerContact[name] = value
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (err) {
     throw new Error(`Error writing config key to file ${filePath}`)
@@ -358,7 +363,6 @@ function getOptionalMinerData (aliasName) {
   } catch (e) {
     return
   }
-
   return data
 }
 
@@ -389,7 +393,7 @@ module.exports = {
   getPreviousAlias,
   saveAlias,
 
-  updateOptionalMinerData,
-  writeOptionalMinerDataToFile,
+  updateMinerContactData,
+  writeMinerContactDataToFile,
   getOptionalMinerData
 }

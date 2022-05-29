@@ -277,9 +277,6 @@ describe('Coinbase Document Services', function () {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
           aliases: '[ { "name": "unittest_1" } ]',
-          config: `{
-                        "email": "testMiner@testDomain.com"
-                    }`,
           vctx: `{
                         "prv": "KxmBu7NFRxWsT6gcwBDCtthWnokPJhHDVajYAVvTwfucFKdMf1dP",
                         "txid": "6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff"
@@ -360,7 +357,19 @@ describe('Coinbase Document Services', function () {
         'minerId': '03fa58c24d34fedfd6b3fd0490fe3bcb36db2bdd6dcccd6f84753ac6da8e91de5f',
         'prevRevocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
         'revocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
-        'prevRevocationKeySig': '30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee'
+        'prevRevocationKeySig': '30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee',
+	'minerContact': {
+		'email': 'test@testDomain.com',
+		'name': 'test',
+		'phone': '07495380665'
+	},
+	'extensions': {
+		'ext1': 1,
+		'ext2': 2,
+		'ext3': {
+			'ext3_1': 1
+		}
+	}
       }
 
       before(async () => {
@@ -370,6 +379,20 @@ describe('Coinbase Document Services', function () {
         mock({
           [`${os.homedir()}/.minerid-client/unittest`]: {
             aliases: '[ { "name": "unittest_1" } ]',
+            config: `{
+			"minerContact": {
+				"email": "test@testDomain.com",
+				"name": "test",
+				"phone": "07495380665"
+			},
+			"extensions": {
+				"ext1": 1,
+				"ext2": 2,
+				"ext3": {
+					"ext3_1": 1
+				}
+			}
+                    }`,
             revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
           },
           [`${os.homedir()}/.keystore`]: {

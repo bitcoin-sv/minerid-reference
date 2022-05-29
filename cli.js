@@ -112,11 +112,11 @@ const fm = require('./utils/filemanager')
     switch (options.command[0].toLowerCase()) {
       case 'config': {
         if (options.command.length < 2 || options.command[1].indexOf('=') === -1) {
-          console.log(fm.getOptionalMinerData(options.name))
+          console.log(fm.getMinerContactData(options.name))
           break
         }
         const nvp = options.command[1].split('=')
-        fm.updateOptionalMinerData(options.name, nvp[0], nvp[1])
+        fm.updateMinerContactData(options.name, nvp[0], nvp[1])
         break
       }
       case 'generateminerid':

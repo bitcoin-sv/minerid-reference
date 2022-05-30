@@ -139,7 +139,7 @@ $ docker-compose up -d
 
 #### Initial Setup
 
-Once the docker container is running, you will need to setup and configure your Miner ID by generating a Miner ID private key as well as setting up your [Validity Check Transaction output (VCTx)](https://github.com/bitcoin-sv-specs/brfc-minerid#323-key-design-decisions). You can do that using `docker exec`:
+Once the docker container is running, you will need to setup and configure your Miner ID by generating a Miner ID private key as well as a Revocation Key private key. You can do that using `docker exec`:
 
 ```console
 $ docker exec -it <CONTAINER> bash
@@ -147,17 +147,12 @@ $ docker exec -it <CONTAINER> bash
 root@2623e1f4ed4e:/app#
 ```
 
-Then run the cli commands to setup and configure the above:
+Then run the cli command to setup and configure the above:
 
 ```console
 root@2623e1f4ed4e:/app# npm run cli -- generateminerid --name testMiner
 ```
 
-```console
-root@2623e1f4ed4e:/app#  npm run cli -- generatevctx --name testMiner
-```
-
-If you are running on `livenet` (mainnet), follow the instructions to fund your VCTx.
 
 ## Authentication
 
@@ -183,7 +178,7 @@ $ npm test
 
 ### Options
 
-  `--command string[]    generatevctx, rotateid, config`
+  `--command string[]    generateminerid, rotateminerid, config`
 
   `-h, --help            Display this usage guide.`
 
@@ -204,19 +199,13 @@ $ npm run cli -- generateminerid --name foo
 $ npm run cli -- generateminerid -n foo
 ```
   
-  Generate a Validity Check Transaction (VCTX).  
-  
-```console
-$ npm run cli -- generatevctx --name foo
-```
-
   Generate op_return with signed coinbase document.  
   
 ```console
 $ npm run cli -- --height 5123123 --name foo
 ```
 
-  Rotate a minerId. This command rotates the minerId which generates a new one. This is done by spending the current VCTX to create a new VCTX with the new minerId in op_return. Subsequent coinbase documents will contain references to both minerIds
+  Rotate a minerId. This command rotates the minerId which generates a new one. Subsequent coinbase documents will contain references to both minerIds
   
 ```console
 $ npm run cli -- rotateminerid --name foo
@@ -444,12 +433,7 @@ The [examples/testMiner.js](examples/testMiner.js) file contains basic code need
     $ npm run cli -- generateminerid -n testMiner
     ```
    
-2. Generate VcTx (not needed for Regtest):
-    ```console
-    $ npm run cli -- generatevctx -n testMiner
-    ```
-
-3. Create coinbase transaction:
+2. Create coinbase transaction:
     ```console
     $ node examples/testMiner.js
     ```

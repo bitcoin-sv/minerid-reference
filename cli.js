@@ -14,7 +14,7 @@ const fm = require('./utils/filemanager')
       type: String,
       defaultOption: true,
       multiple: true,
-      description: 'generateminerid, generatevctx, rotateminerid, config'
+      description: 'generateminerid, rotateminerid, config'
     },
     {
       name: 'help',
@@ -52,10 +52,6 @@ const fm = require('./utils/filemanager')
         {
           desc: 'Generate a minerId',
           example: 'npm run cli -- generateminerid --name [alias]'
-        },
-        {
-          desc: 'Generate VCTx',
-          example: 'npm run cli -- generatevctx -n [alias]'
         },
         {
           desc: 'Add minerContact data',
@@ -123,9 +119,6 @@ const fm = require('./utils/filemanager')
         if (coinbaseDocService.generateMinerId(options.name)) {
           fm.writeRevocationKeyDataToFile(options.name)
 	}
-        break
-      case 'generatevctx':
-        await coinbaseDocService.generateVcTx(options.name)
         break
       case 'rotateminerid':
         coinbaseDocService.rotateMinerId(options.name)

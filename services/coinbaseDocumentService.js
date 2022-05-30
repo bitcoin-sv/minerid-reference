@@ -25,10 +25,7 @@ switch (network) {
     break
 }
 
-const vcTxFilename = 'vctx'
 const cbdVersion = '0.3'
-const fee = 300
-const dustLimit = 546 // satoshis
 const protocolName = '601dface'
 const protocolIdVersion = 0
 
@@ -101,159 +98,6 @@ function signHash (hash, alias) {
   return signature.toString('hex')
 }
 
-async function getValididyCheckTx (aliasName, vctPrivKey) {
-  let vctx = fm.getVctxFromFile(aliasName)
-  if (!vctx) {
-    // no vctx so create one
-    vctx = await createValidityCheckTx(vctPrivKey, aliasName)
-    if (!vctx) {
-      console.log('Error: Could not create vctx')
-      return
-    }
-    // save to file
-    fm.writeVctxToFile(aliasName, vctx)
-  }
-
-  return vctx
-}
-
-// we create a validity check transaction. It only has one output.
-async function createValidityCheckTx (vctPrivKey, aliasName) {
-  const vcTxAddress = bsv.Address.fromPrivateKey(vctPrivKey, network)
-  // Now we have decide how to fund it.
-  if (network === 'regtest') {
-    try {
-      let vctx = fm.getVctxFromFile(aliasName)
-      if (!vctx) {
-        const bitcoinClient = new bitcoin.Client({
-          host: config.get('bitcoin.rpcHost'),
-          port: config.get('bitcoin.rpcPort'),
-          user: config.get('bitcoin.rpcUser'),
-          pass: config.get('bitcoin.rpcPassword'),
-          timeout: 10000
-        })
-
-        vctx = await bitcoinClient.sendToAddress(vcTxAddress.toString(), 1)
-        const blockHash = await bitcoinClient.generate(1)
-        console.log(`New block mined with hash: ${blockHash}`)
-        console.log('VCTx transaction ID:', vctx)
-      }
-
-      return vctx
-    } catch (err) {
-      console.log('Connection to regtest ERROR!')
-      console.log('Please check that there is a proper connection to regtest node')
-      console.log('and the node has sufficient funds (generate 101)\n')
-      throw err
-    }
-  }
-
-  let utxos
-  try {
-    utxos = await getUtxos(vcTxAddress.toString(), networkName)
-  } catch (err) {
-    console.log(`Error: Get utxos error for ${vcTxAddress}: ` + err)
-  }
-
-  if (!utxos || utxos.length === 0) {
-    console.log('Please fund the validity check transaction address then run the command again. Be aware that the total amount you send will remain unspent as long as your minerId remains valid.')
-    console.log('Address to fund: ', vcTxAddress.toString())
-    return
-  }
-
-  const utxoAmount = utxos.reduce((acc, curr) => { return acc + curr.satoshis }, 0)
-  console.log('Validity Check Transaction Amount ', utxoAmount)
-  if (utxoAmount < dustLimit) {
-    console.log(`You only have ${utxoAmount} satoshis in your validity check tx address. This is below the dust limit.`)
-    console.log('Please fund the validity check transaction address then run the command again. Be aware that the total amount you send will remain unspent as long as your minerId remains valid.', vcTxAddress.toString())
-    return
-  }
-
-  const tx = new bsv.Transaction()
-    .from(utxos)
-    .to(vcTxAddress, utxoAmount - fee)
-    .fee(fee)
-
-  tx.sign(vctPrivKey)
-
-  try {
-    const vctxid = await sendTX(tx.toString())
-    console.log('VCTx transaction ID:', vctxid)
-    return vctxid
-  } catch (e) {
-    console.log('error sending tx: ', e.message)
-  }
-}
-
-async function getUtxos (address, network) {
-  const options = {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    uri: `https://api.mattercloud.net/api/v3/${network}/address/${address}/utxo`,
-    timeout: 5000
-  }
-
-  try {
-    const utxosRes = await request(options)
-    const utxos = JSON.parse(utxosRes)
-
-    // Sort these in descending order of confirmation (oldest first)...
-    utxos.sort((a, b) => b.confirmations - a.confirmations)
-
-    const spendableUtxos = []
-
-    for (let i = 0; i < utxos.length; i++) {
-      const include = true
-      if (include) {
-        spendableUtxos.push(
-          new bsv.Transaction.UnspentOutput({
-            address: utxos[i].address,
-            script: bsv.Script(utxos[i].script),
-            satoshis: utxos[i].satoshis,
-            outputIndex: utxos[i].outputIndex,
-            txid: utxos[i].txid
-          })
-        )
-      }
-    }
-
-    return spendableUtxos
-  } catch (err) {
-    console.log('ERROR: ' + err)
-    throw err
-  }
-}
-
-async function sendTX (hex) {
-  const uri = `https://api.whatsonchain.com/v1/bsv/${networkName}/tx/raw`
-
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    uri: uri,
-    body: {
-      txhex: hex
-    },
-    json: true
-  }
-
-  try {
-    const response = await request(options)
-    return response
-  } catch (err) {
-    console.log('ERROR: ' + err)
-    throw err
-  }
-}
-
-function getOrCreateVctPk (aliasName) {
-  return fm.getOrCreatePrivKey(aliasName, vcTxFilename)
-}
-
 function createCoinbaseOpReturnScript (minerInfoTxId) {
   return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), minerInfoTxId], 'hex')
 }
@@ -261,18 +105,6 @@ function createCoinbaseOpReturnScript (minerInfoTxId) {
 function createMinerInfoOpReturnScript (doc, sig) {
   doc = Buffer.from(doc).toString('hex')
   return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), doc, sig], 'hex')
-}
-
-async function generateVcTx (aliasName) {
-  if (!fm.aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
-    return
-  }
-
-  const vctPrivKey = getOrCreateVctPk(aliasName)
-
-  const vct = await getValididyCheckTx(aliasName, vctPrivKey)
-  return vct
 }
 
 /* Create a new minerId
@@ -405,7 +237,6 @@ module.exports = {
   createNewCoinbase2: createCoinbase2,
   createMinerInfoOpReturn,
   generateMinerId,
-  generateVcTx,
   rotateMinerId,
   getCurrentMinerId,
   signWithCurrentMinerId

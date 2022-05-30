@@ -85,41 +85,6 @@ describe('Coinbase Document Services', function () {
       })
     })
 
-    describe('VCTX', function () {
-      describe('Generate VcTx', function () {
-        let aliasExists, getOrCreateVctPkStub, unsetGetOrCreateVctPk, getValididyCheckTxStub, unsetGetValididyCheckTx
-        beforeEach(async () => {
-          aliasExists = sandbox.stub(fm, 'aliasExists').returns(true)
-
-          const getOrCreateVctPkObj = { getOrCreateVctPk: coinbaseDocService.__get__('getOrCreateVctPk') }
-          getOrCreateVctPkStub = sandbox.stub(getOrCreateVctPkObj, 'getOrCreateVctPk').returns({})
-          unsetGetOrCreateVctPk = coinbaseDocService.__set__('getOrCreateVctPk', getOrCreateVctPkStub)
-
-          const getValididyCheckTxObj = { getValididyCheckTx: coinbaseDocService.__get__('getValididyCheckTx') }
-          getValididyCheckTxStub = sandbox.stub(getValididyCheckTxObj, 'getValididyCheckTx').returns({})
-          unsetGetValididyCheckTx = coinbaseDocService.__set__('getValididyCheckTx', getValididyCheckTxStub)
-
-          await coinbaseDocService.generateVcTx('unittest')
-        })
-        afterEach(() => {
-          unsetGetOrCreateVctPk()
-          unsetGetValididyCheckTx()
-        })
-
-        it('calls "aliasExists" with right parameters', () => {
-          expect(aliasExists.calledWith('unittest')).to.be(true)
-        })
-
-        it('calls "getOrCreateVctPk" with right parameters', () => {
-          expect(getOrCreateVctPkStub.calledWith('unittest')).to.be(true)
-        })
-
-        it('calls "getValididyCheckTx" with right parameters', () => {
-          expect(getValididyCheckTxStub.calledWith('unittest', {})).to.be(true)
-        })
-      })
-    })
-
     describe('MinerId Rotation', function () {
       let aliasExists, getCurrentAlias, saveAlias, createMinerId
       beforeEach(() => {
@@ -276,11 +241,7 @@ describe('Coinbase Document Services', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
-          vctx: `{
-                        "prv": "KxmBu7NFRxWsT6gcwBDCtthWnokPJhHDVajYAVvTwfucFKdMf1dP",
-                        "txid": "6839008199026098cc78bf5f34c9a6bdf7a8009c9f019f8399c7ca1945b4a4ff"
-                      }`
+          aliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'

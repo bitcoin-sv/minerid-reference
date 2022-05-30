@@ -8,7 +8,6 @@ const config = require('config')
 var filedir = config.get('minerIdDataPath')
 const keystorePath = config.get('keystorePath')
 const revocationKeystorePath = config.get('revocationKeystorePath')
-const vcTxFilename = 'vctx'
 
 const aliasFilename = 'aliases'
 
@@ -123,84 +122,6 @@ function getRevocationKeyPublicKey (alias) {
 /**
  * Other utility functions.
  */
-function getOrCreatePrivKey (aliasName, filename) {
-  const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, filename)
-  let data
-  try {
-    data = JSON.parse(fs.readFileSync(filePath))
-  } catch (e) {
-    const dir = path.join(homeDir, filedir, aliasName)
-    makeDirIfNotExists(dir)
-
-    data = { prv: bsv.PrivateKey.fromRandom().toString() }
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
-  }
-
-  if (!data.prv) {
-    throw new Error('Invalid private key.')
-  }
-
-  return bsv.PrivateKey.fromString(data.prv)
-}
-
-// the file should store an array of private keys or an xpub and a path.
-function writePrivKeyToFile (aliasName, filename, privKey) {
-  const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, filename)
-  let data
-  try {
-    data = { prv: privKey }
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
-  } catch (err) {
-    throw new Error('Error writing private key to file ' + filePath)
-  }
-}
-
-function copyPrivKey (aliasName, sourceFilename, destinationFilename) {
-  const homeDir = process.env.HOME
-  const sourceFilePath = path.join(homeDir, filedir, aliasName, sourceFilename)
-  const destinationFilePath = path.join(homeDir, filedir, aliasName, destinationFilename)
-  fs.copyFile(sourceFilePath, destinationFilePath, (err) => {
-    if (err) throw err
-    console.log(`${sourceFilename} was copied to ${destinationFilename}`)
-  })
-}
-
-function getVctxFromFile (aliasName) {
-  return _getVctxFromFile(aliasName, vcTxFilename)
-}
-
-function _getVctxFromFile (aliasName, filename) {
-  const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, filename)
-  let data
-  try {
-    data = JSON.parse(fs.readFileSync(filePath))
-  } catch (e) {
-    return
-  }
-
-  return data ? data.txid : null
-}
-
-function writeVctxToFile (aliasName, vtcx) {
-  const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, vcTxFilename)
-  let data
-  try {
-    data = JSON.parse(fs.readFileSync(filePath))
-    if (!data) {
-      console.log('writeVctxToFile: data doesn\'t exist')
-      return
-    }
-    data.txid = vtcx
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
-  } catch (e) {
-    console.log('writeVctxToFile: file doesn\'t exist')
-  }
-}
-
 // Read 'prevRevocationKey' public key from the config file.
 function readPrevRevocationKeyPublicKeyFromFile (aliasName) {
   const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
@@ -376,13 +297,6 @@ module.exports = {
   createRevocationKey,
   getRevocationKeyPrivateKey,
   getRevocationKeyPublicKey,
-
-  getOrCreatePrivKey,
-  writePrivKeyToFile,
-  copyPrivKey,
-
-  getVctxFromFile,
-  writeVctxToFile,
 
   readPrevRevocationKeyPublicKeyFromFile,
   readRevocationKeyPublicKeyFromFile,

@@ -1,7 +1,7 @@
 {
   "name": "builder",
-  "version": "0.2.0",
-  "description": "MinerId Reference Implementation document builder",
+  "version": "0.3.0",
+  "description": "MinerId Generator - document builder",
   "main": "builder.js",
   "scripts": {
     "start": "node builder.js",

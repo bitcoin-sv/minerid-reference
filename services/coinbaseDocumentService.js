@@ -115,17 +115,24 @@ function createMinerInfoOpReturnScript (doc, sig) {
 function rotateMinerId (aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
-    return
+    return false
   }
   if (!fm.aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
-    return
+    return false
   }
   try {
-    // console.log('Rotating minerId')
-
     // get current alias
     const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
+    if (!currentAlias) {
+      console.log(`Error: The minerId key alias "${aliasName}" doesn't exist.`)
+      return false
+    }
+    // Check if the current minerId key is present in the key store.
+    if (!fm.minerIdKeyExists(currentAlias)) {
+      console.log(`Error: The "${currentAlias}.key" minerId private key is not available in the key store.`)
+      return false
+    }
     // increment alias prefix
     const newAlias = fm.incrementAliasPrefix(currentAlias)
     // save alias
@@ -134,7 +141,9 @@ function rotateMinerId (aliasName) {
     fm.createMinerId(newAlias)
   } catch (err) {
     console.log('error rotating minerId: ', err)
+    return false
   }
+  return true
 }
 
 // Rotate the current revocation key.

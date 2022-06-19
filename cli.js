@@ -134,8 +134,11 @@ const fm = require('./utils/filemanager')
 	    }
 	    break
 	  case 'rotateminerid':
-	    coinbaseDocService.rotateMinerId(options.name)
-	    console.log('Rotated minerId')
+	    if (coinbaseDocService.rotateMinerId(options.name)) {
+	      console.log('minerId key rotation has succeeded.')
+	    } else {
+	      console.log('minerId key rotation has failed!')
+	    }
 	    break
 	  case 'rotaterevocationkey':
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {

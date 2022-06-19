@@ -95,6 +95,7 @@ describe('Coinbase Document Services', function () {
       beforeEach(() => {
         aliasExists = sandbox.stub(fm, 'aliasExists').returns(true)
         getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
+        minerIdKeyExists = sandbox.stub(fm, 'minerIdKeyExists').returns(true)
         saveMinerIdAlias = sandbox.stub(fm, 'saveMinerIdAlias')
         createMinerId = sandbox.stub(fm, 'createMinerId')
 
@@ -107,6 +108,10 @@ describe('Coinbase Document Services', function () {
 
       it('calls "getCurrentMinerIdAlias" with right parameters', () => {
         expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
+      })
+
+      it('calls "minerIdKeyExists" with right parameters', () => {
+        expect(minerIdKeyExists.calledWith('unittest_1')).to.be(true)
       })
 
       it('calls "saveMinerIdAlias" with right parameters', () => {

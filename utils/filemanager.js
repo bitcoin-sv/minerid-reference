@@ -6,7 +6,7 @@ const configFilename = 'config'
 
 const config = require('config')
 var filedir = config.get('minerIdDataPath')
-const keystorePath = config.get('keystorePath')
+const minerIdKeystorePath = config.get('keystorePath')
 const revocationKeystorePath = config.get('revocationKeystorePath')
 
 const MINERID_ALIASES_FILENAME = 'aliases'
@@ -95,11 +95,11 @@ function _writeJsonDataToFile (aliasName, data, fileName) {
  * Basic MinerId key exported functions.
  */
 function createMinerId (alias) {
-  _createKey(alias, keystorePath)
+  _createKey(alias, minerIdKeystorePath)
 }
 
 function getMinerIdPrivateKey (alias) {
-  return _getPrivateKey(alias, keystorePath)
+  return _getPrivateKey(alias, minerIdKeystorePath)
 }
 
 function getMinerIdPublicKey (alias) {
@@ -132,6 +132,10 @@ function _checkIfKeyExists (alias, keyPath) {
   } catch (e) {
     return false
   }
+}
+
+function minerIdKeyExists(alias) {
+  return _checkIfKeyExists(alias, minerIdKeystorePath)
 }
 
 function revocationKeyExists(alias) {
@@ -349,6 +353,8 @@ module.exports = {
   createRevocationKey,
   getRevocationKeyPrivateKey,
   getRevocationKeyPublicKey,
+
+  minerIdKeyExists,
   revocationKeyExists,
 
   readPrevRevocationKeyPublicKeyFromFile,

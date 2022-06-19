@@ -94,7 +94,7 @@ function sign (payload, alias) {
 }
 
 function signHash (hash, alias) {
-  const privateKey = fm.getPrivateKey(alias)
+  const privateKey = fm.getMinerIdPrivateKey(alias)
 
   const signature = bsv.crypto.ECDSA.sign(hash, privateKey)
   return signature.toString('hex')

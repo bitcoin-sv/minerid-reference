@@ -57,7 +57,7 @@ describe('Key rolling', function () {
            Buffer.from(fm.getMinerIdPublicKey('unittest_2'), 'hex')  // minerId
         ])
         const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
-        const prevMinerIdPrivateKey = fm.getPrivateKey('unittest_1')
+        const prevMinerIdPrivateKey = fm.getMinerIdPrivateKey('unittest_1')
         const prevMinerIdKeySig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
         const prevMinerIdPublicKey = bsv.PublicKey.fromString('028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
         const verified = bsv.crypto.ECDSA.verify(hash, prevMinerIdKeySig, prevMinerIdPublicKey)

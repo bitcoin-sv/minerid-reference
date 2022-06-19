@@ -508,7 +508,7 @@ describe('Coinbase Document Services', function () {
 	  const expPrevMinerIdPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk').privateKey
 	  const prevMinerIdAlias = fm.getPreviousMinerIdAlias('unittest')
 	  assert.strictEqual(prevMinerIdAlias, 'unittest_1')
-	  assert.strict.deepEqual(fm.getPrivateKey(prevMinerIdAlias), expPrevMinerIdPrivateKey)
+	  assert.strict.deepEqual(fm.getMinerIdPrivateKey(prevMinerIdAlias), expPrevMinerIdPrivateKey)
 	  assert.strictEqual(fm.getMinerIdPublicKey(prevMinerIdAlias), sampleDoc.prevMinerId)
       })
 
@@ -516,7 +516,7 @@ describe('Coinbase Document Services', function () {
 	  const expMinerIdPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K4Degit4vEjkrVZv31rjqfMpFDXq64nNV3MWYHwxgtMLYSiVy1UASsSntxz5RtLmE1wm7iN2SvwNwiuwVhGeunEDNC1o5hwk').privateKey
 	  const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
 	  assert.strictEqual(minerIdAlias, 'unittest_2')
-	  assert.strict.deepEqual(fm.getPrivateKey(minerIdAlias), expMinerIdPrivateKey)
+	  assert.strict.deepEqual(fm.getMinerIdPrivateKey(minerIdAlias), expMinerIdPrivateKey)
 	  assert.strictEqual(fm.getMinerIdPublicKey(minerIdAlias), sampleDoc.minerId)
 	  assert.notEqual(sampleDoc.minerId, sampleDoc.prevMinerId)
       })
@@ -545,7 +545,7 @@ describe('Coinbase Document Services', function () {
           ])
           // recreate signature
           const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
-          const prevMinerIdPrivateKey = fm.getPrivateKey(fm.getPreviousMinerIdAlias('unittest'))
+          const prevMinerIdPrivateKey = fm.getMinerIdPrivateKey(fm.getPreviousMinerIdAlias('unittest'))
           const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
           assert.strictEqual(prevMinerIdSig.toString(), sampleDoc.prevMinerIdSig)
           // verify signature from the sampleDoc

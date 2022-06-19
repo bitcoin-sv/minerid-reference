@@ -24,7 +24,7 @@ describe('Coinbase Document Services', function () {
   describe('No mocking', function () {
     describe('Minerid', function () {
       describe('Generate', async () => {
-        let getMinerId, createMinerId, getRevocationKeyPublicKey, createRevocationKey, saveAlias
+        let getMinerId, createMinerId, getRevocationKeyPublicKey, createRevocationKey, saveMinerIdAlias, saveRevocationKeyAlias
 
         beforeEach(() => {
           sandbox.stub(console, 'log')
@@ -35,7 +35,8 @@ describe('Coinbase Document Services', function () {
           getRevocationKeyPublicKey = sandbox.stub(fm, 'getRevocationKeyPublicKey').returns(false)
           createRevocationKey = sandbox.stub(fm, 'createRevocationKey')
 
-          saveAlias = sandbox.stub(fm, 'saveAlias')
+          saveMinerIdAlias = sandbox.stub(fm, 'saveMinerIdAlias')
+          saveRevocationKeyAlias = sandbox.stub(fm, 'saveRevocationKeyAlias')
 
           coinbaseDocService.generateMinerId('unittest')
         })
@@ -60,23 +61,27 @@ describe('Coinbase Document Services', function () {
           expect(createRevocationKey.calledOnceWith('unittest_1')).to.be(true)
         })
 
-        it('calls "saveAlias" with right parameters', () => {
-          expect(saveAlias.calledWith('unittest', 'unittest_1')).to.be(true)
+        it('calls "saveMinerIdAlias" with right parameters', () => {
+          expect(saveMinerIdAlias.calledWith('unittest', 'unittest_1')).to.be(true)
+        })
+
+        it('calls "saveRevocationKeyAlias" with right parameters', () => {
+          expect(saveRevocationKeyAlias.calledWith('unittest', 'unittest_1')).to.be(true)
         })
       })
 
       describe('Get current', async () => {
-        let getCurrentAlias, getMinerId
+        let getCurrentMinerIdAlias, getMinerId
 
         beforeEach(() => {
-          getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns({})
+          getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns({})
           getMinerId = sandbox.stub(fm, 'getMinerId').returns({})
 
           coinbaseDocService.getCurrentMinerId('unittest')
         })
 
-        it('calls "getCurrentAlias" with right parameters', () => {
-          expect(getCurrentAlias.calledWith('unittest')).to.be(true)
+        it('calls "getCurrentMinerIdAlias" with right parameters', () => {
+          expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
         })
 
         it('calls "getMinerId" with right parameters', () => {
@@ -86,11 +91,11 @@ describe('Coinbase Document Services', function () {
     })
 
     describe('MinerId Rotation', function () {
-      let aliasExists, getCurrentAlias, saveAlias, createMinerId
+      let aliasExists, getCurrentMinerIdAlias, saveMinerIdAlias, createMinerId
       beforeEach(() => {
         aliasExists = sandbox.stub(fm, 'aliasExists').returns(true)
-        getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1')
-        saveAlias = sandbox.stub(fm, 'saveAlias')
+        getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
+        saveMinerIdAlias = sandbox.stub(fm, 'saveMinerIdAlias')
         createMinerId = sandbox.stub(fm, 'createMinerId')
 
         coinbaseDocService.rotateMinerId('unittest')
@@ -100,16 +105,49 @@ describe('Coinbase Document Services', function () {
         expect(aliasExists.calledWith('unittest')).to.be(true)
       })
 
-      it('calls "getCurrentAlias" with right parameters', () => {
-        expect(getCurrentAlias.calledWith('unittest')).to.be(true)
+      it('calls "getCurrentMinerIdAlias" with right parameters', () => {
+        expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
       })
 
-      it('calls "saveAlias" with right parameters', () => {
-        expect(saveAlias.calledWith('unittest', 'unittest_2')).to.be(true)
+      it('calls "saveMinerIdAlias" with right parameters', () => {
+        expect(saveMinerIdAlias.calledWith('unittest', 'unittest_2')).to.be(true)
       })
 
       it('calls "createMinerId" with right parameters', () => {
         expect(createMinerId.calledWith('unittest_2')).to.be(true)
+      })
+    })
+
+    describe('Revocation Key Rotation', function () {
+      let aliasExists, getCurrentRevocationKeyAlias, saveRevocationKeyAlias, createRevocationKey
+      beforeEach(() => {
+        aliasExists = sandbox.stub(fm, 'aliasExists').returns(true)
+        getCurrentRevocationKeyAlias = sandbox.stub(fm, 'getCurrentRevocationKeyAlias').returns('unittest_1')
+	revocationKeyExists = sandbox.stub(fm, 'revocationKeyExists').returns(true)
+        saveRevocationKeyAlias = sandbox.stub(fm, 'saveRevocationKeyAlias')
+        createRevocationKey = sandbox.stub(fm, 'createRevocationKey')
+
+        coinbaseDocService.rotateRevocationKey('unittest')
+      })
+
+      it('calls "aliasExists" with right parameters', () => {
+        expect(aliasExists.calledWith('unittest')).to.be(true)
+      })
+
+      it('calls "getCurrentRevocationKeyAlias" with right parameters', () => {
+        expect(getCurrentRevocationKeyAlias.calledWith('unittest')).to.be(true)
+      })
+
+      it('calls "revocationKeyExists" with right parameters', () => {
+        expect(revocationKeyExists.calledWith('unittest_1')).to.be(true)
+      })
+
+      it('calls "saveRevocationKeyAlias" with right parameters', () => {
+        expect(saveRevocationKeyAlias.calledWith('unittest', 'unittest_2')).to.be(true)
+      })
+
+      it('calls "createRevocationKey" with right parameters', () => {
+        expect(createRevocationKey.calledWith('unittest_2')).to.be(true)
       })
     })
 
@@ -130,15 +168,15 @@ describe('Coinbase Document Services', function () {
       })
 
       describe('Document creation', () => {
-	let getCurrentAlias, getMinerId, getPreviousAlias
+	let getCurrentMinerIdAlias, getMinerId, getPreviousMinerIdAlias
 	let readPrevRevocationKeyPublicKeyFromFile, readRevocationKeyPublicKeyFromFile
 	let readPrevRevocationKeySigFromFile, getOptionalMinerData
 	let signStub, unset, minerIdSigPayload
 
         beforeEach(() => {
-          getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1')
+          getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
           getMinerId = sandbox.stub(fm, 'getMinerId').returns('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab')
-          getPreviousAlias = sandbox.stub(fm, 'getPreviousAlias').returns('unittest_1')
+          getPreviousMinerIdAlias = sandbox.stub(fm, 'getPreviousMinerIdAlias').returns('unittest_1')
 	  readPrevRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readPrevRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
 	  readRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
 	  readPrevRevocationKeySigFromFile = sandbox.stub(fm, 'readPrevRevocationKeySigFromFile').returns('30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee')
@@ -162,16 +200,16 @@ describe('Coinbase Document Services', function () {
         })
 
 	// Checks if the expected functions were called.
-        it('calls "getCurrentAlias" with right parameters', () => {
-          expect(getCurrentAlias.calledWith('unittest')).to.be(true)
+        it('calls "getCurrentMinerIdAlias" with right parameters', () => {
+          expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
         })
 
         it('calls "getMinerId" with right parameters', () => {
           expect(getMinerId.calledWith('unittest_1')).to.be(true)
         })
 
-        it('calls "getPreviousAlias" with right parameters', () => {
-          expect(getPreviousAlias.calledWith('unittest')).to.be(true)
+        it('calls "getPreviousMinerIdAlias" with right parameters', () => {
+          expect(getPreviousMinerIdAlias.calledWith('unittest')).to.be(true)
         })
 
         it('calls "readPrevRevocationKeyPublicKeyFromFile" with right parameters', () => {
@@ -205,6 +243,7 @@ describe('Coinbase Document Services', function () {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
           aliases: '[ { "name": "unittest_1" } ]',
+          revocationKeyAliases: '[ { "name": "unittest_1" } ]',
 	  revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
         },
         [`${os.homedir()}/.keystore`]: {
@@ -237,11 +276,12 @@ describe('Coinbase Document Services', function () {
     })
   })
 
-  describe('Directories mocked (.minerid-client & .keystore)', function () {
+  describe('Static document / Directories mocked (.minerid-client, .keystore & .revocationkeystore)', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]'
+          aliases: '[ { "name": "unittest_1" } ]',
+          revocationKeyAliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
@@ -283,15 +323,15 @@ describe('Coinbase Document Services', function () {
           unset()
         })
 
-        it('signWithCurrentMinerId is calling getCurrentAlias and signHash with the right parameters', () => {
-          const getCurrentAlias = sandbox.stub(fm, 'getCurrentAlias').returns('unittest_1')
+        it('signWithCurrentMinerId is calling getCurrentMinerIdAlias and signHash with the right parameters', () => {
+          const getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
 
           const hash = 'b391347e78e93f05547c6a643dba2ea7df50effdf40061152fab922cbbbef072'
 
           const signWithCurrentMinerId = coinbaseDocService.__get__('signWithCurrentMinerId')
           signWithCurrentMinerId(hash, 'unittest')
 
-          expect(getCurrentAlias.calledWith('unittest')).to.be(true)
+          expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
           expect(signHashStub.calledWith(Buffer.from(hash, 'hex'), 'unittest_1')).to.be(true)
         })
 
@@ -308,7 +348,7 @@ describe('Coinbase Document Services', function () {
       })
     })
 
-    describe('Verification', function () {
+    describe('Verification (an initial miner info document)', function () {
       let docHex, sigHex
       const sampleDoc = {
         'version': '0.3',
@@ -319,18 +359,18 @@ describe('Coinbase Document Services', function () {
         'prevRevocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
         'revocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
         'prevRevocationKeySig': '30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee',
-	'minerContact': {
-		'email': 'test@testDomain.com',
-		'name': 'test',
-		'phone': '07495380665'
-	},
-	'extensions': {
-		'ext1': 1,
-		'ext2': 2,
-		'ext3': {
-			'ext3_1': 1
-		}
-	}
+        'minerContact': {
+                'email': 'test@testDomain.com',
+                'name': 'test',
+                'phone': '07495380665'
+        },
+        'extensions': {
+        	'ext1': 1,
+        	'ext2': 2,
+        	'ext3': {
+        		'ext3_1': 1
+        	}
+        }
       }
 
       before(async () => {
@@ -341,18 +381,18 @@ describe('Coinbase Document Services', function () {
           [`${os.homedir()}/.minerid-client/unittest`]: {
             aliases: '[ { "name": "unittest_1" } ]',
             config: `{
-			"minerContact": {
-				"email": "test@testDomain.com",
-				"name": "test",
-				"phone": "07495380665"
-			},
-			"extensions": {
-				"ext1": 1,
-				"ext2": 2,
-				"ext3": {
-					"ext3_1": 1
-				}
-			}
+        		"minerContact": {
+                                "email": "test@testDomain.com",
+                                "name": "test",
+                                "phone": "07495380665"
+        		},
+        		"extensions": {
+                                "ext1": 1,
+                                "ext2": 2,
+                                "ext3": {
+                                        "ext3_1": 1
+        			}
+        		}
                     }`,
             revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
           },
@@ -427,6 +467,108 @@ describe('Coinbase Document Services', function () {
 
           assert.strictEqual(verified, true)
         })
+      })
+    })
+
+    describe('Verification 2 (a miner-info document with rotated keys)', function () {
+      let docHex, sigHex
+      const sampleDoc = {
+        'version': '0.3',
+        'height': 101,
+        'prevMinerId': '03fa58c24d34fedfd6b3fd0490fe3bcb36db2bdd6dcccd6f84753ac6da8e91de5f',
+        'prevMinerIdSig': '304402206f8b67b731ba317b6f35dc0d53d33b86bec3cb28789e32bd839c183c8af88b29022013f817cef1afcf934ac73a6d61cef368abf3b03dfe489ce9a94db142f589971b',
+        'minerId': '0215c65cd589a42b3d2e58831621f4b93c8f85bd6bba6f00a0a4ca7f7d84e3937d',
+        'prevRevocationKey': '02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411',
+        'revocationKey': '0388c79d310bb82449a6c78262a00e15dfcc27ed88c77548a489900e0acee14370',
+        'prevRevocationKeySig': '304402202f41130334e76dee5de4e7b004e26cb5f3f068f1e928de370d68e992f7cf801102202a38ecdc2dc876d3ed660a54cd96c67038193182453e245499a831054056d59d'
+      }
+
+      beforeEach(async () => {
+        mock({
+          [`${os.homedir()}/.minerid-client/unittest`]: {
+	    aliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]',
+            revocationKeyAliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]'
+          },
+          [`${os.homedir()}/.keystore`]: {
+            'unittest_1.key': 'xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk',
+            'unittest_2.key': 'xprv9s21ZrQH143K4Degit4vEjkrVZv31rjqfMpFDXq64nNV3MWYHwxgtMLYSiVy1UASsSntxz5RtLmE1wm7iN2SvwNwiuwVhGeunEDNC1o5hwk'
+          },
+          [`${os.homedir()}/.revocationkeystore`]: {
+            'unittest_1.key': 'xprv9s21ZrQH143K2MuFMBEMccXsxoz5ShrhQceN32Ycm9j1NrjgRR6AEtocCS83miARoEXpU9rC4UqRvyUjmjvaHzZECZdSYzxSfxAeykBsg92',
+            'unittest_2.key': 'xprv9s21ZrQH143K2c9ejaeTCzpkECHv2SoPMZ8B4hm7vnmzivQpoHU3JcFAYKZgLzfrFXSEp5Wv6iGWVTh2qAnLcPdStNtF7nrtHxvqM41uKBe'
+          }
+        })
+      })
+
+      afterEach(() => {
+        mock.restore()
+      })
+
+      it('can verify prevMinerId', () => {
+	  const expPrevMinerIdPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk').privateKey
+	  const prevMinerIdAlias = fm.getPreviousMinerIdAlias('unittest')
+	  assert.strictEqual(prevMinerIdAlias, 'unittest_1')
+	  assert.strict.deepEqual(fm.getPrivateKey(prevMinerIdAlias), expPrevMinerIdPrivateKey)
+	  assert.strictEqual(fm.getMinerId(prevMinerIdAlias), sampleDoc.prevMinerId)
+      })
+
+      it('can verify minerId', () => {
+	  const expMinerIdPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K4Degit4vEjkrVZv31rjqfMpFDXq64nNV3MWYHwxgtMLYSiVy1UASsSntxz5RtLmE1wm7iN2SvwNwiuwVhGeunEDNC1o5hwk').privateKey
+	  const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
+	  assert.strictEqual(minerIdAlias, 'unittest_2')
+	  assert.strict.deepEqual(fm.getPrivateKey(minerIdAlias), expMinerIdPrivateKey)
+	  assert.strictEqual(fm.getMinerId(minerIdAlias), sampleDoc.minerId)
+	  assert.notEqual(sampleDoc.minerId, sampleDoc.prevMinerId)
+      })
+
+      it('can verify prevRevocationKey', () => {
+	  const expPrevRevocationKeyPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K2MuFMBEMccXsxoz5ShrhQceN32Ycm9j1NrjgRR6AEtocCS83miARoEXpU9rC4UqRvyUjmjvaHzZECZdSYzxSfxAeykBsg92').privateKey
+	  const prevRevocationKeyAlias = fm.getPreviousRevocationKeyAlias('unittest')
+	  assert.strictEqual(prevRevocationKeyAlias, 'unittest_1')
+	  assert.strict.deepEqual(fm.getRevocationKeyPrivateKey(prevRevocationKeyAlias), expPrevRevocationKeyPrivateKey)
+	  assert.strictEqual(fm.getRevocationKeyPublicKey(prevRevocationKeyAlias), sampleDoc.prevRevocationKey)
+      })
+
+      it('can verify revocationKey', () => {
+	  const expRevocationKeyPrivateKey = new bsv.HDPrivateKey('xprv9s21ZrQH143K2c9ejaeTCzpkECHv2SoPMZ8B4hm7vnmzivQpoHU3JcFAYKZgLzfrFXSEp5Wv6iGWVTh2qAnLcPdStNtF7nrtHxvqM41uKBe').privateKey
+	  const revocationKeyAlias = fm.getCurrentRevocationKeyAlias('unittest')
+	  assert.strictEqual(revocationKeyAlias, 'unittest_2')
+	  assert.strict.deepEqual(fm.getRevocationKeyPrivateKey(revocationKeyAlias), expRevocationKeyPrivateKey)
+	  assert.strictEqual(fm.getRevocationKeyPublicKey(revocationKeyAlias), sampleDoc.revocationKey)
+	  assert.notEqual(sampleDoc.revocationKey, sampleDoc.prevRevocationKey)
+      })
+
+      it('can verify prevMinerIdSig signature', () => {
+          const prevMinerIdSigPayload = Buffer.concat([
+             Buffer.from(sampleDoc.prevMinerId, 'hex'),
+             Buffer.from(sampleDoc.minerId, 'hex')
+          ])
+          // recreate signature
+          const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
+          const prevMinerIdPrivateKey = fm.getPrivateKey(fm.getPreviousMinerIdAlias('unittest'))
+          const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
+          assert.strictEqual(prevMinerIdSig.toString(), sampleDoc.prevMinerIdSig)
+          // verify signature from the sampleDoc
+          const actualPrevMinerIdSig = bsv.crypto.Signature.fromString(sampleDoc.prevMinerIdSig)
+          const prevMinerIdPublicKey = bsv.PublicKey.fromString(sampleDoc.prevMinerId)
+          const verified = bsv.crypto.ECDSA.verify(hash, actualPrevMinerIdSig, prevMinerIdPublicKey)
+          assert.strictEqual(verified, true)
+      })
+      it('can verify prevRevocationKeySig signature', () => {
+          const prevRevocationKeySigPayload = Buffer.concat([
+             Buffer.from(sampleDoc.prevRevocationKey, 'hex'),
+             Buffer.from(sampleDoc.revocationKey, 'hex')
+          ])
+          // recreate signature
+          const hash = bsv.crypto.Hash.sha256(prevRevocationKeySigPayload)
+          const prevRevocationKeyPrivateKey = fm.getRevocationKeyPrivateKey(fm.getPreviousRevocationKeyAlias('unittest'))
+          const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, prevRevocationKeyPrivateKey)
+          assert.strictEqual(prevRevocationKeySig.toString(), sampleDoc.prevRevocationKeySig)
+          // verify signature from the sampleDoc
+          const actualPrevRevocationKeySig = bsv.crypto.Signature.fromString(sampleDoc.prevRevocationKeySig)
+          const prevRevocationKeyPublicKey = bsv.PublicKey.fromString(sampleDoc.prevRevocationKey)
+          const verified = bsv.crypto.ECDSA.verify(hash, actualPrevRevocationKeySig, prevRevocationKeyPublicKey)
+          assert.strictEqual(verified, true)
       })
     })
   })

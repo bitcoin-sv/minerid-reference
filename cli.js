@@ -14,7 +14,7 @@ const fm = require('./utils/filemanager')
       type: String,
       defaultOption: true,
       multiple: true,
-      description: 'generateminerid, rotateminerid, config'
+      description: 'generateminerid, rotateminerid, rotaterevocationkey, config'
     },
     {
       name: 'help',
@@ -64,10 +64,19 @@ const fm = require('./utils/filemanager')
         {
           desc: 'Rotate minerId',
           example: 'npm run cli -- rotateminerid --name [alias]'
+        },
+        {
+          desc: 'Rotate revocationKey',
+          example: 'npm run cli -- rotaterevocationkey --name [alias]'
         }
       ]
     }
   ])
+
+  function createReusableRevocationKeyData(aliasName) {
+     fm.writeRevocationKeyDataToFile(options.name)
+     console.log(`\nReusable revocation key data were stored in the config file for "${aliasName}" alias.`)
+  }
 
   let options
   try {
@@ -105,29 +114,44 @@ const fm = require('./utils/filemanager')
       break
   }
   if (options.command) {
-    switch (options.command[0].toLowerCase()) {
-      case 'config': {
-        if (options.command.length < 2 || options.command[1].indexOf('=') === -1) {
-          console.log(fm.getMinerContactData(options.name))
-          break
-        }
-        const nvp = options.command[1].split('=')
-        fm.updateMinerContactData(options.name, nvp[0], nvp[1])
-        break
-      }
-      case 'generateminerid':
-        if (coinbaseDocService.generateMinerId(options.name)) {
-          fm.writeRevocationKeyDataToFile(options.name)
+    try {
+	switch (options.command[0].toLowerCase()) {
+	  case 'config': {
+	    if (options.command.length < 2 || options.command[1].indexOf('=') === -1) {
+	      console.log(fm.getMinerContactData(options.name))
+	      break
+	    }
+	    const nvp = options.command[1].split('=')
+	    fm.updateMinerContactData(options.name, nvp[0], nvp[1])
+	    break
+	  }
+	  case 'generateminerid':
+	    if (coinbaseDocService.generateMinerId(options.name)) {
+	      createReusableRevocationKeyData(options.name)
+	      console.log('MinerId generation has succeeded.')
+	    } else {
+	      console.log('MinerId generation has failed!')
+	    }
+	    break
+	  case 'rotateminerid':
+	    coinbaseDocService.rotateMinerId(options.name)
+	    console.log('Rotated minerId')
+	    break
+	  case 'rotaterevocationkey':
+	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
+	      createReusableRevocationKeyData(options.name)
+	      console.log('Revocation key rotation has succeeded.')
+	    } else {
+	      console.log('Revocation key rotation has failed!')
+	    }
+	    break
+	  default:
+	    console.log(`Unknown command: ${options.command}`)
+	    console.log(usage)
+	    break
 	}
-        break
-      case 'rotateminerid':
-        coinbaseDocService.rotateMinerId(options.name)
-        console.log('Rotated minerId')
-        break
-      default:
-        console.log(`Unknown command: ${options.command}`)
-        console.log(usage)
-        break
+    } catch (e) {
+      console.log(e)
     }
     process.exit(0)
   } else if (!options.height) {

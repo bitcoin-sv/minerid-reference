@@ -9,10 +9,12 @@ var filedir = config.get('minerIdDataPath')
 const keystorePath = config.get('keystorePath')
 const revocationKeystorePath = config.get('revocationKeystorePath')
 
-const aliasFilename = 'aliases'
+const MINERID_ALIASES_FILENAME = 'aliases'
+const REVOCATIONKEY_ALIASES_FILENAME = 'revocationKeyAliases'
 
 const REVOCATION_KEY_DATA_FILENAME = 'revocationKeyData'
 
+// Checks if a folder (with the given name) exists.
 function aliasExists (aliasName) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName)
@@ -122,6 +124,20 @@ function getRevocationKeyPublicKey (alias) {
 /**
  * Other utility functions.
  */
+function _checkIfKeyExists (alias, keyPath) {
+  const dir = path.join(process.env.HOME, keyPath)
+  const filePath = path.join(dir, alias + '.key')
+  try {
+    return fs.existsSync(filePath)
+  } catch (e) {
+    return false
+  }
+}
+
+function revocationKeyExists(alias) {
+  return _checkIfKeyExists(alias, revocationKeystorePath)
+}
+
 // Read 'prevRevocationKey' public key from the config file.
 function readPrevRevocationKeyPublicKeyFromFile (aliasName) {
   const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
@@ -144,18 +160,18 @@ function readRevocationKeyPublicKeyFromFile (aliasName) {
 function writeRevocationKeyDataToFile (aliasName) {
   let revocationKeyData = {}
   // prevRevocationKey
-  const prevRevocationKeyPublicKey = getRevocationKeyPublicKey(getPreviousAlias(aliasName))
-  revocationKeyData["prevRevocationKey"] = prevRevocationKeyPublicKey.toString('hex')
+  const prevRevocationKeyPublicKey = getRevocationKeyPublicKey(getPreviousRevocationKeyAlias(aliasName))
+  revocationKeyData["prevRevocationKey"] = prevRevocationKeyPublicKey
   // revocationKey
-  const revocationKeyPublicKey = getRevocationKeyPublicKey(getCurrentAlias(aliasName))
-  revocationKeyData["revocationKey"] = revocationKeyPublicKey.toString('hex')
+  const revocationKeyPublicKey = getRevocationKeyPublicKey(getCurrentRevocationKeyAlias(aliasName))
+  revocationKeyData["revocationKey"] = revocationKeyPublicKey
   // prevRevocationKeySig
   const payload = Buffer.concat([
     Buffer.from(prevRevocationKeyPublicKey, 'hex'),
     Buffer.from(revocationKeyPublicKey, 'hex')
   ])
   const hash = bsv.crypto.Hash.sha256(payload)
-  const privateKey = getRevocationKeyPrivateKey(getPreviousAlias(aliasName))
+  const privateKey = getRevocationKeyPrivateKey(getPreviousRevocationKeyAlias(aliasName))
   const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
   revocationKeyData["prevRevocationKeySig"] = prevRevocationKeySig.toString('hex')
   // Write revocationKeyData to the file.
@@ -171,16 +187,17 @@ function readPrevRevocationKeySigFromFile (aliasName) {
   return data["prevRevocationKeySig"]
 }
 
-function getCurrentAlias (aliasName) {
-  const data = _getAliases(aliasName)
+// Common non-exported utility functions to support aliases.
+function _getCurrentAlias (aliasName, aliasFileName) {
+  const data = _getAliases(aliasName, aliasFileName)
   if (data && data.length > 0) {
     return data[data.length - 1].name
   }
   return null
 }
 
-function getPreviousAlias (aliasName) {
-  const data = _getAliases(aliasName)
+function _getPreviousAlias (aliasName, aliasFileName) {
+  const data = _getAliases(aliasName, aliasFileName)
   if (!data) {
     return null
   }
@@ -191,9 +208,9 @@ function getPreviousAlias (aliasName) {
   }
 }
 
-function _getAliases (aliasName) {
+function _getAliases (aliasName, aliasFileName) {
   const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, aliasFilename)
+  const filePath = path.join(homeDir, filedir, aliasName, aliasFileName)
   let data
   try {
     data = JSON.parse(fs.readFileSync(filePath))
@@ -202,6 +219,24 @@ function _getAliases (aliasName) {
     return
   }
   return data
+}
+
+// MinerId alias support.
+function getCurrentMinerIdAlias (aliasName) {
+  return _getCurrentAlias(aliasName, MINERID_ALIASES_FILENAME)
+}
+
+function getPreviousMinerIdAlias(aliasName) {
+  return _getPreviousAlias(aliasName, MINERID_ALIASES_FILENAME)
+}
+
+// Revocation Key alias support.
+function getCurrentRevocationKeyAlias(aliasName) {
+  return _getCurrentAlias(aliasName, REVOCATIONKEY_ALIASES_FILENAME)
+}
+
+function getPreviousRevocationKeyAlias(aliasName) {
+  return _getPreviousAlias(aliasName, REVOCATIONKEY_ALIASES_FILENAME)
 }
 
 function makeDirIfNotExists (folderPath) {
@@ -214,10 +249,10 @@ function makeDirIfNotExists (folderPath) {
   fs.mkdirSync(folderPath, { recursive: true })
 }
 
-function saveAlias (aliasName, alias) {
+function _saveAlias (aliasName, alias, aliasFileName) {
   const homeDir = process.env.HOME
   const folderPath = path.join(homeDir, filedir, aliasName)
-  const filePath = path.join(folderPath, aliasFilename)
+  const filePath = path.join(folderPath, aliasFileName)
 
   let data
   try {
@@ -242,6 +277,23 @@ function saveAlias (aliasName, alias) {
   }
 }
 
+function saveMinerIdAlias(aliasName, alias) {
+  _saveAlias(aliasName, alias, MINERID_ALIASES_FILENAME)
+}
+
+function saveRevocationKeyAlias(aliasName, alias) {
+  _saveAlias(aliasName, alias, REVOCATIONKEY_ALIASES_FILENAME)
+}
+
+function incrementAliasPrefix(currentAlias) {
+  const aliasParts = currentAlias.split('_')
+  // increment alias prefix
+  let nr = aliasParts.pop()
+  aliasParts.push(++nr)
+  return aliasParts.join('_')
+}
+
+// MinerId optional data support.
 function updateMinerContactData (aliasName, name, value) {
   if (!aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
@@ -297,15 +349,22 @@ module.exports = {
   createRevocationKey,
   getRevocationKeyPrivateKey,
   getRevocationKeyPublicKey,
+  revocationKeyExists,
 
   readPrevRevocationKeyPublicKeyFromFile,
   readRevocationKeyPublicKeyFromFile,
   readPrevRevocationKeySigFromFile,
   writeRevocationKeyDataToFile,
 
-  getCurrentAlias,
-  getPreviousAlias,
-  saveAlias,
+  getCurrentMinerIdAlias,
+  getPreviousMinerIdAlias,
+  saveMinerIdAlias,
+
+  getCurrentRevocationKeyAlias,
+  getPreviousRevocationKeyAlias,
+  saveRevocationKeyAlias,
+
+  incrementAliasPrefix,
 
   updateMinerContactData,
   writeMinerContactDataToFile,

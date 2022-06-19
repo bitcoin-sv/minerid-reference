@@ -57,8 +57,10 @@ function generateMinerId (aliasName) {
     fm.createRevocationKey(alias)
     const revocationKeyPublicKey = fm.getRevocationKeyPublicKey(alias)
     console.log('Generated new revocationKey: ', revocationKeyPublicKey)
-    // Save the current alias.
-    fm.saveAlias(aliasName, alias)
+    // Save the current MinerId alias.
+    fm.saveMinerIdAlias(aliasName, alias)
+    // Save the current Revocation Key alias.
+    fm.saveRevocationKeyAlias(aliasName, alias)
   } catch (err) {
     console.log('Please check that the signing_service is running properly...')
     console.log('generateMinerId error: ', err)
@@ -68,12 +70,12 @@ function generateMinerId (aliasName) {
 }
 
 function getCurrentMinerId (alias) {
-  const currentMinerId = fm.getMinerId(fm.getCurrentAlias(alias))
+  const currentMinerId = fm.getMinerId(fm.getCurrentMinerIdAlias(alias))
   return currentMinerId
 }
 
 function signWithCurrentMinerId (hash, alias) {
-  const currentAlias = fm.getCurrentAlias(alias)
+  const currentAlias = fm.getCurrentMinerIdAlias(alias)
 
   if (currentAlias === null) {
     return
@@ -123,14 +125,11 @@ function rotateMinerId (aliasName) {
     // console.log('Rotating minerId')
 
     // get current alias
-    const currentAlias = fm.getCurrentAlias(aliasName)
-    const aliasParts = currentAlias.split('_')
+    const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
     // increment alias prefix
-    let nr = aliasParts.pop()
-    aliasParts.push(++nr)
-    const newAlias = aliasParts.join('_')
+    const newAlias = fm.incrementAliasPrefix(currentAlias)
     // save alias
-    fm.saveAlias(aliasName, newAlias)
+    fm.saveMinerIdAlias(aliasName, newAlias)
     // get minerId
     fm.createMinerId(newAlias)
   } catch (err) {
@@ -138,9 +137,44 @@ function rotateMinerId (aliasName) {
   }
 }
 
+// Rotate the current revocation key.
+function rotateRevocationKey (aliasName) {
+  if (!aliasName || aliasName === '') {
+    console.log('Must supply an alias')
+    return false
+  }
+  if (!fm.aliasExists(aliasName)) {
+    console.log(`Name "${aliasName}" doesn't exist.`)
+    return false
+  }
+  try {
+    // get current alias
+    const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
+    if (!currentAlias) {
+      console.log(`Error: The revocation key alias "${aliasName}" doesn't exist.`)
+      return false
+    }
+    // Check if the current revocation key is present in the revocation key store.
+    if (!fm.revocationKeyExists(currentAlias)) {
+      console.log(`Error: The "${currentAlias}.key" revocation private key is not available in the key store.`)
+      return false
+    }
+    // increment alias prefix
+    const newAlias = fm.incrementAliasPrefix(currentAlias)
+    // save alias
+    fm.saveRevocationKeyAlias(aliasName, newAlias)
+    // create a new revocation key
+    fm.createRevocationKey(newAlias)
+  } catch (err) {
+    console.log('Error rotating revocation key: ', err)
+    return false
+  }
+  return true
+}
+
 function createMinerInfoDocument (aliasName, height) {
-  const minerId = fm.getMinerId(fm.getCurrentAlias(aliasName))
-  const prevMinerId = fm.getMinerId(fm.getPreviousAlias(aliasName))
+  const minerId = fm.getMinerId(fm.getCurrentMinerIdAlias(aliasName))
+  const prevMinerId = fm.getMinerId(fm.getPreviousMinerIdAlias(aliasName))
 
   const prevRevocationKey = fm.readPrevRevocationKeyPublicKeyFromFile(aliasName)
   const revocationKey = fm.readRevocationKeyPublicKeyFromFile(aliasName)
@@ -150,7 +184,7 @@ function createMinerInfoDocument (aliasName, height) {
     Buffer.from(minerId, 'hex')
   ])
 
-  const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousAlias(aliasName))
+  const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousMinerIdAlias(aliasName))
 
   const prevRevocationKeySig = fm.readPrevRevocationKeySigFromFile(aliasName)
 
@@ -195,7 +229,7 @@ async function createMinerInfoOpReturn (height, aliasName) {
   console.debug('Miner-info doc:\n' + JSON.stringify(doc))
 
   const payload = JSON.stringify(doc)
-  const signature = sign(Buffer.from(payload), fm.getCurrentAlias(aliasName))
+  const signature = sign(Buffer.from(payload), fm.getCurrentMinerIdAlias(aliasName))
   console.debug('Miner-info-doc sig:\n' + signature.toString('hex'))
 
   const opReturnScript = createMinerInfoOpReturnScript(payload, signature).toHex()
@@ -238,6 +272,7 @@ module.exports = {
   createMinerInfoOpReturn,
   generateMinerId,
   rotateMinerId,
+  rotateRevocationKey,
   getCurrentMinerId,
   signWithCurrentMinerId
 }

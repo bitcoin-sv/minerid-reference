@@ -36,8 +36,8 @@ describe('Key rolling', function () {
         assert.strictEqual(prevMinerIdAlias, 'unittest_1')
         const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
         assert.strictEqual(minerIdAlias, 'unittest_1')
-        assert.strictEqual(fm.getMinerId(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
-        assert.strictEqual(fm.getMinerId(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.strictEqual(fm.getMinerIdPublicKey(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.strictEqual(fm.getMinerIdPublicKey(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
       }
       // Rotate minerId.
       coinbaseDocService.rotateMinerId('unittest')
@@ -47,14 +47,14 @@ describe('Key rolling', function () {
         assert.strictEqual(prevMinerIdAlias, 'unittest_1')
         const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
         assert.strictEqual(minerIdAlias, 'unittest_2')
-        assert.strictEqual(fm.getMinerId(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
-        assert.notEqual(fm.getMinerId(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.strictEqual(fm.getMinerIdPublicKey(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.notEqual(fm.getMinerIdPublicKey(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
       }
       // Verify prevMinerIdSig creation with rotated key.
       {
         const prevMinerIdSigPayload = Buffer.concat([
-           Buffer.from(fm.getMinerId('unittest_1'), 'hex'), // prevMinerId
-           Buffer.from(fm.getMinerId('unittest_2'), 'hex')  // minerId
+           Buffer.from(fm.getMinerIdPublicKey('unittest_1'), 'hex'), // prevMinerId
+           Buffer.from(fm.getMinerIdPublicKey('unittest_2'), 'hex')  // minerId
         ])
         const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
         const prevMinerIdPrivateKey = fm.getPrivateKey('unittest_1')

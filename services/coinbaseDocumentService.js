@@ -34,7 +34,7 @@ function generateMinerId (aliasName) {
   const alias = aliasName + '_1'
   try {
     // Check if aliasName is unused.
-    const existsMinerId = fm.getMinerId(alias)
+    const existsMinerId = fm.getMinerIdPublicKey(alias)
     if (existsMinerId) {
       console.log(`miner alias "${aliasName}" already exists: `)
       console.log(existsMinerId)
@@ -51,7 +51,7 @@ function generateMinerId (aliasName) {
 
     // Create minerId key.
     fm.createMinerId(alias)
-    const minerId = fm.getMinerId(alias)
+    const minerId = fm.getMinerIdPublicKey(alias)
     console.log('Generated new minerId: ', minerId)
     // Create revocationKey key.
     fm.createRevocationKey(alias)
@@ -70,7 +70,7 @@ function generateMinerId (aliasName) {
 }
 
 function getCurrentMinerId (alias) {
-  const currentMinerId = fm.getMinerId(fm.getCurrentMinerIdAlias(alias))
+  const currentMinerId = fm.getMinerIdPublicKey(fm.getCurrentMinerIdAlias(alias))
   return currentMinerId
 }
 
@@ -173,8 +173,8 @@ function rotateRevocationKey (aliasName) {
 }
 
 function createMinerInfoDocument (aliasName, height) {
-  const minerId = fm.getMinerId(fm.getCurrentMinerIdAlias(aliasName))
-  const prevMinerId = fm.getMinerId(fm.getPreviousMinerIdAlias(aliasName))
+  const minerId = fm.getMinerIdPublicKey(fm.getCurrentMinerIdAlias(aliasName))
+  const prevMinerId = fm.getMinerIdPublicKey(fm.getPreviousMinerIdAlias(aliasName))
 
   const prevRevocationKey = fm.readPrevRevocationKeyPublicKeyFromFile(aliasName)
   const revocationKey = fm.readRevocationKeyPublicKeyFromFile(aliasName)

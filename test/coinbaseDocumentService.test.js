@@ -24,12 +24,12 @@ describe('Coinbase Document Services', function () {
   describe('No mocking', function () {
     describe('Minerid', function () {
       describe('Generate', async () => {
-        let getMinerId, createMinerId, getRevocationKeyPublicKey, createRevocationKey, saveMinerIdAlias, saveRevocationKeyAlias
+        let getMinerIdPublicKey, createMinerId, getRevocationKeyPublicKey, createRevocationKey, saveMinerIdAlias, saveRevocationKeyAlias
 
         beforeEach(() => {
           sandbox.stub(console, 'log')
 
-          getMinerId = sandbox.stub(fm, 'getMinerId').returns(false)
+          getMinerIdPublicKey = sandbox.stub(fm, 'getMinerIdPublicKey').returns(false)
           createMinerId = sandbox.stub(fm, 'createMinerId')
 
           getRevocationKeyPublicKey = sandbox.stub(fm, 'getRevocationKeyPublicKey').returns(false)
@@ -41,8 +41,8 @@ describe('Coinbase Document Services', function () {
           coinbaseDocService.generateMinerId('unittest')
         })
 	// Checks if the expected functions were called.
-        it('calls "getMinerId" with right parameters', () => {
-          expect(getMinerId.calledWith('unittest_1')).to.be(true)
+        it('calls "getMinerIdPublicKey" with right parameters', () => {
+          expect(getMinerIdPublicKey.calledWith('unittest_1')).to.be(true)
         })
 
         it('calls "createMinerId" with right parameters', () => {
@@ -71,11 +71,11 @@ describe('Coinbase Document Services', function () {
       })
 
       describe('Get current', async () => {
-        let getCurrentMinerIdAlias, getMinerId
+        let getCurrentMinerIdAlias, getMinerIdPublicKey
 
         beforeEach(() => {
           getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns({})
-          getMinerId = sandbox.stub(fm, 'getMinerId').returns({})
+          getMinerIdPublicKey = sandbox.stub(fm, 'getMinerIdPublicKey').returns({})
 
           coinbaseDocService.getCurrentMinerId('unittest')
         })
@@ -84,8 +84,8 @@ describe('Coinbase Document Services', function () {
           expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
         })
 
-        it('calls "getMinerId" with right parameters', () => {
-          expect(getMinerId.calledWith({})).to.be(true)
+        it('calls "getMinerIdPublicKey" with right parameters', () => {
+          expect(getMinerIdPublicKey.calledWith({})).to.be(true)
         })
       })
     })
@@ -168,14 +168,14 @@ describe('Coinbase Document Services', function () {
       })
 
       describe('Document creation', () => {
-	let getCurrentMinerIdAlias, getMinerId, getPreviousMinerIdAlias
+	let getCurrentMinerIdAlias, getMinerIdPublicKey, getPreviousMinerIdAlias
 	let readPrevRevocationKeyPublicKeyFromFile, readRevocationKeyPublicKeyFromFile
 	let readPrevRevocationKeySigFromFile, getOptionalMinerData
 	let signStub, unset, minerIdSigPayload
 
         beforeEach(() => {
           getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
-          getMinerId = sandbox.stub(fm, 'getMinerId').returns('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab')
+          getMinerIdPublicKey = sandbox.stub(fm, 'getMinerIdPublicKey').returns('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab')
           getPreviousMinerIdAlias = sandbox.stub(fm, 'getPreviousMinerIdAlias').returns('unittest_1')
 	  readPrevRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readPrevRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
 	  readRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
@@ -204,8 +204,8 @@ describe('Coinbase Document Services', function () {
           expect(getCurrentMinerIdAlias.calledWith('unittest')).to.be(true)
         })
 
-        it('calls "getMinerId" with right parameters', () => {
-          expect(getMinerId.calledWith('unittest_1')).to.be(true)
+        it('calls "getMinerIdPublicKey" with right parameters', () => {
+          expect(getMinerIdPublicKey.calledWith('unittest_1')).to.be(true)
         })
 
         it('calls "getPreviousMinerIdAlias" with right parameters', () => {
@@ -509,7 +509,7 @@ describe('Coinbase Document Services', function () {
 	  const prevMinerIdAlias = fm.getPreviousMinerIdAlias('unittest')
 	  assert.strictEqual(prevMinerIdAlias, 'unittest_1')
 	  assert.strict.deepEqual(fm.getPrivateKey(prevMinerIdAlias), expPrevMinerIdPrivateKey)
-	  assert.strictEqual(fm.getMinerId(prevMinerIdAlias), sampleDoc.prevMinerId)
+	  assert.strictEqual(fm.getMinerIdPublicKey(prevMinerIdAlias), sampleDoc.prevMinerId)
       })
 
       it('can verify minerId', () => {
@@ -517,7 +517,7 @@ describe('Coinbase Document Services', function () {
 	  const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
 	  assert.strictEqual(minerIdAlias, 'unittest_2')
 	  assert.strict.deepEqual(fm.getPrivateKey(minerIdAlias), expMinerIdPrivateKey)
-	  assert.strictEqual(fm.getMinerId(minerIdAlias), sampleDoc.minerId)
+	  assert.strictEqual(fm.getMinerIdPublicKey(minerIdAlias), sampleDoc.minerId)
 	  assert.notEqual(sampleDoc.minerId, sampleDoc.prevMinerId)
       })
 

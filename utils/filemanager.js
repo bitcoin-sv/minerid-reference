@@ -102,7 +102,7 @@ function getPrivateKey (alias) {
   return _getPrivateKey(alias, keystorePath)
 }
 
-function getMinerId (alias) {
+function getMinerIdPublicKey (alias) {
   return _getPublicKey(getPrivateKey(alias))
 }
 
@@ -344,7 +344,7 @@ module.exports = {
 
   createMinerId,
   getPrivateKey,
-  getMinerId,
+  getMinerIdPublicKey,
 
   createRevocationKey,
   getRevocationKeyPrivateKey,

@@ -11,7 +11,62 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 describe('Key rolling', function () {
-  describe('Revocation key rotation', function () {
+  describe('minerId key rotation', function () {
+    beforeEach(() => {
+      mock({
+        [`${os.homedir()}/.minerid-client/unittest`]: {
+          aliases: '[ { "name": "unittest_1" } ]'
+        },
+        [`${os.homedir()}/.keystore`]: {
+          'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
+        }
+      })
+      sinon.stub(console, "log")
+      sinon.stub(console, "debug")
+    })
+    afterEach(() => {
+      mock.restore()
+      console.log.restore()
+      console.debug.restore()
+    })
+    it('can rotate the initial minerId for "unittest"', async () => {
+      // Check the initial prevMinerId and minerId are the same.
+      {
+        const prevMinerIdAlias = fm.getPreviousMinerIdAlias('unittest')
+        assert.strictEqual(prevMinerIdAlias, 'unittest_1')
+        const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
+        assert.strictEqual(minerIdAlias, 'unittest_1')
+        assert.strictEqual(fm.getMinerId(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.strictEqual(fm.getMinerId(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+      }
+      // Rotate minerId.
+      coinbaseDocService.rotateMinerId('unittest')
+      // Check if minerId is rotated (prevMinerId != minerId)
+      {
+        const prevMinerIdAlias = fm.getPreviousMinerIdAlias('unittest')
+        assert.strictEqual(prevMinerIdAlias, 'unittest_1')
+        const minerIdAlias = fm.getCurrentMinerIdAlias('unittest')
+        assert.strictEqual(minerIdAlias, 'unittest_2')
+        assert.strictEqual(fm.getMinerId(prevMinerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        assert.notEqual(fm.getMinerId(minerIdAlias), '028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+      }
+      // Verify prevMinerIdSig creation with rotated key.
+      {
+        const prevMinerIdSigPayload = Buffer.concat([
+           Buffer.from(fm.getMinerId('unittest_1'), 'hex'), // prevMinerId
+           Buffer.from(fm.getMinerId('unittest_2'), 'hex')  // minerId
+        ])
+        const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
+        const prevMinerIdPrivateKey = fm.getPrivateKey('unittest_1')
+        const prevMinerIdKeySig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
+        const prevMinerIdPublicKey = bsv.PublicKey.fromString('028e21da5f14280e59191243357d7186a1a658a32d995cf035095399bc1662f3bc')
+        const verified = bsv.crypto.ECDSA.verify(hash, prevMinerIdKeySig, prevMinerIdPublicKey)
+        assert.strictEqual(verified, true)
+      }
+    })
+  })
+
+  describe('revocationKey rotation', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {

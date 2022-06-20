@@ -58,7 +58,7 @@ const fm = require('./utils/filemanager')
           example: 'npm run cli -- config email=s@aliasDomain.com -n [alias]'
         },
         {
-          desc: 'Generate op_return with signed coinbase document',
+          desc: 'Generate op_return with signed miner-info document',
           example: 'npm run cli -- --height 5123123 --name [alias]'
         },
         {

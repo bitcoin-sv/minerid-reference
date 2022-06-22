@@ -14,7 +14,7 @@ const fm = require('./utils/filemanager')
       type: String,
       defaultOption: true,
       multiple: true,
-      description: 'generateminerid, rotateminerid, rotaterevocationkey, config'
+      description: 'generateminerid, rotateminerid, rotaterevocationkey, upgrademinerid, config'
     },
     {
       name: 'help',
@@ -40,7 +40,7 @@ const fm = require('./utils/filemanager')
   const usage = commandLineUsage([
     {
       header: 'Miner Id Client',
-      content: 'Generate a minerId or get a signed coinbase document for a minerId.'
+      content: 'Generate a minerId or get a signed miner info document for a minerId.'
     },
     {
       header: 'Options',
@@ -68,6 +68,10 @@ const fm = require('./utils/filemanager')
         {
           desc: 'Rotate revocationKey',
           example: 'npm run cli -- rotaterevocationkey --name [alias]'
+        },
+        {
+          desc: 'Upgrade minerId v0.1/v0.2 protocol data to v0.3',
+          example: 'npm run cli -- upgrademinerid --name [alias]'
         }
       ]
     }
@@ -146,6 +150,17 @@ const fm = require('./utils/filemanager')
 	      console.log('Revocation key rotation has succeeded.')
 	    } else {
 	      console.log('Revocation key rotation has failed!')
+	    }
+	    break
+	  case 'upgrademinerid':
+	    if (coinbaseDocService.canUpgradeMinerIdProtocol(options.name)) {
+	      const alias = options.name + '_1'
+	      fm.createRevocationKey(alias)
+	      fm.saveRevocationKeyAlias(options.name, alias)
+	      createReusableRevocationKeyData(options.name)
+	      console.log('Miner ID protocol upgrade has succeeded.')
+	    } else {
+	      console.log('Miner ID protocol upgrade has failed!')
 	    }
 	    break
 	  default:

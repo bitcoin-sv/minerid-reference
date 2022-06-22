@@ -215,6 +215,9 @@ function _getPreviousAlias (aliasName, aliasFileName) {
 function _getAliases (aliasName, aliasFileName) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, aliasFileName)
+  if (!fs.existsSync(filePath)) {
+    return
+  }
   let data
   try {
     data = JSON.parse(fs.readFileSync(filePath))

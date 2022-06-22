@@ -112,13 +112,21 @@ function createMinerInfoOpReturnScript (doc, sig) {
 /* Create a new minerId
    Don't return anything but the subsequent coinbase documents will contain both minerIds (now including the new one)
 */
-function rotateMinerId (aliasName) {
+
+function _checkAliasExists(aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return false
   }
   if (!fm.aliasExists(aliasName)) {
     console.log(`Name "${aliasName}" doesn't exist.`)
+    return false
+  }
+  return true
+}
+
+function rotateMinerId (aliasName) {
+  if (!_checkAliasExists(aliasName)) {
     return false
   }
   try {
@@ -148,12 +156,7 @@ function rotateMinerId (aliasName) {
 
 // Rotate the current revocation key.
 function rotateRevocationKey (aliasName) {
-  if (!aliasName || aliasName === '') {
-    console.log('Must supply an alias')
-    return false
-  }
-  if (!fm.aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
+  if (!_checkAliasExists(aliasName)) {
     return false
   }
   try {
@@ -176,6 +179,47 @@ function rotateRevocationKey (aliasName) {
     fm.createRevocationKey(newAlias)
   } catch (err) {
     console.log('Error rotating revocation key: ', err)
+    return false
+  }
+  return true
+}
+
+// Check if minerId protocol can be upgraded.
+function canUpgradeMinerIdProtocol (aliasName) {
+  if (!_checkAliasExists(aliasName)) {
+    return false
+  }
+  try {
+    // Check minerId conditions.
+    {
+      // get current minerId alias
+      const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
+      if (!currentAlias) {
+        console.log(`Error: minerId cannot be upgraded. The minerId key alias "${aliasName}" doesn't exist.`)
+        return false
+      }
+      // Check if the current minerId key is present in the key store.
+      if (!fm.minerIdKeyExists(currentAlias)) {
+        console.log(`Error: minerId cannot be upgraded. The "${currentAlias}.key" minerId private key is not available in the key store.`)
+        return false
+      }
+    }
+    // Check revocationKey conditions.
+    {
+      // get current revocation key alias
+      const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
+      if (currentAlias) {
+        console.log(`Error: minerId is already upgraded. The revocation key alias "${currentAlias}" does exist.`)
+        return false
+      }
+      // Check if the initial revocationKey private key is present in the revocation key store.
+      if (fm.revocationKeyExists(aliasName+'_1')) {
+        console.log(`Error: minerId is already upgraded. The "${aliasName}_1.key" revocation private key is available in the key store.`)
+	return false
+      }
+    }
+  } catch (err) {
+    console.log('Error upgrading minerId protocol data: ', err)
     return false
   }
   return true
@@ -282,6 +326,7 @@ module.exports = {
   generateMinerId,
   rotateMinerId,
   rotateRevocationKey,
+  canUpgradeMinerIdProtocol,
   getCurrentMinerId,
   signWithCurrentMinerId
 }

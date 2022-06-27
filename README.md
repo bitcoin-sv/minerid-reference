@@ -433,7 +433,7 @@ The [examples/testMiner.js](examples/testMiner.js) file contains basic code need
     $ npm run cli -- generateminerid -n testMiner
     ```
    
-2. Create coinbase transaction:
+2. Create Miner ID Coinbase Transaction:
     ```console
     $ node examples/testMiner.js
     ```

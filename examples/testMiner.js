@@ -4,9 +4,10 @@
  * The testing script performs the following operations:
  * 1. Calls the Miner ID Generator to create a new miner-info output script for the given block height.
  * 2. Calls the Node to create a new miner-info tx containing the output script from the point 1.
- * 3. Creates a coinbase transaction.
- * 4. Calls the Miner ID Generator to update the coinbase2 part of the coinbase tx.
- * 5. Updates the coinbase tx and prints out its raw representation.
+ * 3. Calls the Node to get a mining candidate.
+ * 4. Creates a coinbase transaction.
+ * 5. Calls the Miner ID Generator to update the coinbase2 part of the coinbase tx.
+ * 6. Updates the coinbase tx and prints out its raw representation.
  *
  * Prerequisities:
  * 1. BSV Node: Set up and run a node connected to the regtest (see config/default.json configuration file).
@@ -23,7 +24,7 @@ const bsv = require('bsv')
 const config = require('config')
 const rp = require('request-promise')
 
-const { placeholderCB1 } = require('../services/extensions')
+const { placeholderCB1 } = require('../utils/minerinfo')
 const { RPCClient } = require("@iangregsondev/rpc-bitcoin")
 
 // Generator's configuration. 
@@ -52,7 +53,7 @@ async function getMinerInfoOutputScript (alias, height) {
   return await executeRequest(requestOptions)
 }
 
-async function modifyCoinbase2 (alias, minerInfoTxId, coinbase2) {
+async function modifyCoinbase2 (alias, minerInfoTxId, prevhash, merkleProof, coinbase2) {
   const requestOptions = {
     method: 'POST',
     uri: `http://localhost:${PORT_NUMBER}/coinbase2`,
@@ -60,7 +61,9 @@ async function modifyCoinbase2 (alias, minerInfoTxId, coinbase2) {
     body: {
         alias: alias,
 	minerInfoTxId: minerInfoTxId,
-	coinbase2: coinbase2
+	prevhash: prevhash,
+	merkleProof: merkleProof,
+	coinbase2: `${coinbase2}`
     },
     resolveWithFullResponse: true
   }
@@ -188,9 +191,18 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
     }
 
     /**
+     * Get a mining candidate from the node.
+     *
+     * Interaction: The testing script calls the Node.
+     */
+    console.log('\n#3. The script queries the Node to get a mining candidate.')
+    const mc = await client.getminingcandidate()
+
+
+    /**
      * Make a coinbase transaction.
      */
-    console.log('\n#3. Make a coinbase transaction.')
+    console.log('\n#4. Make a coinbase transaction.')
     const coinbaseTx = makeCoinbaseTx()
 
     /**
@@ -201,7 +213,7 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
     let updatedCoinbase2
     try {
       console.log('\n#5. The script queries the Miner ID Generator to update the coinbase2')
-      updatedCoinbase2 = await modifyCoinbase2(ALIAS, minerInfoTxId, getCoinbase2(coinbaseTx))
+      updatedCoinbase2 = await modifyCoinbase2(ALIAS, minerInfoTxId, mc.prevhash, mc.merkleProof, getCoinbase2(coinbaseTx))
       console.log(`updatedCoinbase2= ${updatedCoinbase2}`)
     } catch (e) {
       console.log('Miner ID Generator: ', e)
@@ -212,7 +224,7 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
      * Make Miner ID Coinbase Transaction (combine cb1 & modified cb2)
      */
     const minerIdCoinbaseTx = new bsv.Transaction(placeholderCB1 + updatedCoinbase2)
-    console.log('\n#5. RAW Miner ID Coinbase transaction:')
+    console.log('\n#6. RAW Miner ID Coinbase transaction:')
     console.log(minerIdCoinbaseTx.toString())
     //console.log('coinbase output: ', (Buffer.from(minerIdCoinbaseTx.outputs[1].script.toASM().split(' ')[5], 'hex')).toString('hex'))
     const cbTxOutput1MinerInfoTxid = getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx)

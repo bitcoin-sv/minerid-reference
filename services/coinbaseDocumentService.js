@@ -3,7 +3,8 @@ const request = require('request-promise')
 const config = require('config')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
-const { addExtensions, placeholderCB1 } = require('./extensions')
+const mi = require('../utils/minerinfo')
+const cloneDeep = require('lodash.clonedeep')
 
 // for mainnet: "livenet"
 // for testnet: "testnet"
@@ -26,8 +27,6 @@ switch (network) {
 }
 
 const cbdVersion = '0.3'
-const protocolName = '601dface'
-const protocolIdVersion = 0
 
 function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment
@@ -98,15 +97,6 @@ function signHash (hash, alias) {
 
   const signature = bsv.crypto.ECDSA.sign(hash, privateKey)
   return signature.toString('hex')
-}
-
-function createCoinbaseOpReturnScript (minerInfoTxId) {
-  return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), minerInfoTxId], 'hex')
-}
-
-function createMinerInfoOpReturnScript (doc, sig) {
-  doc = Buffer.from(doc).toString('hex')
-  return bsv.Script.buildSafeDataOut([protocolName, protocolIdVersion.toString(16), doc, sig], 'hex')
 }
 
 /* Create a new minerId
@@ -285,39 +275,68 @@ async function createMinerInfoOpReturn (height, aliasName) {
   const signature = sign(Buffer.from(payload), fm.getCurrentMinerIdAlias(aliasName))
   console.debug('Miner-info-doc sig:\n' + signature.toString('hex'))
 
-  const opReturnScript = createMinerInfoOpReturnScript(payload, signature).toHex()
+  const opReturnScript = mi.createMinerInfoOpReturnScript(payload, signature).toHex()
   return opReturnScript
 }
 
-async function createCoinbase2 (aliasName, minerInfoTxId, coinbase2) {
-  if (!aliasName || aliasName === '') {
-    console.log('Must supply an alias')
-    return
-  }
-  if (!fm.aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
-    return
-  }
-  if (!minerInfoTxId || !/^[A-F0-9]{64}$/i.test(minerInfoTxId)) {
-    console.log('Must supply a valid TxId: ' + minerInfoTxId)
-    return
-  }
-  console.debug('Miner-info-txid:\n' + minerInfoTxId)
+/**
+ * Support for async POST /coinbase2 requests.
+ *
+ * The function creates coinbase2 with the following data:
+ * (1) minerInfoTxId
+ * (2) blockBind
+ * (3) blockBindSig
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @param minerInfoTxId (hex string) An existing miner-info transaction id.
+ * @param prevhash (hex string) Hash of the previous block.
+ * @param merkleProof (list of hex strings) Merkle branches from the mining candidate.
+ * @param coinbase2 (hex string) The 2nd part of the coinbase tx.
+ * @returns (hex string) coinbase2 extended by (1)-(3) data.
+ */
+async function createCoinbase2 (aliasName, minerInfoTxId, prevhash, merkleProof, coinbase2) {
+  console.debug('minerInfoTxId: ' + minerInfoTxId)
 
-  if (!Buffer.isBuffer(coinbase2)) {
-    coinbase2 = Buffer.from(coinbase2, 'hex')
-  }
+  /**
+   * Create a modified coinbase tx from cb1 & cb2 parts.
+   */
+  const ctx = mi.makeCoinbaseTx(mi.placeholderCB1, coinbase2)
+  // Make a deep copy of the ctx. It is needed to create the final version of cb2 part.
+  const ctx2 = cloneDeep(ctx)
 
-  const cb = Buffer.concat([Buffer.from(placeholderCB1, 'hex'), coinbase2])
-  const tx = new bsv.Transaction(cb)
+  /**
+   * Create a modified miner-info coinbase tx.
+   */
+  const modifiedMinerInfoCoinbaseTx = mi.createMinerInfoCoinbaseTx(ctx, minerInfoTxId)
+  console.debug('modifiedMinerInfoCoinbaseTx.id: ', modifiedMinerInfoCoinbaseTx.id)
+  /**
+   * Calculate merkleRoot using miner-info cb2 and merkle branches from the mining candidate.
+   */
+  const modifiedMerkleRoot = mi.buildMerkleRootFromCoinbase(modifiedMinerInfoCoinbaseTx.id, merkleProof)
+  console.debug('modifiedMerkleRoot: ', modifiedMerkleRoot)
+  console.debug('prevhash: ', prevhash)
 
-  tx.addOutput(new bsv.Transaction.Output({
-    script: createCoinbaseOpReturnScript(minerInfoTxId),
-    satoshis: 0
-  }))
+  /**
+   * Calculate block binding data.
+   */
+  const blockBindPayload = Buffer.concat([
+    Buffer.from(modifiedMerkleRoot, 'hex').reverse(), // swap endianness before concatenating
+    Buffer.from(prevhash, 'hex').reverse() // swap endianness before concatenating
+  ])
+  // blockBind
+  const blockBind = bsv.crypto.Hash.sha256(blockBindPayload)
+  console.debug('blockBind: ', blockBind.toString('hex'))
+  // blockBindSig
+  const blockBindSig = signHash(blockBind, fm.getCurrentMinerIdAlias(aliasName))
+  console.debug('blockBindSig: ', blockBindSig)
 
+  /**
+   * Make a miner-info coinbase tx with the block binding support.
+   */
+  const minerInfoCbTxWithBlockBind =
+    mi.createMinerInfoCoinbaseTxWithBlockBind(ctx2, minerInfoTxId, blockBind, blockBindSig)
   // Now we only want to return coinbase2 so remove first part of the coinbase (cb1)
-  return tx.toString().substring(placeholderCB1.length)
+  return minerInfoCbTxWithBlockBind.toString().substring(mi.placeholderCB1.length)
 }
 
 module.exports = {

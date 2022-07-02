@@ -2,7 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const config = require('config')
 const fm = require('./utils/filemanager')
-const { placeholderCB1 } = require('./services/extensions')
+const { placeholderCB1 } = require('./utils/minerinfo')
 const coinbaseDocService = require('./services/coinbaseDocumentService')
 const { authenticateToken } = require('./utils/authentication')
 const bsv = require('bsv')
@@ -47,7 +47,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
 )
 
 app.post('/coinbase2', authenticateToken, async (req, res) => {
-  const { alias, minerInfoTxId, coinbase2 } = req.body
+  const { alias, minerInfoTxId, prevhash, merkleProof, coinbase2 } = req.body
 
   res.setHeader('Content-Type', 'text/plain')
 
@@ -75,6 +75,18 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
     return
   }
 
+  if (!prevhash) {
+    res.status(400).send('prevhash must be supplied')
+    console.log('Bad request: no prevhash supplied')
+    return
+  }
+
+  if (!/^[A-F0-9]{64}$/i.test(prevhash)) {
+    res.status(422).send('prevhash must be a 64-characters hexadecimal string')
+    console.log('Bad request: invalid prevhash: ', prevhash)
+    return
+  }
+
   if (!coinbase2) {
     res.status(400).send('Coinbase 2 must be supplied')
     console.log('Bad request: no coinbase2 supplied')
@@ -99,6 +111,8 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
     const cb2 = await coinbaseDocService.createNewCoinbase2(
       alias,
       minerInfoTxId,
+      prevhash,
+      merkleProof,
       coinbase2
     )
     res.send(cb2)

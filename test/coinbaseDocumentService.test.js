@@ -358,7 +358,7 @@ describe('Coinbase Document Services', function () {
       })
     })
 
-    describe('Verification (an initial miner info document)', function () {
+    describe('Verify an initial miner info document', function () {
       let docHex, sigHex
       const sampleDoc = {
         'version': '0.3',
@@ -480,7 +480,7 @@ describe('Coinbase Document Services', function () {
       })
     })
 
-    describe('Verification 2 (a miner-info document with rotated keys)', function () {
+    describe('Verify a miner-info document with rotated keys', function () {
       let docHex, sigHex
       const sampleDoc = {
         'version': '0.3',

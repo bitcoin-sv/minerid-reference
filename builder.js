@@ -7,6 +7,8 @@ const coinbaseDocService = require('./services/coinbaseDocumentService')
 const { authenticateToken } = require('./utils/authentication')
 const bsv = require('bsv')
 
+require('log-timestamp')
+
 const app = express()
 app.use(bodyParser.json())
 

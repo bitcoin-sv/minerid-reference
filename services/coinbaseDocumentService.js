@@ -60,6 +60,10 @@ function generateMinerId (aliasName) {
     fm.saveMinerIdAlias(aliasName, alias)
     // Save the current Revocation Key alias.
     fm.saveRevocationKeyAlias(aliasName, alias)
+    // Save the first minerId public key.
+    let firstMinerId = {}
+    firstMinerId["first_minerId"] = minerId
+    fm.writeMinerIdDataToFile(aliasName, firstMinerId)
   } catch (err) {
     console.log('Please check that the signing_service is running properly...')
     console.log('generateMinerId error: ', err)
@@ -115,22 +119,31 @@ function _checkAliasExists(aliasName) {
   return true
 }
 
+function _checkCurrentMinerIdPrivateKeyExists (aliasName) {
+  // get current alias
+  const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
+  if (!currentAlias) {
+    console.log(`Error: The minerId key alias "${aliasName}" doesn't exist.`)
+    return false
+  }
+  // Check if the current minerId key is present in the key store.
+  if (!fm.minerIdKeyExists(currentAlias)) {
+    console.log(`Error: The "${currentAlias}.key" minerId private key is not available in the key store.`)
+    return false
+  }
+  return true
+}
+
 function rotateMinerId (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
   }
   try {
+    if (!_checkCurrentMinerIdPrivateKeyExists(aliasName)) {
+      return false
+    }
     // get current alias
     const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
-    if (!currentAlias) {
-      console.log(`Error: The minerId key alias "${aliasName}" doesn't exist.`)
-      return false
-    }
-    // Check if the current minerId key is present in the key store.
-    if (!fm.minerIdKeyExists(currentAlias)) {
-      console.log(`Error: The "${currentAlias}.key" minerId private key is not available in the key store.`)
-      return false
-    }
     // increment alias prefix
     const newAlias = fm.incrementAliasPrefix(currentAlias)
     // save alias
@@ -144,23 +157,34 @@ function rotateMinerId (aliasName) {
   return true
 }
 
+// Check if the revocationKey is available.
+function _checkCurrentRevocationPrivateKeyExists (aliasName) {
+  // get current alias
+  const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
+  if (!currentAlias) {
+    console.log(`Error: The revocation key alias "${aliasName}" doesn't exist.`)
+    return false
+  }
+  // Check if the current revocation key is present in the revocation key store.
+  if (!fm.revocationKeyExists(currentAlias)) {
+    console.log(`Error: The "${currentAlias}.key" revocation private key is not available in the key store.`)
+    return false
+  }
+  return true
+}
+
 // Rotate the current revocation key.
 function rotateRevocationKey (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
   }
   try {
+    // Check if the key to be rotated is available.
+    if (!_checkCurrentRevocationPrivateKeyExists(aliasName)) {
+      return false
+    }
     // get current alias
     const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
-    if (!currentAlias) {
-      console.log(`Error: The revocation key alias "${aliasName}" doesn't exist.`)
-      return false
-    }
-    // Check if the current revocation key is present in the revocation key store.
-    if (!fm.revocationKeyExists(currentAlias)) {
-      console.log(`Error: The "${currentAlias}.key" revocation private key is not available in the key store.`)
-      return false
-    }
     // increment alias prefix
     const newAlias = fm.incrementAliasPrefix(currentAlias)
     // save alias
@@ -174,25 +198,54 @@ function rotateRevocationKey (aliasName) {
   return true
 }
 
+// Revoke the given minerId public key.
+function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
+  if (!_checkAliasExists(aliasName)) {
+    return false
+  }
+  try {
+    // Check if the key needed to create revocationMessageSig:sig1 exists.
+    if (!_checkCurrentRevocationPrivateKeyExists(aliasName)) {
+      return false
+    }
+    // Check if the key needed to create revocationMessageSig:sig2 exists.
+    if (!_checkCurrentMinerIdPrivateKeyExists(aliasName)) {
+      return false
+    }
+    if (!isCompleteRevocation) {
+      const minerIdData = fm.readMinerIdDataFromFile(aliasName)
+      if (!minerIdData.hasOwnProperty('first_minerId')) {
+        console.log('Cannot find "first_minerId" in the config file.')
+        return false
+      }
+      if (minerIdData["first_minerId"] == minerIdPubKey) {
+        console.log('An attempt to terminate the entire Miner ID reputation chain.')
+        return false
+      }
+      if (rotateMinerId(aliasName)) {
+        console.log('The compromised minerId has been rotated successfully.')
+      } else {
+        console.log("The compromised minerId key rotation has failed!")
+        return false
+      }
+    }
+    fm.createMinerIdRevocationData (aliasName, minerIdPubKey, isCompleteRevocation)
+  } catch (err) {
+    console.log('Error revoking minerId: ', err)
+    return false
+  }
+  return true
+}
+
 // Check if minerId protocol can be upgraded.
 function canUpgradeMinerIdProtocol (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
   }
   try {
-    // Check minerId conditions.
-    {
-      // get current minerId alias
-      const currentAlias = fm.getCurrentMinerIdAlias(aliasName)
-      if (!currentAlias) {
-        console.log(`Error: minerId cannot be upgraded. The minerId key alias "${aliasName}" doesn't exist.`)
-        return false
-      }
-      // Check if the current minerId key is present in the key store.
-      if (!fm.minerIdKeyExists(currentAlias)) {
-        console.log(`Error: minerId cannot be upgraded. The "${currentAlias}.key" minerId private key is not available in the key store.`)
-        return false
-      }
+    // Check if the key needed to create revocationMessageSig:sig2 exists.
+    if (!_checkCurrentMinerIdPrivateKeyExists(aliasName)) {
+      return false
     }
     // Check revocationKey conditions.
     {
@@ -228,10 +281,7 @@ function createMinerInfoDocument (aliasName, height) {
   ])
 
   const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousMinerIdAlias(aliasName))
-
   const prevRevocationKeySig = fm.readPrevRevocationKeySigFromFile(aliasName)
-
-  const optionalData = fm.getOptionalMinerData(aliasName)
 
   let doc = {
     version: cbdVersion,
@@ -247,6 +297,20 @@ function createMinerInfoDocument (aliasName, height) {
     prevRevocationKeySig: prevRevocationKeySig
   }
 
+  // TODO: Add a callback to check if a block with the revocation message is alredy mined.
+  const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile(aliasName)
+  if (minerIdRevocationData) {
+    if (minerIdRevocationData["complete_revocation"]) {
+      doc.prevMinerId = minerIdRevocationData["prevMinerId"]
+      doc.prevMinerIdSig = minerIdRevocationData["prevMinerIdSig"]
+    }
+    doc.revocationMessage = {}
+    doc.revocationMessage = minerIdRevocationData.revocationMessage
+    doc.revocationMessageSig = {}
+    doc.revocationMessageSig = minerIdRevocationData.revocationMessageSig
+  }
+
+  const optionalData = fm.readOptionalMinerIdData(aliasName)
   if (optionalData) {
     doc = { ...doc, ...optionalData}
   }
@@ -345,6 +409,7 @@ module.exports = {
   generateMinerId,
   rotateMinerId,
   rotateRevocationKey,
+  revokeMinerId,
   canUpgradeMinerIdProtocol,
   getCurrentMinerId,
   signWithCurrentMinerId

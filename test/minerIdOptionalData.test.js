@@ -30,13 +30,13 @@ describe('Optional Miner ID data fields', function () {
       fm.writeMinerContactDataToFile('unittest', "email", "test@testDomain.com")
       fm.writeMinerContactDataToFile('unittest', "name", "test")
       fm.writeMinerContactDataToFile('unittest', "phone", "07495380665")
-      // getOptionalMinerData
-      assert.strict.deepEqual(JSON.stringify(fm.getOptionalMinerData('unittest')),
+      // readOptionalMinerIdData
+      assert.strict.deepEqual(JSON.stringify(fm.readOptionalMinerIdData('unittest')),
 	JSON.stringify({'minerContact': { 'email': 'test@testDomain.com', 'name': 'test', 'phone': '07495380665' }}))
       // updateMinerContactData
       fm.updateMinerContactData('unittest', "name", "test2")
-      // getOptionalMinerData
-      assert.strict.deepEqual(JSON.stringify(fm.getOptionalMinerData('unittest')),
+      // readOptionalMinerIdData
+      assert.strict.deepEqual(JSON.stringify(fm.readOptionalMinerIdData('unittest')),
 	JSON.stringify({'minerContact': { 'email': 'test@testDomain.com', 'name': 'test2', 'phone': '07495380665' }}))
     })
   })
@@ -68,7 +68,7 @@ describe('Optional Miner ID data fields', function () {
     })
 
     it('can read the MinerId JSON config file for "unittest"', async () => {
-      assert.strict.deepEqual(JSON.stringify(fm.getOptionalMinerData('unittest')),
+      assert.strict.deepEqual(JSON.stringify(fm.readOptionalMinerIdData('unittest')),
 	JSON.stringify({'minerContact': { 'email': 'test@testDomain.com', 'name': 'test', 'phone': '07495380665' },
 			'extensions': { 'ext1': 1, 'ext2': 2, 'ext3': {'ext3_1': 1}}}))
     })

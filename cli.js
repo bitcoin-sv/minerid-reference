@@ -14,13 +14,19 @@ const fm = require('./utils/filemanager')
       type: String,
       defaultOption: true,
       multiple: true,
-      description: 'generateminerid, rotateminerid, rotaterevocationkey, upgrademinerid, config'
+      description: 'generateminerid, rotateminerid, rotaterevocationkey, revokemineridpartially, revokemineridcompletely, upgrademinerid, config'
     },
     {
       name: 'help',
       alias: 'h',
       type: Boolean,
       description: 'Display this usage guide.'
+    },
+    {
+      name: 'minerid',
+      alias: 'm',
+      type: String,
+      description: 'The compromised minerId public key to be revoked.'
     },
     {
       name: 'height',
@@ -68,6 +74,14 @@ const fm = require('./utils/filemanager')
         {
           desc: 'Rotate revocationKey',
           example: 'npm run cli -- rotaterevocationkey --name [alias]'
+        },
+        {
+          desc: 'Partial minerId revocation',
+          example: 'npm run cli -- revokemineridpartially --minerid [minerId] --name [alias]'
+        },
+        {
+          desc: 'Complete minerId revocation',
+          example: 'npm run cli -- revokemineridcompletely --name [alias]'
         },
         {
           desc: 'Upgrade minerId v0.1/v0.2 protocol data to v0.3',
@@ -129,7 +143,7 @@ const fm = require('./utils/filemanager')
 	    fm.updateMinerContactData(options.name, nvp[0], nvp[1])
 	    break
 	  }
-	  case 'generateminerid':
+	  case 'generateminerid': {
 	    if (coinbaseDocService.generateMinerId(options.name)) {
 	      createReusableRevocationKeyData(options.name)
 	      console.log('MinerId generation has succeeded.')
@@ -137,14 +151,16 @@ const fm = require('./utils/filemanager')
 	      console.log('MinerId generation has failed!')
 	    }
 	    break
-	  case 'rotateminerid':
+	  }
+	  case 'rotateminerid': {
 	    if (coinbaseDocService.rotateMinerId(options.name)) {
 	      console.log('minerId key rotation has succeeded.')
 	    } else {
 	      console.log('minerId key rotation has failed!')
 	    }
 	    break
-	  case 'rotaterevocationkey':
+	  }
+	  case 'rotaterevocationkey': {
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
 	      createReusableRevocationKeyData(options.name)
 	      console.log('Revocation key rotation has succeeded.')
@@ -152,7 +168,32 @@ const fm = require('./utils/filemanager')
 	      console.log('Revocation key rotation has failed!')
 	    }
 	    break
-	  case 'upgrademinerid':
+	  }
+	  case 'revokemineridpartially': {
+            if (!options.minerid) {
+              console.log('Error: Specify the minerId public key to be revoked!')
+              console.log('Use: --minerid [minerId]')
+              process.exit(0)
+	    }
+            if (coinbaseDocService.revokeMinerId(options.name, options.minerid, false /* partial revocation */)) {
+              console.log("Revocation data has been created for the compromised minerId key.")
+	    } else {
+              console.log("MinerId partial revocation has failed!")
+	    }
+	    break
+	  }
+	  case 'revokemineridcompletely': {
+            const minerIdData = fm.readMinerIdDataFromFile(options.name)
+            if (!minerIdData.hasOwnProperty('first_minerId')) {
+              console.log('Cannot find "first_minerId" in the config file.')
+              break
+	    }
+            if (coinbaseDocService.revokeMinerId(options.name, minerIdData["first_minerId"], true /* complete revocation */)) {
+              console.log("Revocation data has been created for the compromised minerId key.")
+	    }
+	    break
+	  }
+	  case 'upgrademinerid': {
 	    if (coinbaseDocService.canUpgradeMinerIdProtocol(options.name)) {
 	      const alias = options.name + '_1'
 	      fm.createRevocationKey(alias)
@@ -163,10 +204,12 @@ const fm = require('./utils/filemanager')
 	      console.log('Miner ID protocol upgrade has failed!')
 	    }
 	    break
-	  default:
+	  }
+	  default: {
 	    console.log(`Unknown command: ${options.command}`)
 	    console.log(usage)
 	    break
+	  }
 	}
     } catch (e) {
       console.log(e)

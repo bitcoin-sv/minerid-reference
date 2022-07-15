@@ -38,16 +38,13 @@ describe('Coinbase Document Services', function () {
 
           saveMinerIdAlias = sandbox.stub(fm, 'saveMinerIdAlias')
           saveRevocationKeyAlias = sandbox.stub(fm, 'saveRevocationKeyAlias')
+          writeMinerIdDataToFile = sandbox.stub(fm, 'writeMinerIdDataToFile').returns(false)
 
           coinbaseDocService.generateMinerId('unittest')
         })
 	// Checks if the expected functions were called.
         it('calls "getMinerIdPublicKey" with right parameters', () => {
           expect(getMinerIdPublicKey.calledWith('unittest_1')).to.be(true)
-        })
-
-        it('calls "createMinerId" with right parameters', () => {
-          expect(createMinerId.calledWith('unittest_1')).to.be(true)
         })
 
         it('calls "createMinerId" with right parameters', () => {
@@ -68,6 +65,10 @@ describe('Coinbase Document Services', function () {
 
         it('calls "saveRevocationKeyAlias" with right parameters', () => {
           expect(saveRevocationKeyAlias.calledWith('unittest', 'unittest_1')).to.be(true)
+        })
+
+        it('calls "writeMinerIdDataToFile" once', () => {
+          expect(writeMinerIdDataToFile.calledOnce).to.be(true)
         })
       })
 
@@ -174,17 +175,18 @@ describe('Coinbase Document Services', function () {
       describe('Document creation', () => {
 	let getCurrentMinerIdAlias, getMinerIdPublicKey, getPreviousMinerIdAlias
 	let readPrevRevocationKeyPublicKeyFromFile, readRevocationKeyPublicKeyFromFile
-	let readPrevRevocationKeySigFromFile, getOptionalMinerData
+	let readPrevRevocationKeySigFromFile, readOptionalMinerIdData
 	let signStub, unset, minerIdSigPayload
 
         beforeEach(() => {
+          sinon.stub(console, "log")
           getCurrentMinerIdAlias = sandbox.stub(fm, 'getCurrentMinerIdAlias').returns('unittest_1')
           getMinerIdPublicKey = sandbox.stub(fm, 'getMinerIdPublicKey').returns('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab')
           getPreviousMinerIdAlias = sandbox.stub(fm, 'getPreviousMinerIdAlias').returns('unittest_1')
 	  readPrevRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readPrevRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
 	  readRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
 	  readPrevRevocationKeySigFromFile = sandbox.stub(fm, 'readPrevRevocationKeySigFromFile').returns('30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee')
-          getOptionalMinerData = sandbox.stub(fm, 'getOptionalMinerData').returns({})
+          readOptionalMinerIdData = sandbox.stub(fm, 'readOptionalMinerIdData').returns({})
 
           const signObj = { sign: coinbaseDocService.__get__('sign') }
           signStub = sandbox.stub(signObj, 'sign').returns({})
@@ -201,6 +203,7 @@ describe('Coinbase Document Services', function () {
         })
         afterEach(() => {
           unset()
+          console.log.restore()
         })
 
 	// Checks if the expected functions were called.
@@ -228,8 +231,8 @@ describe('Coinbase Document Services', function () {
           expect(readPrevRevocationKeySigFromFile.calledWith('unittest')).to.be(true)
         })
 
-        it('calls "getOptionalMinerData" with right parameters', () => {
-          expect(getOptionalMinerData.calledWith('unittest')).to.be(true)
+        it('calls "readOptionalMinerIdData" with right parameters', () => {
+          expect(readOptionalMinerIdData.calledWith('unittest')).to.be(true)
         })
 
         it('calls "sign" with right parameters', () => {

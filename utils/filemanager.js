@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const bsv = require('bsv')
 
-const configFilename = 'config'
+const CONFIG_FILENAME = 'config'
 
 const config = require('config')
 var filedir = config.get('minerIdDataPath')
@@ -13,6 +13,10 @@ const MINERID_ALIASES_FILENAME = 'aliases'
 const REVOCATIONKEY_ALIASES_FILENAME = 'revocationKeyAliases'
 
 const REVOCATION_KEY_DATA_FILENAME = 'revocationKeyData'
+
+const MINERID_REVOCATION_DATA_FILENAME = 'minerIdRevocationData'
+
+const MINERID_DATA_FILENAME = 'minerIdData'
 
 // Checks if a folder (with the given name) exists.
 function aliasExists (aliasName) {
@@ -191,6 +195,55 @@ function readPrevRevocationKeySigFromFile (aliasName) {
   return data["prevRevocationKeySig"]
 }
 
+// Creates data fields required by the miner ID revocation procedure.
+function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCompleteRevocation) {
+  console.log('Compromised minerId to be revoked: ', compromisedMinerIdPubKey)
+  // minerId revocation data to be written into the file.
+  let revocationData = {}
+  revocationData["complete_revocation"] = isCompleteRevocation
+  revocationData.revocationMessage = {}
+  revocationData.revocationMessage["compromised_minerId"] = compromisedMinerIdPubKey
+  const revocationMessagePayload = Buffer.from(compromisedMinerIdPubKey, 'hex')
+  const revocationMessageHash = bsv.crypto.Hash.sha256(revocationMessagePayload)
+  // Create revocationMessageSig1.
+  const revocationKeyPrivateKey = getRevocationKeyPrivateKey(getCurrentRevocationKeyAlias(aliasName))
+  const revocationMessageSig1 = bsv.crypto.ECDSA.sign(revocationMessageHash, revocationKeyPrivateKey)
+  revocationData.revocationMessageSig = {}
+  revocationData.revocationMessageSig["sig1"] = revocationMessageSig1.toString('hex')
+  let revocationMessageSig2 = {}
+  if (isCompleteRevocation) {
+    // Create revocationMessageSig2.
+    const minerIdPrivateKey = getMinerIdPrivateKey(getCurrentMinerIdAlias(aliasName))
+    revocationMessageSig2 = bsv.crypto.ECDSA.sign(revocationMessageHash, minerIdPrivateKey)
+    // Complete revocation sets 'prevMinerId' to 'minerId' (both fields hold the same public key).
+    const minerId = getMinerIdPublicKey(getCurrentMinerIdAlias(aliasName))
+    revocationData["prevMinerId"] = minerId.toString('hex')
+    const prevMinerIdSigPayload = Buffer.concat([
+      Buffer.from(minerId, 'hex'),
+      Buffer.from(minerId, 'hex')
+    ])
+    const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
+    const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
+    const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
+    revocationData["prevMinerIdSig"] = prevMinerIdSig.toString('hex')
+  } else {
+    // Store an information about the current prevMinerId key as it will be normalised.
+    const prevMinerId = getMinerIdPublicKey(getPreviousMinerIdAlias(aliasName))
+    revocationData["prevMinerId"] = prevMinerId.toString('hex')
+    // The minerId key is rotated. Use the previous miner ID private key to create sig2.
+    // Create revocationMessageSig2.
+    const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
+    revocationMessageSig2 = bsv.crypto.ECDSA.sign(revocationMessageHash, prevMinerIdPrivateKey)
+  }
+  revocationData.revocationMessageSig["sig2"] = revocationMessageSig2.toString('hex')
+  // Write data to the file.
+  _writeJsonDataToFile(aliasName, revocationData, MINERID_REVOCATION_DATA_FILENAME)
+}
+
+function readMinerIdRevocationDataFromFile (aliasName) {
+  return _readDataFromJsonFile(aliasName, MINERID_REVOCATION_DATA_FILENAME)
+}
+
 // Common non-exported utility functions to support aliases.
 function _getCurrentAlias (aliasName, aliasFileName) {
   const data = _getAliases(aliasName, aliasFileName)
@@ -312,7 +365,7 @@ function updateMinerContactData (aliasName, name, value) {
 
 function writeMinerContactDataToFile (aliasName, name, value) {
   const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, configFilename)
+  const filePath = path.join(homeDir, filedir, aliasName, CONFIG_FILENAME)
   let data = {}
   try {
     if (fs.existsSync(filePath)) {
@@ -330,20 +383,16 @@ function writeMinerContactDataToFile (aliasName, name, value) {
   }
 }
 
-function getOptionalMinerData (aliasName) {
-  if (!aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
-    return
-  }
-  const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, configFilename)
-  let data
-  try {
-    data = JSON.parse(fs.readFileSync(filePath))
-  } catch (e) {
-    return
-  }
-  return data
+function writeMinerIdDataToFile(aliasName, firstMinerId) {
+  _writeJsonDataToFile(aliasName, firstMinerId, MINERID_DATA_FILENAME)
+}
+
+function readOptionalMinerIdData (aliasName) {
+  return _readDataFromJsonFile(aliasName, CONFIG_FILENAME)
+}
+
+function readMinerIdDataFromFile (aliasName) {
+  return _readDataFromJsonFile(aliasName, MINERID_DATA_FILENAME)
 }
 
 module.exports = {
@@ -365,6 +414,9 @@ module.exports = {
   readPrevRevocationKeySigFromFile,
   writeRevocationKeyDataToFile,
 
+  createMinerIdRevocationData,
+  readMinerIdRevocationDataFromFile,
+
   getCurrentMinerIdAlias,
   getPreviousMinerIdAlias,
   saveMinerIdAlias,
@@ -377,5 +429,7 @@ module.exports = {
 
   updateMinerContactData,
   writeMinerContactDataToFile,
-  getOptionalMinerData
+  writeMinerIdDataToFile,
+  readOptionalMinerIdData,
+  readMinerIdDataFromFile
 }

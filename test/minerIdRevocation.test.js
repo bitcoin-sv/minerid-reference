@@ -104,7 +104,7 @@ describe('Revoke minerId', function () {
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
           minerIdData: '{ "first_minerId": "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e" }',
           revocationKeyData: '{ "prevRevocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "revocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "prevRevocationKeySig": "304402205da7a781aefca1e3019d0bf2fb9d936bd5cc9bdbe2e4905c74885224525fd1fd02201337413a079405cc7d64e95762857e94eeb151561175df90607c29a943f53245" }',
-          config: `{}`
+          minerIdOptionalData: `{}`
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K4SmQL6XoUuFtQSoz3zd2zQAEoVcAeYkrmnewh3BJ326nZCJazvhRgsE6v8eb14hPcemGaycLxyKVqCRfD4teWmDWbD6DdhT'
@@ -142,7 +142,7 @@ describe('Revoke minerId', function () {
           revocationKeyAliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]',
           minerIdData: '{ "first_minerId": "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e" }',
           revocationKeyData: '{ "prevRevocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "revocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "prevRevocationKeySig": "304402205da7a781aefca1e3019d0bf2fb9d936bd5cc9bdbe2e4905c74885224525fd1fd02201337413a079405cc7d64e95762857e94eeb151561175df90607c29a943f53245" }',
-          config: `{}`
+          minerIdOptionalData: `{}`
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K4SmQL6XoUuFtQSoz3zd2zQAEoVcAeYkrmnewh3BJ326nZCJazvhRgsE6v8eb14hPcemGaycLxyKVqCRfD4teWmDWbD6DdhT'
@@ -191,7 +191,7 @@ describe('Revoke minerId', function () {
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
           minerIdData: '{ "first_minerId": "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e" }',
           revocationKeyData: '{ "prevRevocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "revocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "prevRevocationKeySig": "304402205da7a781aefca1e3019d0bf2fb9d936bd5cc9bdbe2e4905c74885224525fd1fd02201337413a079405cc7d64e95762857e94eeb151561175df90607c29a943f53245" }',
-          config: `{}`
+          minerIdOptionalData: `{}`
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K4SmQL6XoUuFtQSoz3zd2zQAEoVcAeYkrmnewh3BJ326nZCJazvhRgsE6v8eb14hPcemGaycLxyKVqCRfD4teWmDWbD6DdhT',
@@ -238,7 +238,7 @@ describe('Revoke minerId', function () {
           revocationKeyAliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]',
           minerIdData: '{ "first_minerId": "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e" }',
           revocationKeyData: '{ "prevRevocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "revocationKey": "03fe61b02a9ec52be67233e6c0d6acfb95ba5759d3df20edcd5ff723850f8b2fdd", "prevRevocationKeySig": "304402205da7a781aefca1e3019d0bf2fb9d936bd5cc9bdbe2e4905c74885224525fd1fd02201337413a079405cc7d64e95762857e94eeb151561175df90607c29a943f53245" }',
-          config: `{}`
+          minerIdOptionalData: `{}`
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K4SmQL6XoUuFtQSoz3zd2zQAEoVcAeYkrmnewh3BJ326nZCJazvhRgsE6v8eb14hPcemGaycLxyKVqCRfD4teWmDWbD6DdhT',

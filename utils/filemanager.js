@@ -2,12 +2,13 @@ const fs = require('fs')
 const path = require('path')
 const bsv = require('bsv')
 
-const CONFIG_FILENAME = 'config'
 
 const config = require('config')
 var filedir = config.get('minerIdDataPath')
 const minerIdKeystorePath = config.get('keystorePath')
 const revocationKeystorePath = config.get('revocationKeystorePath')
+
+const MINERID_OPTIONAL_DATA_FILENAME = 'minerIdOptionalData'
 
 const MINERID_ALIASES_FILENAME = 'aliases'
 const REVOCATIONKEY_ALIASES_FILENAME = 'revocationKeyAliases'
@@ -365,7 +366,7 @@ function updateMinerContactData (aliasName, name, value) {
 
 function writeMinerContactDataToFile (aliasName, name, value) {
   const homeDir = process.env.HOME
-  const filePath = path.join(homeDir, filedir, aliasName, CONFIG_FILENAME)
+  const filePath = path.join(homeDir, filedir, aliasName, MINERID_OPTIONAL_DATA_FILENAME)
   let data = {}
   try {
     if (fs.existsSync(filePath)) {
@@ -388,7 +389,7 @@ function writeMinerIdDataToFile(aliasName, firstMinerId) {
 }
 
 function readOptionalMinerIdData (aliasName) {
-  return _readDataFromJsonFile(aliasName, CONFIG_FILENAME)
+  return _readDataFromJsonFile(aliasName, MINERID_OPTIONAL_DATA_FILENAME)
 }
 
 function readMinerIdDataFromFile (aliasName) {

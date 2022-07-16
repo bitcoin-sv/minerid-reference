@@ -46,7 +46,7 @@ describe('Optional Miner ID data fields', function () {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
           aliases: '[ { "name": "unittest_1" } ]',
-          config: `{
+          minerIdOptionalData: `{
 			"minerContact": {
 				"email": "test@testDomain.com",
 				"name": "test",

@@ -393,7 +393,7 @@ describe('Coinbase Document Services', function () {
         mock({
           [`${os.homedir()}/.minerid-client/unittest`]: {
             aliases: '[ { "name": "unittest_1" } ]',
-            config: `{
+            minerIdOptionalData: `{
         		"minerContact": {
                                 "email": "test@testDomain.com",
                                 "name": "test",

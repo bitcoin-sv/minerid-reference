@@ -15,7 +15,7 @@ describe('Upgrade Miner ID Protocol', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]'
+          minerIdAliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
@@ -51,7 +51,7 @@ describe('Upgrade Miner ID Protocol', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {

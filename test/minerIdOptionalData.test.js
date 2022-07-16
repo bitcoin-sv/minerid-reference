@@ -13,7 +13,7 @@ describe('Optional Miner ID data fields', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
         }
       })
       sinon.stub(console, "log")
@@ -45,7 +45,7 @@ describe('Optional Miner ID data fields', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
           minerIdOptionalData: `{
 			"minerContact": {
 				"email": "test@testDomain.com",

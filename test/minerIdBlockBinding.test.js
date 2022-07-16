@@ -27,7 +27,7 @@ describe('Block binding', function () {
   beforeEach(() => {
     mock({
       [`${os.homedir()}/.minerid-client/unittest`]: {
-        aliases: '[ { "name": "unittest_1" } ]'
+        minerIdAliases: '[ { "name": "unittest_1" } ]'
       },
       [`${os.homedir()}/.keystore`]: {
         'unittest_1.key': 'xprv9s21ZrQH143K2EikiPVYtLM8sUrBeiuJqKFyAzEWyqjyvDwqFt3mtkHvfHjx7276nxnqsqm8VNtiwQZXXo5TK5N7Zy4NycaDdhBYCEMHJbk'

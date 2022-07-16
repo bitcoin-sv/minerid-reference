@@ -15,7 +15,7 @@ describe('Key rolling', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]'
+          minerIdAliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
@@ -70,7 +70,7 @@ describe('Key rolling', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyData: '{ "prevRevocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "revocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "prevRevocationKeySig": "3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f" }'
         },

@@ -249,7 +249,7 @@ describe('Coinbase Document Services', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
 	  revocationKeyData: '{ "prevRevocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "revocationKey": "02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411", "prevRevocationKeySig": "30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee" }'
         },
@@ -293,7 +293,7 @@ describe('Coinbase Document Services', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          aliases: '[ { "name": "unittest_1" } ]',
+          minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
@@ -392,7 +392,7 @@ describe('Coinbase Document Services', function () {
 
         mock({
           [`${os.homedir()}/.minerid-client/unittest`]: {
-            aliases: '[ { "name": "unittest_1" } ]',
+            minerIdAliases: '[ { "name": "unittest_1" } ]',
             minerIdOptionalData: `{
         		"minerContact": {
                                 "email": "test@testDomain.com",
@@ -499,7 +499,7 @@ describe('Coinbase Document Services', function () {
       beforeEach(async () => {
         mock({
           [`${os.homedir()}/.minerid-client/unittest`]: {
-	    aliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]',
+	    minerIdAliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]',
             revocationKeyAliases: '[ { "name": "unittest_1" }, { "name": "unittest_2" } ]'
           },
           [`${os.homedir()}/.keystore`]: {

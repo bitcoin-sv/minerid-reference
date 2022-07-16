@@ -10,7 +10,7 @@ const revocationKeystorePath = config.get('revocationKeystorePath')
 
 const MINERID_OPTIONAL_DATA_FILENAME = 'minerIdOptionalData'
 
-const MINERID_ALIASES_FILENAME = 'aliases'
+const MINERID_ALIASES_FILENAME = 'minerIdAliases'
 const REVOCATIONKEY_ALIASES_FILENAME = 'revocationKeyAliases'
 
 const REVOCATION_KEY_DATA_FILENAME = 'revocationKeyData'

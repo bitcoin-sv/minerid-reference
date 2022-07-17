@@ -14,7 +14,7 @@ const fm = require('./utils/filemanager')
       type: String,
       defaultOption: true,
       multiple: true,
-      description: 'generateminerid, rotateminerid, rotaterevocationkey, revokemineridpartially, revokemineridcompletely, upgrademinerid, config'
+      description: 'generateminerid, getcurrentminerid, rotateminerid, rotaterevocationkey, revokemineridpartially, revokemineridcompletely, upgrademinerid, config'
     },
     {
       name: 'help',
@@ -64,6 +64,10 @@ const fm = require('./utils/filemanager')
         {
           desc: 'Generate a minerId',
           example: 'npm run cli -- generateminerid --name [alias]'
+        },
+        {
+          desc: 'Get the current minerId',
+          example: 'npm run cli -- getcurrentminerid --name [alias]'
         },
         {
           desc: 'Add minerContact data',
@@ -155,6 +159,19 @@ const fm = require('./utils/filemanager')
 	      console.log('MinerId generation has succeeded.')
 	    } else {
 	      console.log('MinerId generation has failed!')
+	    }
+	    break
+	  }
+	  case 'getcurrentminerid': {
+	    if (!fm.aliasExists(options.name)) {
+	      console.log(`The given "${options.name}" alias doesn't exist.`)
+	    } else {
+	      const currentMinerId = coinbaseDocService.getCurrentMinerId(options.name)
+	      if (currentMinerId) {
+	        console.log('The current minerId is: ', currentMinerId)
+	      } else {
+	        console.log('Error: Check if the minerId private key is in the keystore!')
+	      }
 	    }
 	    break
 	  }

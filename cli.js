@@ -52,7 +52,7 @@ const fm = require('./utils/filemanager')
   const usage = commandLineUsage([
     {
       header: 'Miner Id Client',
-      content: 'Generate a minerId or get a signed miner info document for a minerId.'
+      content: 'Generate/rotate/revoke a minerId or get a signed miner info document for a minerId. Rotate a revocationKey key.'
     },
     {
       header: 'Options',

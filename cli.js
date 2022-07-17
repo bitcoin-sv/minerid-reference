@@ -29,6 +29,12 @@ const fm = require('./utils/filemanager')
       description: 'The compromised minerId public key to be revoked.'
     },
     {
+      name: 'firstminerid',
+      alias: 'f',
+      type: String,
+      description: 'The first minerId public key used in the first Miner ID reputation chain.'
+    },
+    {
       name: 'height',
       alias: 't',
       type: Number,
@@ -85,7 +91,7 @@ const fm = require('./utils/filemanager')
         },
         {
           desc: 'Upgrade minerId v0.1/v0.2 protocol data to v0.3',
-          example: 'npm run cli -- upgrademinerid --name [alias]'
+          example: 'npm run cli -- upgrademinerid --firstminerid [minerId] --name [alias]'
         }
       ]
     }
@@ -195,7 +201,15 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'upgrademinerid': {
 	    if (coinbaseDocService.canUpgradeMinerIdProtocol(options.name)) {
+	      if (!options.firstminerid) {
+	        console.log('Error: Specify the first minerId public key!')
+	        console.log('Use: --firstminerid [minerId]')
+	        process.exit(0)
+	      }
 	      const alias = options.name + '_1'
+	      let firstMinerId = {}
+	      firstMinerId["first_minerId"] = options.firstminerid
+	      fm.writeMinerIdDataToFile(options.name, firstMinerId)
 	      fm.createRevocationKey(alias)
 	      fm.saveRevocationKeyAlias(options.name, alias)
 	      createReusableRevocationKeyData(options.name)

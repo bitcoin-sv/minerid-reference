@@ -12,6 +12,7 @@ const sinon = require('sinon')
 
 describe('Upgrade Miner ID Protocol', function () {
   describe('Upgrade from v0.1/v0.2 to v0.3 is possible', function () {
+    const expFirstMinerId = "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e"
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
@@ -42,6 +43,10 @@ describe('Upgrade Miner ID Protocol', function () {
       assert.strictEqual(fm.getCurrentRevocationKeyAlias('unittest'), 'unittest_1')
       assert.strictEqual(fm.getPreviousRevocationKeyAlias('unittest'), 'unittest_1')
       assert.strictEqual(fm.revocationKeyExists('unittest_1'), true)
+      let firstMinerId = {}
+      firstMinerId["first_minerId"] = expFirstMinerId
+      fm.writeMinerIdDataToFile('unittest', firstMinerId)
+      assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["first_minerId"], expFirstMinerId)
       // The rovocation key protocol data were already created so another attempt to upgrade the protocol's data should fail.
       assert.strictEqual(coinbaseDocService.canUpgradeMinerIdProtocol('unittest'), false)
     })

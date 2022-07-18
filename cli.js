@@ -38,7 +38,7 @@ const fm = require('./utils/filemanager')
       name: 'height',
       alias: 't',
       type: Number,
-      description: 'The block height that will be included in the coinbase document.'
+      description: 'The block height that will be included in the miner-info document.'
     },
     {
       name: 'name',
@@ -52,7 +52,7 @@ const fm = require('./utils/filemanager')
   const usage = commandLineUsage([
     {
       header: 'Miner Id Client',
-      content: 'Generate/rotate/revoke a minerId or get a signed miner info document for a minerId. Rotate a revocationKey key.'
+      content: 'Generate/rotate/revoke a minerId or get a signed miner-info document for a minerId. Rotate a revocationKey key.'
     },
     {
       header: 'Options',

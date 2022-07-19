@@ -25,7 +25,8 @@ function checkCoinbaseScript(outputParts) {
   // Protocol Id version
   assert.strict.equal(outputParts[3], '00')
   // Miner-info txid
-  assert.strict.equal(outputParts[4], sm1.minerInfoTxId)
+  // (revert back to the big-endian representation)
+  assert.strict.equal(Buffer.from(outputParts[4], 'hex').reverse().toString('hex'), sm1.minerInfoTxId)
 }
 
 function checkCoinbaseScript2(outputParts) {
@@ -112,7 +113,7 @@ describe('Miner info utils', function () {
     it('can make a coinbase transaction with an output script containing miner-info-txid', () => {
       const ctx = mi.makeCoinbaseTx(mi.placeholderCB1, Buffer.from(sm1.cb2, 'hex'))
       const ctx2 = mi.createMinerInfoCoinbaseTx(ctx, sm1.minerInfoTxId)
-      assert.strict.equal(ctx2.id, '3b30ed54514a02dea1fe7246dd112dc80bafa82a7d28083912e19ea772c30e81')
+      assert.strict.equal(ctx2.id, '6c027b176a8cca0b9eff9a338e94a9d321055f39641d8ddf2cfc8639e54adffb')
       const script = ctx2.outputs[1].script
       const outputParts = script.toASM().split(' ')
       checkCoinbaseScript(outputParts)
@@ -121,7 +122,7 @@ describe('Miner info utils', function () {
     it('can make a coinbase transaction with an output script containing: miner-info-txid, blockBind and blockBindSig', () => {
       const ctx = mi.makeCoinbaseTx(mi.placeholderCB1, Buffer.from(sm1.cb2, 'hex'))
       const ctx2 = mi.createMinerInfoCoinbaseTxWithBlockBind(ctx, sm1.minerInfoTxId, sm1.blockBind, sm1.blockBindSig)
-      assert.strict.equal(ctx2.id, '5d34b9489fa27c6a868219c371a62d4a9003f4bb76eed60e40da7ec19b2bc949')
+      assert.strict.equal(ctx2.id, '8a9b1c9ba4ba56c2e9c19e8df17c1e07207ef19eb5a07badd7a8f9a9032c6948')
       const script = ctx2.outputs[1].script
       const outputParts = script.toASM().split(' ')
       checkCoinbaseScript2(outputParts)

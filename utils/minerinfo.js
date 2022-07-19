@@ -45,7 +45,8 @@ function buildMerkleRootFromCoinbase (coinbaseTxId, merkleBranches) {
  * @returns (bsv.Script) Script containing (1) - (3) data.
  */
 function createCoinbaseOpReturnScript (minerInfoTxId) {
-  return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, minerInfoTxId], 'hex')
+  const minerInfoTxIdInLittleEndianRep = Buffer.from(minerInfoTxId, 'hex').reverse() // swap endianness before adding into the script
+  return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, minerInfoTxIdInLittleEndianRep], 'hex')
 }
 
 /**
@@ -62,7 +63,8 @@ function createCoinbaseOpReturnScript (minerInfoTxId) {
  * @returns (bsv.Script) Script containing (1) - (5) data.
  */
 function createCoinbaseOpReturnScript2 (minerInfoTxId, blockBind, blockBindSig) {
-  return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, minerInfoTxId, blockBind, blockBindSig], 'hex')
+  const minerInfoTxIdInLittleEndianRep = Buffer.from(minerInfoTxId, 'hex').reverse() // swap endianness before adding into the script
+  return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, minerInfoTxIdInLittleEndianRep, blockBind, blockBindSig], 'hex')
 }
 
 /**

@@ -3,6 +3,7 @@ const request = require('request-promise')
 const config = require('config')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
+const cm = require('../utils/common')
 const mi = require('../utils/minerinfo')
 const cloneDeep = require('lodash.clonedeep')
 
@@ -150,6 +151,8 @@ function rotateMinerId (aliasName) {
     fm.saveMinerIdAlias(aliasName, newAlias)
     // get minerId
     fm.createMinerId(newAlias)
+    // update keys info in minerIdData file
+    fm.updateKeysInfoInMinerIdDataFile(aliasName)
   } catch (err) {
     console.log('error rotating minerId: ', err)
     return false
@@ -269,28 +272,20 @@ function canUpgradeMinerIdProtocol (aliasName) {
 }
 
 function createMinerInfoDocument (aliasName, height) {
-  const minerId = fm.getMinerIdPublicKey(fm.getCurrentMinerIdAlias(aliasName))
-  const prevMinerId = fm.getMinerIdPublicKey(fm.getPreviousMinerIdAlias(aliasName))
+  const minerIdData = fm.readMinerIdDataAndUpdateMinerIdKeysStatus(aliasName)
 
   const prevRevocationKey = fm.readPrevRevocationKeyPublicKeyFromFile(aliasName)
   const revocationKey = fm.readRevocationKeyPublicKeyFromFile(aliasName)
-
-  const minerIdSigPayload = Buffer.concat([
-    Buffer.from(prevMinerId, 'hex'),
-    Buffer.from(minerId, 'hex')
-  ])
-
-  const prevMinerIdSig = sign(minerIdSigPayload, fm.getPreviousMinerIdAlias(aliasName))
   const prevRevocationKeySig = fm.readPrevRevocationKeySigFromFile(aliasName)
 
   let doc = {
     version: cbdVersion,
     height: height,
 
-    prevMinerId: prevMinerId,
-    prevMinerIdSig: prevMinerIdSig,
+    prevMinerId: minerIdData["prevMinerId"],
+    prevMinerIdSig: minerIdData["prevMinerIdSig"],
 
-    minerId: minerId,
+    minerId: minerIdData["minerId"],
 
     prevRevocationKey: prevRevocationKey,
     revocationKey: revocationKey,

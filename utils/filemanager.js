@@ -148,26 +148,8 @@ function revocationKeyExists(alias) {
   return _checkIfKeyExists(alias, revocationKeystorePath)
 }
 
-// Read 'prevRevocationKey' public key from the config file.
-function readPrevRevocationKeyPublicKeyFromFile (aliasName) {
-  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
-  if (!data.hasOwnProperty('prevRevocationKey')) {
-    throw new Error(`Missing "prevRevocationKey" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
-  }
-  return data["prevRevocationKey"]
-}
-
-// Read 'revocationKey' public key from the config file.
-function readRevocationKeyPublicKeyFromFile (aliasName) {
-  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
-  if (!data.hasOwnProperty('revocationKey')) {
-    throw new Error(`Missing "revocationKey" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
-  }
-  return data["revocationKey"]
-}
-
 // Write 'prevRevocationKey', 'revocationKey' public keys and 'prevRevocationKeySig' to the file.
-function writeRevocationKeyDataToFile (aliasName) {
+function writeRevocationKeyDataToFile (aliasName, isKeyRotation) {
   let revocationKeyData = {}
   // prevRevocationKey
   const prevRevocationKeyPublicKey = getRevocationKeyPublicKey(getPreviousRevocationKeyAlias(aliasName))
@@ -176,25 +158,72 @@ function writeRevocationKeyDataToFile (aliasName) {
   const revocationKeyPublicKey = getRevocationKeyPublicKey(getCurrentRevocationKeyAlias(aliasName))
   revocationKeyData["revocationKey"] = revocationKeyPublicKey
   // prevRevocationKeySig
-  const payload = Buffer.concat([
-    Buffer.from(prevRevocationKeyPublicKey, 'hex'),
-    Buffer.from(revocationKeyPublicKey, 'hex')
-  ])
-  const hash = bsv.crypto.Hash.sha256(payload)
-  const privateKey = getRevocationKeyPrivateKey(getPreviousRevocationKeyAlias(aliasName))
-  const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
-  revocationKeyData["prevRevocationKeySig"] = prevRevocationKeySig.toString('hex')
+  {
+    const hash = bsv.crypto.Hash.sha256(cm.concatFields(prevRevocationKeyPublicKey, revocationKeyPublicKey))
+    const privateKey = getRevocationKeyPrivateKey(getPreviousRevocationKeyAlias(aliasName))
+    const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
+    revocationKeyData["prevRevocationKeySig"] = prevRevocationKeySig.toString('hex')
+  }
+  if (isKeyRotation) {
+    revocationKeyData.nextDocData = {}
+    revocationKeyData.nextDocData["prevRevocationKey"] = revocationKeyData["revocationKey"]
+    revocationKeyData.nextDocData["revocationKey"] = revocationKeyData["revocationKey"]
+    // prevRevocationKeySig
+    const hash = bsv.crypto.Hash.sha256(cm.concatFields(revocationKeyData.nextDocData["prevRevocationKey"], revocationKeyData.nextDocData["revocationKey"]))
+    const privateKey = getRevocationKeyPrivateKey(getCurrentRevocationKeyAlias(aliasName))
+    const prevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
+    revocationKeyData.nextDocData["prevRevocationKeySig"] = prevRevocationKeySig.toString('hex')
+  }
   // Write revocationKeyData to the file.
   _writeJsonDataToFile(aliasName, revocationKeyData, REVOCATION_KEY_DATA_FILENAME)
 }
 
-// Read 'prevRevocationKeySig' signature from the config file.
-function readPrevRevocationKeySigFromFile (aliasName) {
-  const data = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
-  if (!data.hasOwnProperty('prevRevocationKeySig')) {
-    throw new Error(`Missing "prevRevocationKeySig" data field in the "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
+function updateRevocationKeyData (aliasName, revocationKeyData) {
+  _writeJsonDataToFile(aliasName, revocationKeyData, REVOCATION_KEY_DATA_FILENAME)
+}
+
+function _checkRequiredDataField (data, field, fileName) {
+  if (!data.hasOwnProperty(field)) {
+    throw new Error(`Missing "${field}" data field in the "${fileName}" config file.`)
   }
-  return data["prevRevocationKeySig"]
+}
+
+function readRevocationKeyDataFromFile (aliasName) {
+  const revocationKeyData = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
+  if (!revocationKeyData) {
+    throw new Error(`Missing "${REVOCATION_KEY_DATA_FILENAME}" config file.`)
+  }
+  _checkRequiredDataField(revocationKeyData, "prevRevocationKey", REVOCATION_KEY_DATA_FILENAME)
+  _checkRequiredDataField(revocationKeyData, "revocationKey", REVOCATION_KEY_DATA_FILENAME)
+  _checkRequiredDataField(revocationKeyData, "prevRevocationKeySig", REVOCATION_KEY_DATA_FILENAME)
+  return revocationKeyData
+}
+
+function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
+  function _normalisePrevRevocationKey (aliasName, revocationKeyData) {
+    // Make sure that after the revocation document containing the key rotation is written on the blockchain
+    // the first miner-info doc (which comes after it) sets 'prevRevocationKey' and 'revocationKey' fields to the same value.
+    let revocationKeyData2 = {}
+    // Check if the 'nextDocData' section is available.
+    _checkRequiredDataField(revocationKeyData, "nextDocData", REVOCATION_KEY_DATA_FILENAME)
+    _checkRequiredDataField(revocationKeyData.nextDocData, "prevRevocationKey", REVOCATION_KEY_DATA_FILENAME)
+    revocationKeyData2["prevRevocationKey"] = revocationKeyData.nextDocData["prevRevocationKey"]
+    _checkRequiredDataField(revocationKeyData.nextDocData, "revocationKey", REVOCATION_KEY_DATA_FILENAME)
+    revocationKeyData2["revocationKey"] = revocationKeyData.nextDocData["revocationKey"]
+    _checkRequiredDataField(revocationKeyData.nextDocData, "prevRevocationKeySig", REVOCATION_KEY_DATA_FILENAME)
+    revocationKeyData2["prevRevocationKeySig"] = revocationKeyData.nextDocData["prevRevocationKeySig"]
+    _writeJsonDataToFile(aliasName, revocationKeyData2, REVOCATION_KEY_DATA_FILENAME)
+    return revocationKeyData2
+  }
+  let revocationKeyData = {}
+  revocationKeyData = readRevocationKeyDataFromFile (aliasName)
+  if (revocationKeyData["prevRevocationKey"] != revocationKeyData["revocationKey"]) {
+    const rpc_keys_check_ok = false // Call the getmineridkeysinfo RPC to check the currently valid revocation keys in the DB.
+    if (rpc_keys_check_ok) {
+      return _normalisePrevRevocationKey(aliasName, revocationKeyData)
+    }
+  }
+  return revocationKeyData
 }
 
 // Creates data fields required by the miner ID revocation procedure.
@@ -220,11 +249,8 @@ function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCom
     // Complete revocation sets 'prevMinerId' to 'minerId' (both fields hold the same public key).
     const minerId = getMinerIdPublicKey(getCurrentMinerIdAlias(aliasName))
     revocationData["prevMinerId"] = minerId.toString('hex')
-    const prevMinerIdSigPayload = Buffer.concat([
-      Buffer.from(minerId, 'hex'),
-      Buffer.from(minerId, 'hex')
-    ])
-    const hash = bsv.crypto.Hash.sha256(prevMinerIdSigPayload)
+    // prevMinerIdSig
+    const hash = bsv.crypto.Hash.sha256(cm.concatFields(minerId, minerId))
     const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
     const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey)
     revocationData["prevMinerIdSig"] = prevMinerIdSig.toString('hex')
@@ -460,10 +486,10 @@ module.exports = {
   minerIdKeyExists,
   revocationKeyExists,
 
-  readPrevRevocationKeyPublicKeyFromFile,
-  readRevocationKeyPublicKeyFromFile,
-  readPrevRevocationKeySigFromFile,
+  readRevocationKeyDataFromFile,
+  readRevocationKeyDataAndUpdateKeysStatus,
   writeRevocationKeyDataToFile,
+  updateRevocationKeyData,
 
   createMinerIdRevocationData,
   readMinerIdRevocationDataFromFile,

@@ -65,6 +65,8 @@ function generateMinerId (aliasName) {
     let firstMinerId = {}
     firstMinerId["first_minerId"] = minerId
     fm.writeMinerIdDataToFile(aliasName, firstMinerId)
+    // Save revocation key data to the file.
+    fm.writeRevocationKeyDataToFile(aliasName, false)
   } catch (err) {
     console.log('Please check that the signing_service is running properly...')
     console.log('generateMinerId error: ', err)
@@ -273,10 +275,7 @@ function canUpgradeMinerIdProtocol (aliasName) {
 
 function createMinerInfoDocument (aliasName, height) {
   const minerIdData = fm.readMinerIdDataAndUpdateMinerIdKeysStatus(aliasName)
-
-  const prevRevocationKey = fm.readPrevRevocationKeyPublicKeyFromFile(aliasName)
-  const revocationKey = fm.readRevocationKeyPublicKeyFromFile(aliasName)
-  const prevRevocationKeySig = fm.readPrevRevocationKeySigFromFile(aliasName)
+  const revocationKeyData = fm.readRevocationKeyDataAndUpdateKeysStatus(aliasName)
 
   let doc = {
     version: cbdVersion,
@@ -287,9 +286,9 @@ function createMinerInfoDocument (aliasName, height) {
 
     minerId: minerIdData["minerId"],
 
-    prevRevocationKey: prevRevocationKey,
-    revocationKey: revocationKey,
-    prevRevocationKeySig: prevRevocationKeySig
+    prevRevocationKey: revocationKeyData["prevRevocationKey"],
+    revocationKey: revocationKeyData["revocationKey"],
+    prevRevocationKeySig: revocationKeyData["prevRevocationKeySig"]
   }
 
   // TODO: Add a callback to check if a block with the revocation message is alredy mined.

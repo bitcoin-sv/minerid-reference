@@ -101,8 +101,8 @@ const fm = require('./utils/filemanager')
     }
   ])
 
-  function createReusableRevocationKeyData(aliasName) {
-     fm.writeRevocationKeyDataToFile(options.name)
+  function createReusableRevocationKeyData(aliasName, isKeyRotation) {
+     fm.writeRevocationKeyDataToFile(options.name, isKeyRotation)
      console.log(`\nReusable revocation key data were stored in the config file for "${aliasName}" alias.`)
   }
 
@@ -155,7 +155,7 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'generateminerid': {
 	    if (coinbaseDocService.generateMinerId(options.name)) {
-	      createReusableRevocationKeyData(options.name)
+	      createReusableRevocationKeyData(options.name, false)
 	      console.log('MinerId generation has succeeded.')
 	    } else {
 	      console.log('MinerId generation has failed!')
@@ -185,7 +185,7 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'rotaterevocationkey': {
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
-	      createReusableRevocationKeyData(options.name)
+	      createReusableRevocationKeyData(options.name, true)
 	      console.log('Revocation key rotation has succeeded.')
 	    } else {
 	      console.log('Revocation key rotation has failed!')
@@ -229,7 +229,7 @@ const fm = require('./utils/filemanager')
 	      fm.writeMinerIdDataToFile(options.name, firstMinerId)
 	      fm.createRevocationKey(alias)
 	      fm.saveRevocationKeyAlias(options.name, alias)
-	      createReusableRevocationKeyData(options.name)
+	      createReusableRevocationKeyData(options.name, false)
 	      console.log('Miner ID protocol upgrade has succeeded.')
 	    } else {
 	      console.log('Miner ID protocol upgrade has failed!')

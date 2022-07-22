@@ -116,7 +116,12 @@ describe('Key rolling', function () {
         [`${os.homedir()}/.minerid-client/unittest`]: {
           minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
+          minerIdData: '{}',
+          revocationKeyData: '{}',
           revocationKeyData: '{ "prevRevocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "revocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "prevRevocationKeySig": "3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f" }'
+        },
+        [`${os.homedir()}/.keystore`]: {
+          'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
         },
         [`${os.homedir()}/.revocationkeystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY'
@@ -132,6 +137,13 @@ describe('Key rolling', function () {
     })
 
     it('can rotate the initial revocationKey for "unittest" and write/read its outcome from the result files', async () => {
+      // The initial miner-info document with minerId keys (other fields are skipped in the example for simplicity).
+      let firstMinerIdDoc = `{
+         "prevRevocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61",
+         "prevRevocationKeySig": "3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f",
+         "revocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61"
+      }`
+      const firstDoc = JSON.parse(firstMinerIdDoc)
       // Check the initial prevRevocationKey and revocationKey are the same.
       {
         const prevRevocationKeyAlias = fm.getPreviousRevocationKeyAlias('unittest')
@@ -139,26 +151,32 @@ describe('Key rolling', function () {
         const revocationKeyAlias = fm.getCurrentRevocationKeyAlias('unittest')
         assert.strictEqual(revocationKeyAlias, 'unittest_1')
 	assert.strictEqual(fm.getRevocationKeyPublicKey(prevRevocationKeyAlias), fm.getRevocationKeyPublicKey(revocationKeyAlias))
-        assert.strictEqual(fm.readPrevRevocationKeyPublicKeyFromFile('unittest'), fm.readRevocationKeyPublicKeyFromFile('unittest'))
+        assert.strictEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"], fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
       }
+      // Check the initial miner-info document before revocationKey rotation.
+      const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
+      const minerIdInitialDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      assert.strictEqual(minerIdInitialDoc.prevRevocationKey, firstDoc.prevRevocationKey)
+      assert.strictEqual(minerIdInitialDoc.prevRevocationKeySig, firstDoc.prevRevocationKeySig)
+      assert.strictEqual(minerIdInitialDoc.revocationKey, firstDoc.revocationKey)
       // Rotate the revocation key.
       assert.strictEqual(coinbaseDocService.rotateRevocationKey('unittest'), true)
       // Check if revocationKey is correctly rotated (prevRevocationKey != revocationKey).
       {
         const prevRevocationKeyAlias = fm.getPreviousRevocationKeyAlias('unittest')
         assert.strictEqual(prevRevocationKeyAlias, 'unittest_1')
-	assert.strictEqual(fm.getRevocationKeyPublicKey(prevRevocationKeyAlias), '03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61')
+	assert.strictEqual(fm.getRevocationKeyPublicKey(prevRevocationKeyAlias), firstDoc.prevRevocationKey)
         const revocationKeyAlias = fm.getCurrentRevocationKeyAlias('unittest')
         assert.strictEqual(revocationKeyAlias, 'unittest_2')
 	assert.notEqual(fm.getRevocationKeyPublicKey(prevRevocationKeyAlias), fm.getRevocationKeyPublicKey(revocationKeyAlias))
       }
       // Write reusable revocation key data to files.
-      fm.writeRevocationKeyDataToFile('unittest')
+      fm.writeRevocationKeyDataToFile('unittest', true)
       {
-        assert.strictEqual(fm.getRevocationKeyPublicKey('unittest_1'), '03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61')
-        assert.notEqual(fm.getRevocationKeyPublicKey('unittest_2'), '03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61')
-        assert.strictEqual(fm.getRevocationKeyPublicKey('unittest_2'), fm.readRevocationKeyPublicKeyFromFile('unittest'))
-        assert.notEqual(fm.readPrevRevocationKeyPublicKeyFromFile('unittest'), fm.readRevocationKeyPublicKeyFromFile('unittest'))
+        assert.strictEqual(fm.getRevocationKeyPublicKey('unittest_1'), firstDoc.prevRevocationKey)
+        assert.notEqual(fm.getRevocationKeyPublicKey('unittest_2'), firstDoc.revocationKey)
+        assert.strictEqual(fm.getRevocationKeyPublicKey('unittest_2'), fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
+        assert.notEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"], fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
       }
       // Check if the signature is correct.
       {
@@ -169,8 +187,26 @@ describe('Key rolling', function () {
         const hash = bsv.crypto.Hash.sha256(prevRevocationKeySigPayload)
         const prevRevocationKeyPrivateKey = fm.getRevocationKeyPrivateKey('unittest_1')
         const expectedPrevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, prevRevocationKeyPrivateKey)
-        assert.strictEqual(fm.readPrevRevocationKeySigFromFile('unittest'), expectedPrevRevocationKeySig.toString())
+        assert.strictEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"], expectedPrevRevocationKeySig.toString())
       }
+      // Check if the miner-info document sets rotated revocation keys correctly.
+      const revocationKeyRotatedDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      assert.strictEqual(revocationKeyRotatedDoc.prevRevocationKey, firstDoc.revocationKey)
+      assert.strictEqual(revocationKeyRotatedDoc.prevRevocationKeySig, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"])
+      assert.strictEqual(revocationKeyRotatedDoc.revocationKey, fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
+      // Mark rpc check to acknowledge revocationKey key rotation.
+      let revocationKeyData2 = {}
+      const revocationKeyData = fm.readRevocationKeyDataFromFile('unittest')
+      revocationKeyData2["revocationKey"] = revocationKeyData.nextDocData["revocationKey"]
+      revocationKeyData2["prevRevocationKey"] = revocationKeyData.nextDocData["prevRevocationKey"]
+      revocationKeyData2["prevRevocationKeySig"] = revocationKeyData.nextDocData["prevRevocationKey"]
+      fm.updateRevocationKeyData('unittest', revocationKeyData2)
+      // Check if the first miner-info document - after revocationKey key rotation - sets prevRevocationKey and revocationKey fields to the same value.
+      const nextDocData = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      assert.strictEqual(nextDocData.revocationKey, nextDocData.prevRevocationKey)
+      assert.strictEqual(nextDocData.prevRevocationKey, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"])
+      assert.strictEqual(nextDocData.prevRevocationKeySig, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"])
+      assert.strictEqual(nextDocData.revocationKey, fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
     })
   })
 })

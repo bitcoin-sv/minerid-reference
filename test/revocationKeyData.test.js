@@ -47,9 +47,9 @@ describe('Reusable revocationKey data', function () {
     it('can write and read the initial revocationKey data for "unittest"', async () => {
       const priv = new bsv.HDPrivateKey('xprv9s21ZrQH143K47rYq5fLuFhkYAW2htySkXmb6uXCnPnbNfEcYDymSBU1chDnyTVYTs3Lb6PRhX1dvXm3Zn26ZLnUJLErJTBaZKWmoJpejCY').privateKey
       fm.writeRevocationKeyDataToFile('unittest')
-      assert.strict.deepEqual(fm.readPrevRevocationKeyPublicKeyFromFile('unittest'), priv.publicKey.toString())
-      assert.strict.deepEqual(fm.readRevocationKeyPublicKeyFromFile('unittest'), priv.publicKey.toString())
-      assert.strict.deepEqual(fm.readPrevRevocationKeySigFromFile('unittest'), '3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f')
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"], priv.publicKey.toString())
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["revocationKey"], priv.publicKey.toString())
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"], '3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f')
     })
   })
 
@@ -75,11 +75,11 @@ describe('Reusable revocationKey data', function () {
     })
 
     it('can read the initial prevRevocationKey public key for "unittest"', async () => {
-      assert.strict.deepEqual(fm.readPrevRevocationKeyPublicKeyFromFile('unittest'), fm.getRevocationKeyPublicKey(fm.getPreviousRevocationKeyAlias('unittest')))
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"], fm.getRevocationKeyPublicKey(fm.getPreviousRevocationKeyAlias('unittest')))
     })
 
     it('can read the initial revocationKey public key for "unittest"', async () => {
-      assert.strict.deepEqual(fm.readRevocationKeyPublicKeyFromFile('unittest'), fm.getRevocationKeyPublicKey(fm.getCurrentRevocationKeyAlias('unittest')))
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["revocationKey"], fm.getRevocationKeyPublicKey(fm.getCurrentRevocationKeyAlias('unittest')))
     })
 
     it('can read the initial prevRevocationKeySig for "unittest"', async () => {
@@ -94,7 +94,7 @@ describe('Reusable revocationKey data', function () {
       const hash = bsv.crypto.Hash.sha256(payload)
       const privateKey = fm.getRevocationKeyPrivateKey(fm.getCurrentRevocationKeyAlias('unittest'))
       const expectedPrevRevocationKeySig = bsv.crypto.ECDSA.sign(hash, privateKey)
-      assert.strict.deepEqual(fm.readPrevRevocationKeySigFromFile('unittest'), expectedPrevRevocationKeySig.toString())
+      assert.strict.deepEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"], expectedPrevRevocationKeySig.toString())
     })
   })
 })

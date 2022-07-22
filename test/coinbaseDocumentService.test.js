@@ -94,6 +94,7 @@ describe('Coinbase Document Services', function () {
 
     describe('MinerId Rotation', function () {
       let aliasExists, getCurrentMinerIdAlias, saveMinerIdAlias, createMinerId
+      let updateKeysInfoInMinerIdDataFile
       beforeEach(() => {
         sinon.stub(console, "log")
         aliasExists = sandbox.stub(fm, 'aliasExists').returns(true)
@@ -182,17 +183,13 @@ describe('Coinbase Document Services', function () {
       })
 
       describe('Document creation', () => {
-	let getCurrentMinerIdAlias, getMinerIdPublicKey, getPreviousMinerIdAlias
-	let readPrevRevocationKeyPublicKeyFromFile, readRevocationKeyPublicKeyFromFile
-	let readPrevRevocationKeySigFromFile, readOptionalMinerIdData
+	let readMinerIdDataAndUpdateMinerIdKeysStatus, readRevocationKeyDataAndUpdateKeysStatus, readOptionalMinerIdData
 	let signStub, unset, minerIdSigPayload
 
         beforeEach(() => {
           sinon.stub(console, "log")
           readMinerIdDataAndUpdateMinerIdKeysStatus = sandbox.stub(fm, 'readMinerIdDataAndUpdateMinerIdKeysStatus').returns('{}')
-	  readPrevRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readPrevRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
-	  readRevocationKeyPublicKeyFromFile = sandbox.stub(fm, 'readRevocationKeyPublicKeyFromFile').returns('02fa4ca062e40e9c909aa7d0539ab7b0790e554505d7a2992bf97b1fdc7a4a3411')
-	  readPrevRevocationKeySigFromFile = sandbox.stub(fm, 'readPrevRevocationKeySigFromFile').returns('30430220377c9bfa51290dd57f56568722c8f8e9d6522977246cb69c5e8bd3f4ce8c1fd0021f0cdb5d979dc083afaab270385386fd4b5dc6d165594aedafe0afd5f8d1a6ee')
+          readRevocationKeyDataAndUpdateKeysStatus = sandbox.stub(fm, 'readRevocationKeyDataAndUpdateKeysStatus').returns('{}')
           readOptionalMinerIdData = sandbox.stub(fm, 'readOptionalMinerIdData').returns({})
 
           const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
@@ -212,16 +209,8 @@ describe('Coinbase Document Services', function () {
           expect(readMinerIdDataAndUpdateMinerIdKeysStatus.calledWith('unittest')).to.be(true)
         })
 
-        it('calls "readPrevRevocationKeyPublicKeyFromFile" with right parameters', () => {
-          expect(readPrevRevocationKeyPublicKeyFromFile.calledWith('unittest')).to.be(true)
-        })
-
-        it('calls "readRevocationKeyPublicKeyFromFile" with right parameters', () => {
-          expect(readRevocationKeyPublicKeyFromFile.calledWith('unittest')).to.be(true)
-        })
-
-        it('calls "readPrevRevocationKeySigFromFile" with right parameters', () => {
-          expect(readPrevRevocationKeySigFromFile.calledWith('unittest')).to.be(true)
+        it('calls "readRevocationKeyDataAndUpdateKeysStatus" with right parameters', () => {
+          expect(readRevocationKeyDataAndUpdateKeysStatus.calledWith('unittest')).to.be(true)
         })
 
         it('calls "readOptionalMinerIdData" with right parameters', () => {

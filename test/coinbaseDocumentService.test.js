@@ -143,6 +143,7 @@ describe('Coinbase Document Services', function () {
 	revocationKeyExists = sandbox.stub(fm, 'revocationKeyExists').returns(true)
         saveRevocationKeyAlias = sandbox.stub(fm, 'saveRevocationKeyAlias')
         createRevocationKey = sandbox.stub(fm, 'createRevocationKey')
+        writeRevocationKeyDataToFile = sandbox.stub(fm, 'writeRevocationKeyDataToFile').returns('{}')
 
         coinbaseDocService.rotateRevocationKey('unittest')
       })
@@ -165,6 +166,10 @@ describe('Coinbase Document Services', function () {
 
       it('calls "createRevocationKey" with right parameters', () => {
         expect(createRevocationKey.calledWith('unittest_2')).to.be(true)
+      })
+
+      it('calls "writeRevocationKeyDataToFile" with right parameters', () => {
+        expect(writeRevocationKeyDataToFile.calledWith('unittest', true)).to.be(true)
       })
     })
 

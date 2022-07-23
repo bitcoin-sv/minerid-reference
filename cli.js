@@ -155,7 +155,6 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'generateminerid': {
 	    if (coinbaseDocService.generateMinerId(options.name)) {
-	      createReusableRevocationKeyData(options.name, false)
 	      console.log('MinerId generation has succeeded.')
 	    } else {
 	      console.log('MinerId generation has failed!')
@@ -185,7 +184,6 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'rotaterevocationkey': {
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
-	      createReusableRevocationKeyData(options.name, true)
 	      console.log('Revocation key rotation has succeeded.')
 	    } else {
 	      console.log('Revocation key rotation has failed!')

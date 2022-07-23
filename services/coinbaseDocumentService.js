@@ -196,6 +196,8 @@ function rotateRevocationKey (aliasName) {
     fm.saveRevocationKeyAlias(aliasName, newAlias)
     // create a new revocation key
     fm.createRevocationKey(newAlias)
+    // Save revocation key data to the file.
+    fm.writeRevocationKeyDataToFile(aliasName, true)
   } catch (err) {
     console.log('Error rotating revocation key: ', err)
     return false

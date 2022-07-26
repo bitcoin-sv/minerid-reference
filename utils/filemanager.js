@@ -420,6 +420,7 @@ function updateKeysInfoInMinerIdDataFile2 (aliasName, minerIdData, prevMinerId, 
   minerIdData["minerId"] = minerId
   minerIdData["prevMinerIdSig"] = prevMinerIdSig
   writeMinerIdDataToFile(aliasName, minerIdData)
+  return minerIdData
 }
 
 function updateKeysInfoInMinerIdDataFile (aliasName) {
@@ -430,7 +431,7 @@ function updateKeysInfoInMinerIdDataFile (aliasName) {
   const hash = bsv.crypto.Hash.sha256(cm.concatFields(prevMinerId, minerId))
   const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
   const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey).toString('hex')
-  updateKeysInfoInMinerIdDataFile2(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
+  return updateKeysInfoInMinerIdDataFile2(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
 }
 
 function readOptionalMinerIdData (aliasName) {
@@ -442,32 +443,30 @@ function readMinerIdDataFromFile (aliasName) {
 }
 
 function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
+  function _normalisePrevMinerId (aliasName, minerIdData) {
+    // The first miner-info document (after the minerId key rotation) is forming a new Miner ID reputation chain.
+    // It sets 'prevMinerId' to the same value as 'minerId' field.
+    const minerId = minerIdData["minerId"]
+    const prevMinerId = minerId
+    const hash = bsv.crypto.Hash.sha256(cm.concatFields(prevMinerId, minerId))
+    const minerIdPrivateKey = getMinerIdPrivateKey(getCurrentMinerIdAlias(aliasName))
+    const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, minerIdPrivateKey).toString('hex')
+    return updateKeysInfoInMinerIdDataFile2(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
+  }
   let minerIdData = {}
   minerIdData = readMinerIdDataFromFile(aliasName)
   if (minerIdData &&
     minerIdData.hasOwnProperty('prevMinerId') &&
-      minerIdData.hasOwnProperty('minerId') &&
-      minerIdData.hasOwnProperty('prevMinerIdSig')) {
+    minerIdData.hasOwnProperty('minerId') &&
+    minerIdData.hasOwnProperty('prevMinerIdSig')) {
     if (minerIdData["prevMinerId"] != minerIdData["minerId"]) {
       const rpc_keys_check_ok = false // Call the getmineridkeysinfo RPC to check the currently valid minerId key in the DB.
       if (rpc_keys_check_ok) {
-        // The first miner-info document (after the minerId key rotation) is forming a new Miner ID reputation chain.
-        // It sets 'prevMinerId' to the same value as 'minerId' field.
-        const minerId = minerIdData["minerId"]
-        const prevMinerId = minerId
-        const hash = bsv.crypto.Hash.sha256(cm.concatFields(prevMinerId, minerId))
-        const minerIdPrivateKey = getMinerIdPrivateKey(getCurrentMinerIdAlias(aliasName))
-        const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, minerIdPrivateKey).toString('hex')
-        updateKeysInfoInMinerIdDataFiles(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
+        return _normalisePrevMinerId(aliasName, minerIdData)
       }
     }
   } else {
-    const minerId = getMinerIdPublicKey(getCurrentMinerIdAlias(aliasName))
-    const prevMinerId = getMinerIdPublicKey(getPreviousMinerIdAlias(aliasName))
-    const hash = bsv.crypto.Hash.sha256(cm.concatFields(prevMinerId, minerId))
-    const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
-    const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, prevMinerIdPrivateKey).toString('hex')
-    updateKeysInfoInMinerIdDataFile2(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
+    return updateKeysInfoInMinerIdDataFile(aliasName)
   }
   return minerIdData
 }

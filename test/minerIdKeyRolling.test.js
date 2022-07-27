@@ -56,7 +56,7 @@ describe('Key rolling', function () {
       }
       // Check the initial miner-info document before minerId rotation.
       const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
-      const minerIdInitialDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const minerIdInitialDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(minerIdInitialDoc.prevMinerId, firstDoc.prevMinerId)
       assert.strictEqual(minerIdInitialDoc.prevMinerIdSig, firstDoc.prevMinerIdSig)
       assert.strictEqual(minerIdInitialDoc.minerId, firstDoc.minerId)
@@ -88,7 +88,7 @@ describe('Key rolling', function () {
         assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["prevMinerIdSig"], prevMinerIdKeySig.toString('hex'))
       }
       // Check if the miner-info document sets rotated minerId keys correctly.
-      const minerIdRotatedDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const minerIdRotatedDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(minerIdRotatedDoc.prevMinerId, firstDoc.minerId)
       assert.strictEqual(minerIdRotatedDoc.prevMinerIdSig, fm.readMinerIdDataFromFile('unittest')["prevMinerIdSig"])
       assert.strictEqual(minerIdRotatedDoc.minerId, fm.readMinerIdDataFromFile('unittest')["minerId"])
@@ -102,7 +102,7 @@ describe('Key rolling', function () {
       const prevMinerIdSig = bsv.crypto.ECDSA.sign(hash, minerIdPrivateKey).toString('hex')
       fm.updateKeysInfoInMinerIdDataFile2('unittest', minerIdData, prevMinerId, minerId, prevMinerIdSig)
       // Check if the first miner-info document - in the new chain - sets prevMinerId and minerId to the same value.
-      const firstDocInNewChain = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const firstDocInNewChain = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(firstDocInNewChain.minerId, firstDocInNewChain.prevMinerId)
       assert.strictEqual(firstDocInNewChain.prevMinerId, fm.readMinerIdDataFromFile('unittest')["prevMinerId"])
       assert.strictEqual(firstDocInNewChain.prevMinerIdSig, fm.readMinerIdDataFromFile('unittest')["prevMinerIdSig"])
@@ -155,7 +155,7 @@ describe('Key rolling', function () {
       }
       // Check the initial miner-info document before revocationKey rotation.
       const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
-      const minerIdInitialDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const minerIdInitialDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(minerIdInitialDoc.prevRevocationKey, firstDoc.prevRevocationKey)
       assert.strictEqual(minerIdInitialDoc.prevRevocationKeySig, firstDoc.prevRevocationKeySig)
       assert.strictEqual(minerIdInitialDoc.revocationKey, firstDoc.revocationKey)
@@ -190,7 +190,7 @@ describe('Key rolling', function () {
         assert.strictEqual(fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"], expectedPrevRevocationKeySig.toString())
       }
       // Check if the miner-info document sets rotated revocation keys correctly.
-      const revocationKeyRotatedDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const revocationKeyRotatedDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(revocationKeyRotatedDoc.prevRevocationKey, firstDoc.revocationKey)
       assert.strictEqual(revocationKeyRotatedDoc.prevRevocationKeySig, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"])
       assert.strictEqual(revocationKeyRotatedDoc.revocationKey, fm.readRevocationKeyDataFromFile('unittest')["revocationKey"])
@@ -202,7 +202,7 @@ describe('Key rolling', function () {
       revocationKeyData2["prevRevocationKeySig"] = revocationKeyData.nextDocData["prevRevocationKey"]
       fm.updateRevocationKeyData('unittest', revocationKeyData2)
       // Check if the first miner-info document - after revocationKey key rotation - sets prevRevocationKey and revocationKey fields to the same value.
-      const nextDocData = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+      const nextDocData = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
       assert.strictEqual(nextDocData.revocationKey, nextDocData.prevRevocationKey)
       assert.strictEqual(nextDocData.prevRevocationKey, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKey"])
       assert.strictEqual(nextDocData.prevRevocationKeySig, fm.readRevocationKeyDataFromFile('unittest')["prevRevocationKeySig"])

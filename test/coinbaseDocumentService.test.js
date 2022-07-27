@@ -191,15 +191,15 @@ describe('Coinbase Document Services', function () {
 	let readMinerIdDataAndUpdateMinerIdKeysStatus, readRevocationKeyDataAndUpdateKeysStatus, readOptionalMinerIdData
 	let signStub, unset, minerIdSigPayload
 
-        beforeEach(() => {
+        beforeEach(async () => {
           sinon.stub(console, "log")
           readMinerIdDataAndUpdateMinerIdKeysStatus = sandbox.stub(fm, 'readMinerIdDataAndUpdateMinerIdKeysStatus').returns('{}')
           readRevocationKeyDataAndUpdateKeysStatus = sandbox.stub(fm, 'readRevocationKeyDataAndUpdateKeysStatus').returns('{}')
           readOptionalMinerIdData = sandbox.stub(fm, 'readOptionalMinerIdData').returns({})
 
-          const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
+          const createMinerInfoDocument = await coinbaseDocService.__get__('createMinerInfoDocument')
 
-          createMinerInfoDocument('unittest', 1234)
+          await createMinerInfoDocument('unittest', 1234)
 
           minerIdSigPayload = Buffer.concat([
             Buffer.from('02759b832a3b8ec8184911d533d8b4b4fdc2026e58d4fba0303587cebbc68d21ab', 'hex'),
@@ -214,8 +214,8 @@ describe('Coinbase Document Services', function () {
           expect(readMinerIdDataAndUpdateMinerIdKeysStatus.calledWith('unittest')).to.be(true)
         })
 
-        it('calls "readRevocationKeyDataAndUpdateKeysStatus" with right parameters', () => {
-          expect(readRevocationKeyDataAndUpdateKeysStatus.calledWith('unittest')).to.be(true)
+        it('calls "readRevocationKeyDataAndUpdateKeysStatus" with right parameters', async () => {
+          expect(await readRevocationKeyDataAndUpdateKeysStatus.calledWith('unittest')).to.be(true)
         })
 
         it('calls "readOptionalMinerIdData" with right parameters', () => {

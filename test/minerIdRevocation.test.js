@@ -23,7 +23,7 @@ describe('Revoke minerId', function () {
   }`
   const firstDoc = JSON.parse(firstMinerIdDoc)
 
-  function checkMinerIdRevocationMessageAndSig (minerIdRevocationData, compromisedMinerId, minerIdPrivateKey) {
+  async function checkMinerIdRevocationMessageAndSig (minerIdRevocationData, compromisedMinerId, minerIdPrivateKey) {
      // Check minerId revocation data.
      assert.strictEqual(minerIdRevocationData.revocationMessage["compromised_minerId"], compromisedMinerId)
      const expRevocationMessagePayload = Buffer.concat([
@@ -37,7 +37,7 @@ describe('Revoke minerId', function () {
      assert.strictEqual(minerIdRevocationData.revocationMessageSig["sig2"], expRevocationMessageSig2.toString('hex'))
      // Check if the miner-info revocation document contains minerId revocation data.
      const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
-     const minerIdRevocationDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+     const minerIdRevocationDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
      assert.strictEqual(minerIdRevocationDoc.revocationMessage["compromised_minerId"], minerIdRevocationData.revocationMessage["compromised_minerId"])
      assert.strictEqual(minerIdRevocationDoc.revocationMessageSig["sig1"], minerIdRevocationData.revocationMessageSig["sig1"])
      assert.strictEqual(minerIdRevocationDoc.revocationMessageSig["sig2"], minerIdRevocationData.revocationMessageSig["sig2"])
@@ -54,14 +54,14 @@ describe('Revoke minerId', function () {
   }
 
   // The input arguments represent the miner ID keys seen by the miner-info revocation document.
-  function testPartialRevocation (initialMinerId, compromisedMinerId, expPrevMinerId) {
-     function checkPartialMinerIdRevocationDoc (compromisedMinerId, expPrevMinerId, expMinerId, prevMinerIdPrivateKey) {
+  async function testPartialRevocation (initialMinerId, compromisedMinerId, expPrevMinerId) {
+     async function checkPartialMinerIdRevocationDoc (compromisedMinerId, expPrevMinerId, expMinerId, prevMinerIdPrivateKey) {
        const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile('unittest')
        assert.strictEqual(minerIdRevocationData["complete_revocation"], false)
        checkMinerIdRevocationMessageAndSig(minerIdRevocationData, compromisedMinerId, prevMinerIdPrivateKey)
        // 'prevMinerId' != 'minerId'.
        const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
-       const minerIdRevocationDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+       const minerIdRevocationDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
        assert.strictEqual(minerIdRevocationDoc.prevMinerId, expPrevMinerId)
        assert.strictEqual(minerIdRevocationDoc.minerId, expMinerId)
        assert.notEqual(expPrevMinerId, expMinerId)
@@ -78,14 +78,14 @@ describe('Revoke minerId', function () {
   // The input arguments represent the miner ID keys seen by the miner-info revocation document.
   // (1) The compromised minerId key is always the first minerId key used in the initial reputation chain.
   // (2) The miner-info revocation document sets 'prevMinerId' to the same value as 'minerId'.
-  function testCompleteRevocation (compromisedMinerId, expMinerId) {
-     function checkCompleteMinerIdRevocationDoc (compromisedMinerId, expMinerId, minerIdPrivateKey) {
+  async function testCompleteRevocation (compromisedMinerId, expMinerId) {
+     async function checkCompleteMinerIdRevocationDoc (compromisedMinerId, expMinerId, minerIdPrivateKey) {
        const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile('unittest')
        assert.strictEqual(minerIdRevocationData["complete_revocation"], true)
        checkMinerIdRevocationMessageAndSig(minerIdRevocationData, compromisedMinerId, minerIdPrivateKey)
        // Check if the miner-info revocation document sets 'prevMinerId' to the same value as 'minerId' field.
        const createMinerInfoDocument = coinbaseDocService.__get__('createMinerInfoDocument')
-       const minerIdRevocationDoc = createMinerInfoDocument('unittest', 101 /* a dummy height */)
+       const minerIdRevocationDoc = await createMinerInfoDocument('unittest', 101 /* a dummy height */)
        assert.strictEqual(minerIdRevocationDoc.prevMinerId, expMinerId)
        assert.strictEqual(minerIdRevocationDoc.minerId, expMinerId)
        checkPrevMinerIdSig(minerIdRevocationDoc.prevMinerId, minerIdRevocationDoc.minerId, minerIdRevocationDoc.prevMinerIdSig)
@@ -129,8 +129,8 @@ describe('Revoke minerId', function () {
       assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
     })
 
-    it('can verify that the complete revocation is possible for the non-rotated chain', () => {
-      testCompleteRevocation(firstDoc.minerId, firstDoc.minerId)
+    it('can verify that the complete revocation is possible for the non-rotated chain', async () => {
+      await testCompleteRevocation(firstDoc.minerId, firstDoc.minerId)
     })
   })
 
@@ -168,8 +168,8 @@ describe('Revoke minerId', function () {
       assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
     })
 
-    it('can verify that the complete revocation is possible for the non-rotated chain', () => {
-      testCompleteRevocation(firstDoc.minerId, firstDoc.minerId)
+    it('can verify that the complete revocation is possible for the non-rotated chain', async () => {
+      await testCompleteRevocation(firstDoc.minerId, firstDoc.minerId)
     })
   })
 
@@ -211,12 +211,12 @@ describe('Revoke minerId', function () {
       console.debug.restore()
     })
 
-    it('can verify the partial revocation', () => {
-      testPartialRevocation (firstDoc.minerId, rotatedDoc.minerId, rotatedDoc.minerId)
+    it('can verify the partial revocation', async () => {
+      await testPartialRevocation (firstDoc.minerId, rotatedDoc.minerId, rotatedDoc.minerId)
     })
 
-    it('can verify the complete revocation', () => {
-      testCompleteRevocation(firstDoc.minerId, rotatedDoc.minerId)
+    it('can verify the complete revocation', async () => {
+      await testCompleteRevocation(firstDoc.minerId, rotatedDoc.minerId)
     })
   })
 
@@ -259,12 +259,12 @@ describe('Revoke minerId', function () {
       console.debug.restore()
     })
 
-    it('can verify the partial revocation', () => {
-      testPartialRevocation (firstDoc.minerId, rotatedDoc.minerId, rotatedDoc.minerId)
+    it('can verify the partial revocation', async () => {
+      await testPartialRevocation (firstDoc.minerId, rotatedDoc.minerId, rotatedDoc.minerId)
     })
 
-    it('can verify the complete revocation', () => {
-      testCompleteRevocation(firstDoc.minerId, rotatedDoc.minerId)
+    it('can verify the complete revocation', async () => {
+      await testCompleteRevocation(firstDoc.minerId, rotatedDoc.minerId)
     })
   })
 })

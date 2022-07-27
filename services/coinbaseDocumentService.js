@@ -275,9 +275,9 @@ function canUpgradeMinerIdProtocol (aliasName) {
   return true
 }
 
-function createMinerInfoDocument (aliasName, height) {
-  const minerIdData = fm.readMinerIdDataAndUpdateMinerIdKeysStatus(aliasName)
-  const revocationKeyData = fm.readRevocationKeyDataAndUpdateKeysStatus(aliasName)
+async function createMinerInfoDocument (aliasName, height) {
+  const minerIdData = await fm.readMinerIdDataAndUpdateMinerIdKeysStatus(aliasName)
+  const revocationKeyData = await fm.readRevocationKeyDataAndUpdateKeysStatus(aliasName)
 
   let doc = {
     version: cbdVersion,
@@ -328,7 +328,7 @@ async function createMinerInfoOpReturn (height, aliasName) {
     return
   }
 
-  const doc = createMinerInfoDocument(aliasName, parseInt(height))
+  const doc = await createMinerInfoDocument(aliasName, parseInt(height))
   console.debug('Miner-info doc:\n' + JSON.stringify(doc))
 
   const payload = JSON.stringify(doc)

@@ -3,6 +3,7 @@ const path = require('path')
 const bsv = require('bsv')
 
 const cm = require('./common')
+const cb = require('./callbacks')
 
 const config = require('config')
 var filedir = config.get('minerIdDataPath')
@@ -199,7 +200,7 @@ function readRevocationKeyDataFromFile (aliasName) {
   return revocationKeyData
 }
 
-function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
+async function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
   function _normalisePrevRevocationKey (aliasName, revocationKeyData) {
     // Make sure that after the revocation document containing the key rotation is written on the blockchain
     // the first miner-info doc (which comes after it) sets 'prevRevocationKey' and 'revocationKey' fields to the same value.
@@ -218,8 +219,11 @@ function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
   let revocationKeyData = {}
   revocationKeyData = readRevocationKeyDataFromFile (aliasName)
   if (revocationKeyData["prevRevocationKey"] != revocationKeyData["revocationKey"]) {
-    const rpc_keys_check_ok = false // Call the getmineridkeysinfo RPC to check the currently valid revocation keys in the DB.
-    if (rpc_keys_check_ok) {
+    // Check if a revocationKey rotation is confirmed on the blockchain.
+    if (await cb.checkRevocationKeysConfirmed(
+        getMinerIdPublicKey(getCurrentMinerIdAlias(aliasName)),
+        revocationKeyData["revocationKey"],
+        revocationKeyData["prevRevocationKey"])) {
       return _normalisePrevRevocationKey(aliasName, revocationKeyData)
     }
   }
@@ -442,7 +446,7 @@ function readMinerIdDataFromFile (aliasName) {
   return _readDataFromJsonFile(aliasName, MINERID_DATA_FILENAME)
 }
 
-function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
+async function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
   function _normalisePrevMinerId (aliasName, minerIdData) {
     // The first miner-info document (after the minerId key rotation) is forming a new Miner ID reputation chain.
     // It sets 'prevMinerId' to the same value as 'minerId' field.
@@ -460,8 +464,8 @@ function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
     minerIdData.hasOwnProperty('minerId') &&
     minerIdData.hasOwnProperty('prevMinerIdSig')) {
     if (minerIdData["prevMinerId"] != minerIdData["minerId"]) {
-      const rpc_keys_check_ok = false // Call the getmineridkeysinfo RPC to check the currently valid minerId key in the DB.
-      if (rpc_keys_check_ok) {
+      // Check if a minerId rotation is confirmed on the blockchain.
+      if (await cb.checkMinerIdKeysConfirmed(minerIdData["minerId"], minerIdData["prevMinerId"])) {
         return _normalisePrevMinerId(aliasName, minerIdData)
       }
     }

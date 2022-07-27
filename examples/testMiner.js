@@ -111,7 +111,7 @@ function getMinerInfoDocSignature(minerInfoOutputScript) {
 }
 
 function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
-  return (Buffer.from(minerIdCoinbaseTx.outputs[1].script.toASM().split(' ')[4], 'hex')).toString('hex')
+  return (Buffer.from(minerIdCoinbaseTx.outputs[1].script.toASM().split(' ')[4], 'hex')).reverse().toString('hex')
 }
 
 /**

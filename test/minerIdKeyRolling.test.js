@@ -2,6 +2,7 @@ const rewire = require('rewire')
 const coinbaseDocService = rewire('../services/coinbaseDocumentService')
 const fm = require('../utils/filemanager')
 const cm = require('../utils/common')
+const cb = require('../utils/callbacks')
 
 const bsv = require('bsv')
 const os = require('os')
@@ -11,7 +12,18 @@ const mock = require('mock-fs')
 const assert = require('assert')
 const sinon = require('sinon')
 
+let sandbox
 describe('Key rolling', function () {
+  before(() => {
+    sandbox = sinon.createSandbox()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  function mockCallbacks() {
+    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
+    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+  }
   describe('minerId key rotation', function () {
     beforeEach(() => {
       mock({

@@ -2,6 +2,7 @@ const rewire = require('rewire')
 const coinbaseDocService = rewire('../services/coinbaseDocumentService')
 const mi = rewire('../utils/minerinfo')
 const fm = require('../utils/filemanager')
+const cb = require('../utils/callbacks')
 
 const bsv = require('bsv')
 const os = require('os')
@@ -11,7 +12,20 @@ const mock = require('mock-fs')
 const assert = require('assert')
 const sinon = require('sinon')
 
+let sandbox
+
 describe('Revoke minerId', function () {
+  before(() => {
+    sandbox = sinon.createSandbox()
+  })
+  afterEach(() => {
+    sandbox.restore()
+  })
+  function mockCallbacks() {
+    // Don't allow UTs to make a connection with the Node.
+    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
+    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+  }
   // The initial miner-info document (the 'version' and 'height' fields are skipped in the example for simplicity).
   let firstMinerIdDoc = `{
     "prevMinerId": "02850442c6346d2ad8b457c9d7c0ac691ac14d61497750c27e389b8b6d62b2ac7e",
@@ -115,6 +129,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      mockCallbacks()
     })
 
     afterEach(() => {
@@ -154,6 +169,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      mockCallbacks()
     })
 
     afterEach(() => {
@@ -203,6 +219,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      mockCallbacks()
     })
 
     afterEach(() => {
@@ -251,6 +268,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      mockCallbacks()
     })
 
     afterEach(() => {

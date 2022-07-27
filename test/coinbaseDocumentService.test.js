@@ -2,6 +2,7 @@ const rewire = require('rewire')
 const coinbaseDocService = rewire('../services/coinbaseDocumentService')
 const mi = rewire('../utils/minerinfo')
 const fm = require('../utils/filemanager')
+const cb = require('../utils/callbacks')
 
 const bsv = require('bsv')
 const os = require('os')
@@ -21,6 +22,10 @@ describe('Coinbase Document Services', function () {
   afterEach(() => {
     sandbox.restore()
   })
+  function mockCallbacks() {
+    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
+    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+  }
 
   describe('No mocking', function () {
     describe('Minerid', function () {
@@ -196,6 +201,7 @@ describe('Coinbase Document Services', function () {
           readMinerIdDataAndUpdateMinerIdKeysStatus = sandbox.stub(fm, 'readMinerIdDataAndUpdateMinerIdKeysStatus').returns('{}')
           readRevocationKeyDataAndUpdateKeysStatus = sandbox.stub(fm, 'readRevocationKeyDataAndUpdateKeysStatus').returns('{}')
           readOptionalMinerIdData = sandbox.stub(fm, 'readOptionalMinerIdData').returns({})
+          mockCallbacks()
 
           const createMinerInfoDocument = await coinbaseDocService.__get__('createMinerInfoDocument')
 
@@ -247,6 +253,7 @@ describe('Coinbase Document Services', function () {
 
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      mockCallbacks()
     })
     afterEach(() => {
       mock.restore()
@@ -373,6 +380,7 @@ describe('Coinbase Document Services', function () {
       before(async () => {
         sinon.stub(console, "log")
         sinon.stub(console, "debug")
+        mockCallbacks()
 
         mock({
           [`${os.homedir()}/.minerid-client/unittest`]: {

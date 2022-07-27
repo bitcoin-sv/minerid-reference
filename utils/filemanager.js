@@ -273,7 +273,25 @@ function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCom
 }
 
 function readMinerIdRevocationDataFromFile (aliasName) {
-  return _readDataFromJsonFile(aliasName, MINERID_REVOCATION_DATA_FILENAME)
+  const minerIdRevocationData = _readDataFromJsonFile(aliasName, MINERID_REVOCATION_DATA_FILENAME)
+  if (!minerIdRevocationData) {
+    return
+  }
+  _checkRequiredDataField(minerIdRevocationData, "complete_revocation", MINERID_REVOCATION_DATA_FILENAME)
+  _checkRequiredDataField(minerIdRevocationData, "revocationMessage", MINERID_REVOCATION_DATA_FILENAME)
+  _checkRequiredDataField(minerIdRevocationData.revocationMessage, "compromised_minerId", MINERID_REVOCATION_DATA_FILENAME)
+  _checkRequiredDataField(minerIdRevocationData, "revocationMessageSig", MINERID_REVOCATION_DATA_FILENAME)
+  _checkRequiredDataField(minerIdRevocationData.revocationMessageSig, "sig1", MINERID_REVOCATION_DATA_FILENAME)
+  _checkRequiredDataField(minerIdRevocationData.revocationMessageSig, "sig2", MINERID_REVOCATION_DATA_FILENAME)
+  return minerIdRevocationData
+}
+
+function deleteMinerIdRevocationDataFile (aliasName) {
+  const filePath = path.join(process.env.HOME, filedir, aliasName, MINERID_REVOCATION_DATA_FILENAME)
+  fs.unlink(filePath, (err) => {
+    if (err) throw err;
+    console.debug(`${filePath} was deleted`);
+  });
 }
 
 // Common non-exported utility functions to support aliases.
@@ -465,7 +483,7 @@ async function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
     minerIdData.hasOwnProperty('prevMinerIdSig')) {
     if (minerIdData["prevMinerId"] != minerIdData["minerId"]) {
       // Check if a minerId rotation is confirmed on the blockchain.
-      if (await cb.checkMinerIdKeysConfirmed(minerIdData["minerId"], minerIdData["prevMinerId"])) {
+      if (await cb.checkMinerIdKeysConfirmed(minerIdData["minerId"], minerIdData["prevMinerId"], "CURRENT")) {
         return _normalisePrevMinerId(aliasName, minerIdData)
       }
     }
@@ -496,6 +514,7 @@ module.exports = {
 
   createMinerIdRevocationData,
   readMinerIdRevocationDataFromFile,
+  deleteMinerIdRevocationDataFile,
 
   getCurrentMinerIdAlias,
   getPreviousMinerIdAlias,

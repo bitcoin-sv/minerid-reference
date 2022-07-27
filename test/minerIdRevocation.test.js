@@ -23,8 +23,9 @@ describe('Revoke minerId', function () {
   })
   function mockCallbacks() {
     // Don't allow UTs to make a connection with the Node.
-    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
-    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+    let checkMinerIdKeysConfirmed = sandbox.stub(cb, 'checkMinerIdKeysConfirmed').returns(false)
+    let checkRevocationKeysConfirmed = sandbox.stub(cb, 'checkRevocationKeysConfirmed').returns(false)
+    let isMinerIdRevocationConfirmed = sandbox.stub(cb, 'isMinerIdRevocationConfirmed').returns(false)
   }
   // The initial miner-info document (the 'version' and 'height' fields are skipped in the example for simplicity).
   let firstMinerIdDoc = `{
@@ -45,7 +46,6 @@ describe('Revoke minerId', function () {
      ])
      const expRevocationMessageHash = bsv.crypto.Hash.sha256(expRevocationMessagePayload)
      const expRevocationMessageSig1 = bsv.crypto.ECDSA.sign(expRevocationMessageHash, fm.getRevocationKeyPrivateKey(fm.getCurrentRevocationKeyAlias('unittest')))
-     //const expRevocationMessageSig2 = bsv.crypto.ECDSA.sign(expRevocationMessageHash, fm.getMinerIdPrivateKey(fm.getCurrentMinerIdAlias('unittest')))
      const expRevocationMessageSig2 = bsv.crypto.ECDSA.sign(expRevocationMessageHash, minerIdPrivateKey)
      assert.strictEqual(minerIdRevocationData.revocationMessageSig["sig1"], expRevocationMessageSig1.toString('hex'))
      assert.strictEqual(minerIdRevocationData.revocationMessageSig["sig2"], expRevocationMessageSig2.toString('hex'))

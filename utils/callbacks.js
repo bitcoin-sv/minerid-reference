@@ -30,14 +30,15 @@ function rpcConnect () {
 /**
  * Call getmineridinfo rpc to check if minerId keys are confirmed in Miner ID DB.
  */
-async function checkMinerIdKeysConfirmed (minerId, prevMinerId) {
+async function checkMinerIdKeysConfirmed (minerId, prevMinerId, minerIdState) {
   try {
     console.debug(`${checkMinerIdKeysConfirmed.name}-parameters:
         minerId= ${minerId},
-        prevMinerId= ${prevMinerId}`)
+        prevMinerId= ${prevMinerId},
+	minerIdState= ${minerIdState}`)
     const client = rpcConnect()
     const minerIdInfo = await client.getmineridinfo({hexdata: minerId})
-    if (!minerIdInfo) {
+    if (!minerIdInfo || JSON.stringify(minerIdInfo) === '{}') {
       console.log('Empty result returned by getmineridinfo rpc.')
       return false
     }
@@ -47,7 +48,7 @@ async function checkMinerIdKeysConfirmed (minerId, prevMinerId) {
     _checkRequiredDataField(minerIdInfo, "minerIdState")
     _checkRequiredDataField(minerIdInfo, "prevMinerId")
     return (minerIdInfo["minerId"] == minerId) &&
-           (minerIdInfo["minerIdState"] == "CURRENT") &&
+           (minerIdInfo["minerIdState"] == minerIdState) &&
            (minerIdInfo["prevMinerId"] == prevMinerId)
   } catch (e) {
     console.log('RPC error: ', e)
@@ -66,7 +67,7 @@ async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocat
         prevRevocationKey= ${prevRevocationKey}`)
     const client = rpcConnect()
     const minerIdInfo = await client.getmineridinfo({hexdata: minerId})
-    if (!minerIdInfo) {
+    if (!minerIdInfo || JSON.stringify(minerIdInfo) === '{}') {
       console.log('Empty result returned by getmineridinfo rpc.')
       return false
     }
@@ -86,8 +87,27 @@ async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocat
   }
 }
 
+/**
+ * Check if minerId revocation is confirmed in Miner ID DB.
+ */
+async function isMinerIdRevocationConfirmed(minerId, prevMinerId, compromisedMinerid, minerIdState, revocationName) {
+  console.debug(`${isMinerIdRevocationConfirmed.name}-parameters:
+      minerId= ${minerId},
+      prevMinerId= ${prevMinerId},
+      compromisedMinerid= ${compromisedMinerid},
+      minerIdState= ${minerIdState},
+      revocationName= ${revocationName}`)
+  if (await checkMinerIdKeysConfirmed(minerId, prevMinerId, minerIdState)) {
+    console.debug(`${revocationName} revocation is confirmed for minerId= ${compromisedMinerid}`)
+    return true
+  }
+  console.debug(`${revocationName} revocation is not confirmed for minerId= ${compromisedMinerid}`)
+  return false
+}
+
 module.exports = {
   rpcConnect,
   checkMinerIdKeysConfirmed,
-  checkRevocationKeysConfirmed
+  checkRevocationKeysConfirmed,
+  isMinerIdRevocationConfirmed
 }

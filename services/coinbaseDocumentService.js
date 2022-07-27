@@ -4,6 +4,7 @@ const config = require('config')
 const fm = require('../utils/filemanager')
 const bitcoin = require('bitcoin-promise')
 const cm = require('../utils/common')
+const cb = require('../utils/callbacks')
 const mi = require('../utils/minerinfo')
 const cloneDeep = require('lodash.clonedeep')
 
@@ -276,6 +277,38 @@ function canUpgradeMinerIdProtocol (aliasName) {
 }
 
 async function createMinerInfoDocument (aliasName, height) {
+  async function _checkIfMinerIdRevocationOccurred(doc) {
+    const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile(aliasName)
+    if (minerIdRevocationData) {
+      if (minerIdRevocationData["complete_revocation"]) {
+        await cb.isMinerIdRevocationConfirmed(
+          doc.minerId,
+          minerIdRevocationData["prevMinerId"],
+          minerIdRevocationData.revocationMessage["compromised_minerId"],
+          "REVOKED",
+          "Complete")
+        // Check if the prevMinerId field is normalised
+        if (doc.prevMinerId !== doc.minerId) {
+          doc.prevMinerId = minerIdRevocationData["prevMinerId"]
+          doc.prevMinerIdSig = minerIdRevocationData["prevMinerIdSig"]
+        }
+      } else {
+        if (await cb.isMinerIdRevocationConfirmed(
+          doc.minerId,
+          minerIdRevocationData["prevMinerId"],
+          minerIdRevocationData.revocationMessage["compromised_minerId"],
+          "CURRENT",
+          "Partial")) {
+          fm.deleteMinerIdRevocationDataFile(aliasName)
+          return
+	}
+      }
+      doc.revocationMessage = {}
+      doc.revocationMessage = minerIdRevocationData.revocationMessage
+      doc.revocationMessageSig = {}
+      doc.revocationMessageSig = minerIdRevocationData.revocationMessageSig
+    }
+  }
   const minerIdData = await fm.readMinerIdDataAndUpdateMinerIdKeysStatus(aliasName)
   const revocationKeyData = await fm.readRevocationKeyDataAndUpdateKeysStatus(aliasName)
 
@@ -293,18 +326,7 @@ async function createMinerInfoDocument (aliasName, height) {
     prevRevocationKeySig: revocationKeyData["prevRevocationKeySig"]
   }
 
-  // TODO: Add a callback to check if a block with the revocation message is alredy mined.
-  const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile(aliasName)
-  if (minerIdRevocationData) {
-    if (minerIdRevocationData["complete_revocation"]) {
-      doc.prevMinerId = minerIdRevocationData["prevMinerId"]
-      doc.prevMinerIdSig = minerIdRevocationData["prevMinerIdSig"]
-    }
-    doc.revocationMessage = {}
-    doc.revocationMessage = minerIdRevocationData.revocationMessage
-    doc.revocationMessageSig = {}
-    doc.revocationMessageSig = minerIdRevocationData.revocationMessageSig
-  }
+  await _checkIfMinerIdRevocationOccurred(doc)
 
   const optionalData = fm.readOptionalMinerIdData(aliasName)
   if (optionalData) {

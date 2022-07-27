@@ -21,8 +21,9 @@ describe('Key rolling', function () {
     sandbox.restore()
   })
   function mockCallbacks() {
-    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
-    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+    let checkMinerIdKeysConfirmed = sandbox.stub(cb, 'checkMinerIdKeysConfirmed').returns(false)
+    let checkRevocationKeysConfirmed = sandbox.stub(cb, 'checkRevocationKeysConfirmed').returns(false)
+    let isMinerIdRevocationConfirmed = sandbox.stub(cb, 'isMinerIdRevocationConfirmed').returns(false)
   }
   describe('minerId key rotation', function () {
     beforeEach(() => {
@@ -30,7 +31,6 @@ describe('Key rolling', function () {
         [`${os.homedir()}/.minerid-client/unittest`]: {
           minerIdAliases: '[ { "name": "unittest_1" } ]',
           minerIdData: '{}',
-          revocationKeyData: '{}',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyData: '{ "prevRevocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "revocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "prevRevocationKeySig": "3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f" }'
         },
@@ -129,7 +129,6 @@ describe('Key rolling', function () {
           minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]',
           minerIdData: '{}',
-          revocationKeyData: '{}',
           revocationKeyData: '{ "prevRevocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "revocationKey": "03e19a7d21b453bd51ad80d90a7af00fe26247ca2e7e7e51a97525aef96b20bc61", "prevRevocationKeySig": "3045022100cf459fd3723760cfaad1c1a2df825ac44054256216b76cc8a8e97a5b38cb4fd5022066209f8d53655fdb5b948312ca3051178cb026cb8f95687b8387ccbb5671154f" }'
         },
         [`${os.homedir()}/.keystore`]: {

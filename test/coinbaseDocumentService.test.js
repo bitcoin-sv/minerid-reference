@@ -23,8 +23,9 @@ describe('Coinbase Document Services', function () {
     sandbox.restore()
   })
   function mockCallbacks() {
-    let isMinerIdRotationConfirmed = sandbox.stub(cb, 'isMinerIdRotationConfirmed').returns(false)
-    let isRevocationKeyRotationConfirmed = sandbox.stub(cb, 'isRevocationKeyRotationConfirmed').returns(false)
+    let checkMinerIdKeysConfirmed = sandbox.stub(cb, 'checkMinerIdKeysConfirmed').returns(false)
+    let checkRevocationKeysConfirmed = sandbox.stub(cb, 'checkRevocationKeysConfirmed').returns(false)
+    let isMinerIdRevocationConfirmed = sandbox.stub(cb, 'isMinerIdRevocationConfirmed').returns(false)
   }
 
   describe('No mocking', function () {

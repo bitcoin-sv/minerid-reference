@@ -105,9 +105,40 @@ async function isMinerIdRevocationConfirmed(minerId, prevMinerId, compromisedMin
   return false
 }
 
+/**
+ * Use revokeminerid rpc to revoke the given compromised minerId key.
+ *
+ * The connected node will update its own Miner ID DB. After that,
+ * it will send the revokemid P2P network message to the network.
+ *
+ * The input parameter is defined as a json object of the following form:
+ *  {
+ *      "revocationKey": xxxx,
+ *      "minerId": xxxx,
+ *      "revocationMessage": {
+ *          "compromised_minerId": xxxx
+ *      },
+ *      "revocationMessageSig": {
+ *          "sig1": xxxx,
+ *          "sig2": xxxx
+ *      }
+ *  }
+ */
+async function revokeMinerId (input) {
+  try {
+    console.debug(`${revokeMinerId.name}-parameters: ${JSON.stringify(input)}`)
+    const client = rpcConnect()
+    await client.revokeminerid({input})
+  } catch (e) {
+    console.log('RPC error: ', e)
+    return false
+  }
+}
+
 module.exports = {
   rpcConnect,
   checkMinerIdKeysConfirmed,
   checkRevocationKeysConfirmed,
-  isMinerIdRevocationConfirmed
+  isMinerIdRevocationConfirmed,
+  revokeMinerId
 }

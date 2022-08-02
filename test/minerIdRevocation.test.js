@@ -26,6 +26,7 @@ describe('Revoke minerId', function () {
     let checkMinerIdKeysConfirmed = sandbox.stub(cb, 'checkMinerIdKeysConfirmed').returns(false)
     let checkRevocationKeysConfirmed = sandbox.stub(cb, 'checkRevocationKeysConfirmed').returns(false)
     let isMinerIdRevocationConfirmed = sandbox.stub(cb, 'isMinerIdRevocationConfirmed').returns(false)
+    let revokeMinerId = sandbox.stub(cb, 'revokeMinerId').returns(false)
   }
   // The initial miner-info document (the 'version' and 'height' fields are skipped in the example for simplicity).
   let firstMinerIdDoc = `{
@@ -82,7 +83,7 @@ describe('Revoke minerId', function () {
        checkPrevMinerIdSig(minerIdRevocationDoc.prevMinerId, minerIdRevocationDoc.minerId, minerIdRevocationDoc.prevMinerIdSig)
      }
      assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["first_minerId"], initialMinerId)
-     assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', compromisedMinerId, false /* partial revocation */), true)
+     assert.strictEqual(await coinbaseDocService.revokeMinerId('unittest', compromisedMinerId, false /* partial revocation */), true)
      // Use the previous miner ID private key associated with prevMinerId public key defined by the revocation document.
      const prevMinerIdPrivateKey = fm.getMinerIdPrivateKey(fm.getPreviousMinerIdAlias('unittest'))
      const currentMinerId = fm.getMinerIdPublicKey(fm.getCurrentMinerIdAlias('unittest')).toString('hex')
@@ -105,7 +106,7 @@ describe('Revoke minerId', function () {
        checkPrevMinerIdSig(minerIdRevocationDoc.prevMinerId, minerIdRevocationDoc.minerId, minerIdRevocationDoc.prevMinerIdSig)
      }
      assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["first_minerId"], compromisedMinerId)
-     assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', compromisedMinerId, true /* complete revocation */), true)
+     assert.strictEqual(await coinbaseDocService.revokeMinerId('unittest', compromisedMinerId, true /* complete revocation */), true)
      const minerIdPrivateKey = fm.getMinerIdPrivateKey(fm.getCurrentMinerIdAlias('unittest'))
      checkCompleteMinerIdRevocationDoc(compromisedMinerId, expMinerId, minerIdPrivateKey)
   }
@@ -138,10 +139,10 @@ describe('Revoke minerId', function () {
       console.debug.restore()
     })
 
-    it('can verify that the partial revocation is not possible for the non-rotated chain', () => {
+    it('can verify that the partial revocation is not possible for the non-rotated chain', async () => {
       assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["first_minerId"], firstDoc.minerId)
       // It's not possible to partially revoke a Miner ID reputation chain which is built up with a non-rotated minerId.
-      assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
+      assert.strictEqual(await coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
     })
 
     it('can verify that the complete revocation is possible for the non-rotated chain', async () => {
@@ -178,10 +179,10 @@ describe('Revoke minerId', function () {
       console.debug.restore()
     })
 
-    it('can verify that the partial revocation is not possible for the non-rotated chain', () => {
+    it('can verify that the partial revocation is not possible for the non-rotated chain', async () => {
       assert.strictEqual(fm.readMinerIdDataFromFile('unittest')["first_minerId"], firstDoc.minerId)
       // It's not possible to partially revoke a Miner ID reputation chain which is built up with a non-rotated minerId.
-      assert.strictEqual(coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
+      assert.strictEqual(await coinbaseDocService.revokeMinerId('unittest', firstDoc.minerId, false /* partial revocation */), false)
     })
 
     it('can verify that the complete revocation is possible for the non-rotated chain', async () => {

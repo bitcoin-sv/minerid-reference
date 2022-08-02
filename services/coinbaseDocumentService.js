@@ -207,7 +207,30 @@ function rotateRevocationKey (aliasName) {
 }
 
 // Revoke the given minerId public key.
-function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
+async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
+  async function _revokeMinerIdNotification(aliasName, minerIdPubKey) {
+    // Revocation key data.
+    const revocationKeyPrivateKey = fm.getRevocationKeyPrivateKey(fm.getCurrentRevocationKeyAlias(aliasName))
+    const revocationKeyPublicKey = fm.getRevocationKeyPublicKey(fm.getCurrentRevocationKeyAlias(aliasName))
+    // MinerId key data.
+    const minerIdPrivateKey = fm.getMinerIdPrivateKey(fm.getCurrentMinerIdAlias(aliasName))
+    const minerIdPublicKey = fm.getMinerIdPublicKey(fm.getCurrentMinerIdAlias(aliasName))
+    // Revocation message data.
+    const hash = bsv.crypto.Hash.sha256(Buffer.from(minerIdPubKey, 'hex'))
+    // Prepare an input parameter to be used by the callback.
+    const input = {
+       "revocationKey": revocationKeyPublicKey.toString('hex'),
+       "minerId": minerIdPublicKey.toString('hex'),
+       "revocationMessage": {
+           "compromised_minerId": minerIdPubKey.toString('hex')
+       },
+       "revocationMessageSig": {
+           "sig1": bsv.crypto.ECDSA.sign(hash, revocationKeyPrivateKey).toString('hex'),
+           "sig2": bsv.crypto.ECDSA.sign(hash, minerIdPrivateKey).toString('hex')
+       }
+    }
+    await cb.revokeMinerId(input)
+  }
   if (!_checkAliasExists(aliasName)) {
     return false
   }
@@ -220,6 +243,7 @@ function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
     if (!_checkCurrentMinerIdPrivateKeyExists(aliasName)) {
       return false
     }
+    // Check conditions specific to the partial revocation.
     if (!isCompleteRevocation) {
       const minerIdData = fm.readMinerIdDataFromFile(aliasName)
       if (!minerIdData.hasOwnProperty('first_minerId')) {
@@ -230,6 +254,12 @@ function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
         console.log('An attempt to terminate the entire Miner ID reputation chain.')
         return false
       }
+    }
+    // Call the configured callback to revoke the specified minerId and to send
+    // a fast notification to the network.
+    await _revokeMinerIdNotification(aliasName, minerIdPubKey)
+
+    if (!isCompleteRevocation) {
       if (rotateMinerId(aliasName)) {
         console.log('The compromised minerId has been rotated successfully.')
       } else {

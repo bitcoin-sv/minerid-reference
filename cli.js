@@ -196,7 +196,7 @@ const fm = require('./utils/filemanager')
               console.log('Use: --minerid [minerId]')
               process.exit(0)
 	    }
-            if (coinbaseDocService.revokeMinerId(options.name, options.minerid, false /* partial revocation */)) {
+            if (await coinbaseDocService.revokeMinerId(options.name, options.minerid, false /* partial revocation */)) {
               console.log("Revocation data has been created for the compromised minerId key.")
 	    } else {
               console.log("MinerId partial revocation has failed!")
@@ -209,7 +209,7 @@ const fm = require('./utils/filemanager')
               console.log('Cannot find "first_minerId" in the config file.')
               break
 	    }
-            if (coinbaseDocService.revokeMinerId(options.name, minerIdData["first_minerId"], true /* complete revocation */)) {
+            if (await coinbaseDocService.revokeMinerId(options.name, minerIdData["first_minerId"], true /* complete revocation */)) {
               console.log("Revocation data has been created for the compromised minerId key.")
 	    }
 	    break

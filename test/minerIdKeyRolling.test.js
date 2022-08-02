@@ -24,6 +24,7 @@ describe('Key rolling', function () {
     let checkMinerIdKeysConfirmed = sandbox.stub(cb, 'checkMinerIdKeysConfirmed').returns(false)
     let checkRevocationKeysConfirmed = sandbox.stub(cb, 'checkRevocationKeysConfirmed').returns(false)
     let isMinerIdRevocationConfirmed = sandbox.stub(cb, 'isMinerIdRevocationConfirmed').returns(false)
+    let revokeMinerId = sandbox.stub(cb, 'revokeMinerId').returns(false)
   }
   describe('minerId key rotation', function () {
     beforeEach(() => {

@@ -280,7 +280,7 @@ $ npm run cli -- upgrademinerid -f minerId -n  foo
 
 ## Implementation
 
-The **REST API** has 4 endpoints:
+The **REST API** has 7 endpoints:
 
 ### 1. `GET /opreturn/:alias/:blockHeight([0-9]+)`
 
@@ -412,6 +412,19 @@ response:
 }
 ```
 
+### 7. `GET /opreturn/:alias/isvalid`
+
+`alias`: MinerId alias
+
+**returns** 'true' if the last generated miner-info op_return script (using `GET /opreturn/:alias/:blockHeight([0-9]+)`) is still valid (a key rotation or revocation didn't occur) for an `alias` MinerId and 'false' otherwise.
+
+#### Example
+
+```console
+$ curl localhost:9002/opreturn/testMiner/isvalid
+
+true
+```
 
 ## Example Miner Code
 

@@ -62,10 +62,11 @@ function generateMinerId (aliasName) {
     fm.saveMinerIdAlias(aliasName, alias)
     // Save the current Revocation Key alias.
     fm.saveRevocationKeyAlias(aliasName, alias)
-    // Save the first minerId public key.
-    let firstMinerId = {}
-    firstMinerId["first_minerId"] = minerId
-    fm.writeMinerIdDataToFile(aliasName, firstMinerId)
+    // Save the first minerId public key and initial opreturn status.
+    let minerIdData = {}
+    minerIdData["first_minerId"] = minerId
+    minerIdData["opreturn_status"] = true
+    fm.writeMinerIdDataToFile(aliasName, minerIdData)
     // Save revocation key data to the file.
     fm.writeRevocationKeyDataToFile(aliasName, false)
   } catch (err) {
@@ -156,6 +157,8 @@ function rotateMinerId (aliasName) {
     fm.createMinerId(newAlias)
     // update keys info in minerIdData file
     fm.updateKeysInfoInMinerIdDataFile(aliasName)
+    // Rotation invalidates the last generated miner-info op_return script.
+    fm.writeOpReturnStatusToFile(aliasName, false)
   } catch (err) {
     console.log('error rotating minerId: ', err)
     return false
@@ -199,6 +202,8 @@ function rotateRevocationKey (aliasName) {
     fm.createRevocationKey(newAlias)
     // Save revocation key data to the file.
     fm.writeRevocationKeyDataToFile(aliasName, true)
+    // Rotation invalidates the last generated miner-info op_return script.
+    fm.writeOpReturnStatusToFile(aliasName, false)
   } catch (err) {
     console.log('Error rotating revocation key: ', err)
     return false
@@ -208,6 +213,7 @@ function rotateRevocationKey (aliasName) {
 
 // Revoke the given minerId public key.
 async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
+  // Call the node to invalidate the specified key and to broadcast a P2P revokemid message to the network.
   async function _revokeMinerIdNotification(aliasName, minerIdPubKey) {
     // Revocation key data.
     const revocationKeyPrivateKey = fm.getRevocationKeyPrivateKey(fm.getCurrentRevocationKeyAlias(aliasName))
@@ -258,7 +264,7 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
     // Call the configured callback to revoke the specified minerId and to send
     // a fast notification to the network.
     await _revokeMinerIdNotification(aliasName, minerIdPubKey)
-
+    // At this stage a partial revocation procedure requires to rotate the current minerId key.
     if (!isCompleteRevocation) {
       if (rotateMinerId(aliasName)) {
         console.log('The compromised minerId has been rotated successfully.')
@@ -267,7 +273,10 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
         return false
       }
     }
+    // Creates protocol data to be dynamically used during miner-info document's construction.
     fm.createMinerIdRevocationData (aliasName, minerIdPubKey, isCompleteRevocation)
+    // Revocation invalidates the last generated miner-info op_return script.
+    fm.writeOpReturnStatusToFile(aliasName, false)
   } catch (err) {
     console.log('Error revoking minerId: ', err)
     return false
@@ -388,6 +397,9 @@ async function createMinerInfoOpReturn (height, aliasName) {
   console.debug('Miner-info-doc sig:\n' + signature.toString('hex'))
 
   const opReturnScript = mi.createMinerInfoOpReturnScript(payload, signature).toHex()
+  // Generated op_return script is valid.
+  fm.writeOpReturnStatusToFile(aliasName, true)
+
   return opReturnScript
 }
 
@@ -451,6 +463,23 @@ async function createCoinbase2 (aliasName, minerInfoTxId, prevhash, merkleProof,
   return minerInfoCbTxWithBlockBind.toString().substring(mi.placeholderCB1.length)
 }
 
+/**
+ * Support for /opreturn/:alias/isvalid requests.
+ *
+ * Informs the caller about the status of the last generated miner-info op_return script,
+ * returns:
+ * (a) 'true'  - the in-use script is valid for the requested alias,
+ * (b) 'false' - the in-use script is invalid due to a key rotation or revocation
+ *     executed by an operator using CLI command interface for the given alias.
+ *
+ * The next miner-info document creation sets the status to 'true'.
+ *
+ * @returns (boolean) a miner-info op_return script status.
+ */
+function opReturnStatus(aliasName) {
+  return fm.readOpReturnStatusFromFile(aliasName)
+}
+
 module.exports = {
   createNewCoinbase2: createCoinbase2,
   createMinerInfoOpReturn,
@@ -460,5 +489,6 @@ module.exports = {
   revokeMinerId,
   canUpgradeMinerIdProtocol,
   getCurrentMinerId,
-  signWithCurrentMinerId
+  signWithCurrentMinerId,
+  opReturnStatus
 }

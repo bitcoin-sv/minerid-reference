@@ -263,8 +263,8 @@ function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCom
     const prevMinerId = getMinerIdPublicKey(getPreviousMinerIdAlias(aliasName))
     revocationData["prevMinerId"] = prevMinerId.toString('hex')
     // The minerId key is rotated. Use the previous miner ID private key to create sig2.
-    // Create revocationMessageSig2.
     const prevMinerIdPrivateKey = getMinerIdPrivateKey(getPreviousMinerIdAlias(aliasName))
+    // Create revocationMessageSig2.
     revocationMessageSig2 = bsv.crypto.ECDSA.sign(revocationMessageHash, prevMinerIdPrivateKey)
   }
   revocationData.revocationMessageSig["sig2"] = revocationMessageSig2.toString('hex')
@@ -433,8 +433,8 @@ function writeMinerContactDataToFile (aliasName, name, value) {
   }
 }
 
-function writeMinerIdDataToFile(aliasName, firstMinerId) {
-  _writeJsonDataToFile(aliasName, firstMinerId, MINERID_DATA_FILENAME)
+function writeMinerIdDataToFile(aliasName, minerIdData) {
+  _writeJsonDataToFile(aliasName, minerIdData, MINERID_DATA_FILENAME)
 }
 
 function updateKeysInfoInMinerIdDataFile2 (aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig) {
@@ -493,6 +493,18 @@ async function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
   return minerIdData
 }
 
+function readOpReturnStatusFromFile (aliasName) {
+  minerIdData = readMinerIdDataFromFile(aliasName)
+  _checkRequiredDataField(minerIdData, "opreturn_status", MINERID_DATA_FILENAME)
+  return minerIdData["opreturn_status"]
+}
+
+function writeOpReturnStatusToFile (aliasName, opReturnStatus) {
+  minerIdData = readMinerIdDataFromFile(aliasName)
+  minerIdData["opreturn_status"] = opReturnStatus
+  writeMinerIdDataToFile(aliasName, minerIdData)
+}
+
 module.exports = {
   aliasExists,
 
@@ -533,5 +545,8 @@ module.exports = {
   updateKeysInfoInMinerIdDataFile,
   readOptionalMinerIdData,
   readMinerIdDataFromFile,
-  readMinerIdDataAndUpdateMinerIdKeysStatus
+  readMinerIdDataAndUpdateMinerIdKeysStatus,
+
+  readOpReturnStatusFromFile,
+  writeOpReturnStatusToFile
 }

@@ -101,11 +101,6 @@ const fm = require('./utils/filemanager')
     }
   ])
 
-  function createReusableRevocationKeyData(aliasName, isKeyRotation) {
-     fm.writeRevocationKeyDataToFile(options.name, isKeyRotation)
-     console.log(`\nReusable revocation key data were stored in the config file for "${aliasName}" alias.`)
-  }
-
   let options
   try {
     options = commandLineArgs(optionDefinitions)
@@ -227,7 +222,8 @@ const fm = require('./utils/filemanager')
 	      fm.writeMinerIdDataToFile(options.name, firstMinerId)
 	      fm.createRevocationKey(alias)
 	      fm.saveRevocationKeyAlias(options.name, alias)
-	      createReusableRevocationKeyData(options.name, false)
+	      fm.writeRevocationKeyDataToFile(options.name, false)
+	      fm.writeOpReturnStatusToFile(options.name, true)
 	      console.log('Miner ID protocol upgrade has succeeded.')
 	    } else {
 	      console.log('Miner ID protocol upgrade has failed!')

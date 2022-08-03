@@ -110,6 +110,7 @@ describe('Coinbase Document Services', function () {
         saveMinerIdAlias = sandbox.stub(fm, 'saveMinerIdAlias')
         createMinerId = sandbox.stub(fm, 'createMinerId')
         updateKeysInfoInMinerIdDataFile = sandbox.stub(fm, 'updateKeysInfoInMinerIdDataFile').returns('{}')
+	writeOpReturnStatusToFile = sandbox.stub(fm, 'writeOpReturnStatusToFile').returns(true)
 
         coinbaseDocService.rotateMinerId('unittest')
       })
@@ -140,6 +141,10 @@ describe('Coinbase Document Services', function () {
       it('calls "updateKeysInfoInMinerIdDataFile" with right parameters', () => {
         expect(updateKeysInfoInMinerIdDataFile.calledWith('unittest')).to.be(true)
       })
+
+      it('calls "writeOpReturnStatusToFile" with right parameters', () => {
+        expect(writeOpReturnStatusToFile.calledWith('unittest', false)).to.be(true)
+      })
     })
 
     describe('Revocation Key Rotation', function () {
@@ -151,6 +156,7 @@ describe('Coinbase Document Services', function () {
         saveRevocationKeyAlias = sandbox.stub(fm, 'saveRevocationKeyAlias')
         createRevocationKey = sandbox.stub(fm, 'createRevocationKey')
         writeRevocationKeyDataToFile = sandbox.stub(fm, 'writeRevocationKeyDataToFile').returns('{}')
+	writeOpReturnStatusToFile = sandbox.stub(fm, 'writeOpReturnStatusToFile').returns(true)
 
         coinbaseDocService.rotateRevocationKey('unittest')
       })
@@ -177,6 +183,10 @@ describe('Coinbase Document Services', function () {
 
       it('calls "writeRevocationKeyDataToFile" with right parameters', () => {
         expect(writeRevocationKeyDataToFile.calledWith('unittest', true)).to.be(true)
+      })
+
+      it('calls "writeOpReturnStatusToFile" with right parameters', () => {
+        expect(writeOpReturnStatusToFile.calledWith('unittest', false)).to.be(true)
       })
     })
 

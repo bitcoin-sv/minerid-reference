@@ -142,6 +142,23 @@ app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
   }
 })
 
+app.get('/opreturn/:alias/isvalid', authenticateToken, (req, res) => {
+  res.setHeader('Content-Type', 'text/plain')
+
+  if (!fm.aliasExists(req.params.alias)) {
+    res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', req.params.alias)
+    return
+  }
+
+  try {
+    res.send(coinbaseDocService.opReturnStatus(req.params.alias))
+  } catch (err) {
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
+  }
+})
+
 app.get('/minerid/:alias', authenticateToken, (req, res) => {
   res.setHeader('Content-Type', 'text/plain')
 

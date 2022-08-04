@@ -76,7 +76,7 @@ function _readDataFromJsonFile (aliasName, fileName) {
   }
   const filePath = path.join(process.env.HOME, filedir, aliasName, fileName)
   if (!fs.existsSync(filePath)) {
-    console.log(`File "${filePath}" doesn't exist.`)
+    console.debug(`File "${filePath}" doesn't exist.`)
     return
   }
   let data

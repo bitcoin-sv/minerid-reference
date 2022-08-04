@@ -19,6 +19,7 @@ if (!config.hasOwnProperty('debug') || !config.get('debug')) {
 }
 
 app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   const { blockHeight, alias } = req.params
 
   res.setHeader('Content-Type', 'text/plain')
@@ -49,6 +50,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
 )
 
 app.post('/coinbase2', authenticateToken, async (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   const { alias, minerInfoTxId, prevhash, merkleProof, coinbase2 } = req.body
 
   res.setHeader('Content-Type', 'text/plain')
@@ -125,6 +127,7 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
 })
 
 app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -143,6 +146,7 @@ app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
 })
 
 app.get('/opreturn/:alias/isvalid', authenticateToken, (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -160,6 +164,7 @@ app.get('/opreturn/:alias/isvalid', authenticateToken, (req, res) => {
 })
 
 app.get('/minerid/:alias', authenticateToken, (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -178,6 +183,7 @@ app.get('/minerid/:alias', authenticateToken, (req, res) => {
 })
 
 app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   res.setHeader('Content-Type', 'text/plain')
 
   if (!fm.aliasExists(req.params.alias)) {
@@ -206,6 +212,7 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res
 )
 
 app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
   res.setHeader('Content-Type', 'application/json')
 
   if (!fm.aliasExists(req.params.alias)) {

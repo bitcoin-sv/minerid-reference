@@ -247,7 +247,7 @@ const fm = require('./utils/filemanager')
     process.exit(0)
   }
 
-  const opReturn = await coinbaseDocService.createMinerInfoOpReturn(options.height, options.name)
+  const opReturn = await coinbaseDocService.createMinerInfoOpReturn(options.name, options.height)
   if (opReturn) {
     console.log('OP_RETURN hex:')
     console.log(opReturn)

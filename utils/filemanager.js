@@ -21,6 +21,9 @@ const MINERID_REVOCATION_DATA_FILENAME = 'minerIdRevocationData'
 
 const MINERID_DATA_FILENAME = 'minerIdData'
 
+const DATAREFS_DATA_FILENAME = 'dataRefs'
+const DATAREFS_TX_DATA_FILENAME = 'dataRefsTxData'
+
 // Checks if a folder (with the given name) exists.
 function aliasExists (aliasName) {
   const homeDir = process.env.HOME
@@ -505,6 +508,103 @@ function writeOpReturnStatusToFile (aliasName, opReturnStatus) {
   writeMinerIdDataToFile(aliasName, minerIdData)
 }
 
+function readDataRefsTxFile(aliasName) {
+  try {
+    const txData = _readDataFromJsonFile(aliasName, DATAREFS_TX_DATA_FILENAME)
+    if (txData) {
+      _checkRequiredDataField(txData, "dataRefs", DATAREFS_TX_DATA_FILENAME)
+      _checkRequiredDataField(txData.dataRefs, "refs", DATAREFS_TX_DATA_FILENAME)
+      if (!Array.isArray(txData.dataRefs.refs)) {
+        throw new Error(`"dataRefs.refs" data field in the "${DATAREFS_TX_DATA_FILENAME}" config file must be an array!`)
+      }
+      txData.dataRefs.refs.forEach(
+        function(obj) {
+          _checkRequiredDataField(obj, "brfcIds", DATAREFS_TX_DATA_FILENAME)
+          _checkRequiredDataField(obj, "data", DATAREFS_TX_DATA_FILENAME)
+          if (JSON.stringify(obj.data) === '{}') {
+            throw new Error(`"dataRefs.refs.data" data field in the "${DATAREFS_TX_DATA_FILENAME}" config file must be a non-empty json object!`)
+	  }
+          obj.brfcIds.forEach(
+            function(id) {
+               if (!/^[A-F0-9]{12}$/i.test(id)) {
+                 throw new Error(`"dataRefs.refs.brfcIds" data field in the "${DATAREFS_TX_DATA_FILENAME}" config file must be a valid BRFC ID!`)
+	       }
+              _checkRequiredDataField(obj.data, id, DATAREFS_TX_DATA_FILENAME) })
+          _checkRequiredDataField(obj, "vout", DATAREFS_TX_DATA_FILENAME)
+          if (!/^\d+$/i.test(obj.vout)) {
+            throw new Error(`"dataRefs.refs.vout" data field in the "${DATAREFS_TX_DATA_FILENAME}" config file must be a valid outpoint number!`)
+          }
+      })
+    }
+    return txData
+  } catch (e) {
+    console.log('Error reading dataRefsTx configuration: ', e)
+    return null
+  }
+}
+
+function createDataRefsFile(aliasName, dataRefsTxId) {
+  if (dataRefsTxId === undefined) {
+    return
+  }
+  try {
+    const txData = readDataRefsTxFile(aliasName)
+    if (txData) {
+      let data = {}
+      let refs = []
+      txData.dataRefs.refs.forEach(
+        function(obj) {
+          let refObj = {}
+          refObj["brfcIds"] = obj.brfcIds
+          refObj["txid"] = dataRefsTxId
+          refObj["vout"] = obj.vout
+          refs.push(refObj)
+      })
+      data.dataRefs = {}
+      data.dataRefs["refs"] = refs
+      _writeJsonDataToFile(aliasName, data, DATAREFS_DATA_FILENAME)
+    }
+  } catch (e) {
+    console.log('Error creating dataRefs configuration: ', e)
+  }
+}
+
+function readDataRefsFromFile(aliasName) {
+  let data = {}
+  try {
+    data = _readDataFromJsonFile(aliasName, DATAREFS_DATA_FILENAME)
+    if (data) {
+      _checkRequiredDataField(data, "dataRefs", DATAREFS_DATA_FILENAME)
+      _checkRequiredDataField(data.dataRefs, "refs", DATAREFS_DATA_FILENAME)
+      if (!Array.isArray(data.dataRefs.refs)) {
+        throw new Error(`"dataRefs.refs" data field in the "${DATAREFS_DATA_FILENAME}" config file must be an array!`)
+      }
+      data.dataRefs.refs.forEach(
+        function(obj) {
+         _checkRequiredDataField(obj, "brfcIds", DATAREFS_DATA_FILENAME)
+         obj.brfcIds.forEach(
+           function(id) {
+             if (!/^[A-F0-9]{12}$/i.test(id)) {
+               throw new Error(`"dataRefs.refs.brfcIds" data field in the "${DATAREFS_DATA_FILENAME}" config file must be a valid BRFC ID!`)
+	     }
+	 })
+         _checkRequiredDataField(obj, "txid", DATAREFS_DATA_FILENAME)
+         if (!/^[A-F0-9]{64}$/i.test(obj.txid)) {
+           throw new Error(`"dataRefs.refs.txid" data field in the "${DATAREFS_DATA_FILENAME}" config file must be a valid transaction id!`)
+	 }
+         _checkRequiredDataField(obj, "vout", DATAREFS_DATA_FILENAME)
+         if (!/^\d+$/i.test(obj.vout)) {
+           throw new Error(`"dataRefs.refs.vout" data field in the "${DATAREFS_DATA_FILENAME}" config file must be a valid outpoint number!`)
+	 }
+      })
+    }
+  } catch (e) {
+    console.log('Error reading dataRefs configuration: ', e)
+    return null
+  }
+  return data
+}
+
 module.exports = {
   aliasExists,
 
@@ -548,5 +648,9 @@ module.exports = {
   readMinerIdDataAndUpdateMinerIdKeysStatus,
 
   readOpReturnStatusFromFile,
-  writeOpReturnStatusToFile
+  writeOpReturnStatusToFile,
+
+  readDataRefsTxFile,
+  createDataRefsFile,
+  readDataRefsFromFile
 }

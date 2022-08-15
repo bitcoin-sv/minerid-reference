@@ -315,7 +315,7 @@ function canUpgradeMinerIdProtocol (aliasName) {
   return true
 }
 
-async function createMinerInfoDocument (aliasName, height) {
+async function createMinerInfoDocument (aliasName, height, dataRefsTxId) {
   async function _checkIfMinerIdRevocationOccurred(doc) {
     const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile(aliasName)
     if (minerIdRevocationData) {
@@ -369,13 +369,21 @@ async function createMinerInfoDocument (aliasName, height) {
 
   const optionalData = fm.readOptionalMinerIdData(aliasName)
   if (optionalData) {
-    doc = { ...doc, ...optionalData}
+    doc = { ...doc, ...optionalData }
+  }
+
+  if (dataRefsTxId !== undefined) {
+    fm.createDataRefsFile(aliasName, dataRefsTxId)
+  }
+  const dataRefs = fm.readDataRefsFromFile(aliasName)
+  if (dataRefs) {
+    doc.extensions = { ...doc.extensions, ...dataRefs }
   }
 
   return doc
 }
 
-async function createMinerInfoOpReturn (height, aliasName) {
+async function createMinerInfoOpReturn (aliasName, height, dataRefsTxId) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
     return
@@ -389,7 +397,7 @@ async function createMinerInfoOpReturn (height, aliasName) {
     return
   }
 
-  const doc = await createMinerInfoDocument(aliasName, parseInt(height))
+  const doc = await createMinerInfoDocument(aliasName, parseInt(height), dataRefsTxId)
   console.debug('Miner-info doc:\n' + JSON.stringify(doc))
 
   const payload = JSON.stringify(doc)
@@ -401,6 +409,18 @@ async function createMinerInfoOpReturn (height, aliasName) {
   fm.writeOpReturnStatusToFile(aliasName, true)
 
   return opReturnScript
+}
+
+function createDataRefsOpReturns(aliasName) {
+  let dataRefsOpReturnScripts = []
+  const txData = fm.readDataRefsTxFile(aliasName)
+  if (txData) {
+    txData.dataRefs.refs.forEach(
+       function(obj) {
+         dataRefsOpReturnScripts.push(mi.createDataRefOpReturnScript(JSON.stringify(obj.data)).toHex())
+    })
+  }
+  return dataRefsOpReturnScripts
 }
 
 /**
@@ -483,6 +503,7 @@ function opReturnStatus(aliasName) {
 module.exports = {
   createNewCoinbase2: createCoinbase2,
   createMinerInfoOpReturn,
+  createDataRefsOpReturns,
   generateMinerId,
   rotateMinerId,
   rotateRevocationKey,

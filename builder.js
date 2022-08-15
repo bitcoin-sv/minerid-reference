@@ -18,6 +18,28 @@ if (!config.hasOwnProperty('debug') || !config.get('debug')) {
   console.log('Debug print enabled ')
 }
 
+app.get('/datarefs/:alias/opreturns', authenticateToken, async (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
+  const { alias } = req.params
+
+  res.setHeader('Content-Type', 'text/plain')
+
+  if (!fm.aliasExists(alias)) {
+    res.status(422).send(`Alias "${alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', alias)
+    return
+  }
+
+  try {
+    const opReturn = await coinbaseDocService.createDataRefsOpReturns(alias)
+    res.send(opReturn)
+  } catch (err) {
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
+  }
+}
+)
+
 app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, res) => {
   console.log(`Request: ${req.method} ${req.url}`)
   const { blockHeight, alias } = req.params
@@ -38,8 +60,46 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
 
   try {
     const opReturn = await coinbaseDocService.createMinerInfoOpReturn(
+      alias,
+      blockHeight
+    )
+    res.send(opReturn)
+  } catch (err) {
+    res.status(500).send(`Internal error: ${err.message}`)
+    console.warn(`Internal error: ${err.message}`)
+  }
+}
+)
+
+app.get('/opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId', authenticateToken, async (req, res) => {
+  console.log(`Request: ${req.method} ${req.url}`)
+  const { dataRefsTxId, blockHeight, alias } = req.params
+
+  res.setHeader('Content-Type', 'text/plain')
+
+  if (!/^[A-F0-9]{64}$/i.test(dataRefsTxId)) {
+    res.status(422).send('dataRef txid must be a 64-characters hexadecimal string')
+    console.log('Bad request: invalid dataRefs txid: ', dataRefsTxId)
+    return
+  }
+
+  if (blockHeight < 1) {
+    res.status(422).send('Must enter a valid height')
+    console.log('Bad request: invalid height: ', blockHeight)
+    return
+  }
+
+  if (!fm.aliasExists(alias)) {
+    res.status(422).send(`Alias "${alias}" doesn't exist`)
+    console.log('Bad request: non-existent alias: ', alias)
+    return
+  }
+
+  try {
+    const opReturn = await coinbaseDocService.createMinerInfoOpReturn(
+      alias,
       blockHeight,
-      alias
+      dataRefsTxId
     )
     res.send(opReturn)
   } catch (err) {

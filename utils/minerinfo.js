@@ -83,6 +83,11 @@ function createMinerInfoOpReturnScript (doc, sig) {
   return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, doc, sig], 'hex')
 }
 
+function createDataRefOpReturnScript (data) {
+  data = Buffer.from(data).toString('hex')
+  return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, data], 'hex')
+}
+
 /**
  * Make a coinbase tx from cb1 & cb2 parts.
  */
@@ -121,6 +126,7 @@ module.exports = {
   buildMerkleRootFromCoinbase,
   createCoinbaseOpReturnScript,
   createMinerInfoOpReturnScript,
+  createDataRefOpReturnScript,
   makeCoinbaseTx,
   createMinerInfoCoinbaseTx,
   createMinerInfoCoinbaseTxWithBlockBind

@@ -464,6 +464,60 @@ $ curl localhost:9002/opreturn/testMiner/isvalid
 true
 ```
 
+## DataRefs support
+
+It is possible either to create a new dataRefs transaction or to refer to an existing one(s). The MID Generator controls that process using configuration data files listed below.
+
+### dataRefsTxData config file
+
+The `dataRefsTxData` config file defines what must be contained in a new dataRefs transaction. Its expected location is the `~/.minerid-client/:alias` folder. If this config file exists, then the Generator is instructed to create and return a dataRefs op_return output script(s) through `GET /datarefs/:alias/opreturns` request. The first call to 'GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId' method creates a new `dataRefs` config file (or overwrites the existing one) based on the existing `dataRefsTxData` configuration and `dataRefsTxId` specified in the request. The entire content of the `dataRefs` config file is then added to the miner-info document under **extensions** section.
+
+#### Example
+```console
+{
+   "dataRefs": {
+     "refs": [
+       {
+         "brfcIds": ["62b21572ca46", "a224052ad433"],
+         "data": {
+           "62b21572ca46": {
+              "alpha": 1
+           },
+           "a224052ad433": {
+              "omega": 800
+           }
+         },
+         "vout": 0
+       }
+     ]
+   }
+}
+```
+
+### dataRefs config file
+
+An operator may want to link a minerId key with an existing dataRefs transaction(s). To do that the Generator requires to create and configure the `dataRefs` config file, only (its content will be added to the miner-info document under **extensions** section). The `dataRefs` file must be placed in the `~/.minerid-client/:alias` folder.
+
+Note: A presence of the `dataRefsTxData` config file will cause the existing `dataRefs` config file to be overwritten during processing.
+
+#### Example
+```console
+{
+  "dataRefs": {
+    "refs": [
+      {
+        "brfcIds": [
+          "62b21572ca46",
+          "a224052ad433"
+        ],
+        "txid": "c2835431b7486a732897bc64bf04c4c751c820d298ee9d181dfa433f0023dcda",
+        "vout": 0
+      }
+    ]
+  }
+}
+```
+
 ## Example Miner Code
 
 The [examples/testMiner.js](examples/testMiner.js) file contains basic code needed to generate a coinbase transaction that has a miner-info coinbase output in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that output to its coinbase transaction.

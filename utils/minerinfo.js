@@ -20,9 +20,9 @@ const placeholderCB1 = '01000000010000000000000000000000000000000000000000000000
  *
  * It uses a modified miner-info coinbase tx to create a modified merkle root.
  *
- * @param coinbaseTxId (hex string) Coinbase transaction id.
+ * @param coinbaseTxId (a hex-string) Coinbase transaction id.
  * @param merkleProof (list of hex strings) Merkle branches from the mining candidate.
- * @returns (hex string) Modified Merkle root.
+ * @returns (a hex-string) Modified Merkle root.
  */
 function buildMerkleRootFromCoinbase (coinbaseTxId, merkleBranches) {
   let res = Buffer.from(coinbaseTxId, 'hex').reverse() // swap endianness before concatenating
@@ -41,7 +41,7 @@ function buildMerkleRootFromCoinbase (coinbaseTxId, merkleBranches) {
  * (2) protocol id version
  * (3) minerInfoTxId
  *
- * @param minerInfoTxId (hex string) An existing miner-info transaction id.
+ * @param minerInfoTxId (a hex-string) An existing miner-info transaction id.
  * @returns (bsv.Script) Script containing (1) - (3) data.
  */
 function createCoinbaseOpReturnScript (minerInfoTxId) {
@@ -57,9 +57,9 @@ function createCoinbaseOpReturnScript (minerInfoTxId) {
  * (4) blockBind
  * (5) blockBindSig
  *
- * @param minerInfoTxId (hex string) An existing miner-info transaction id.
- * @param blockBind (hex string) A block binding result.
- * @param blockBindSig (hex string) Signature over the blockBind data.
+ * @param minerInfoTxId (a hex-string) An existing miner-info transaction id.
+ * @param blockBind (a hex-string) A block binding result.
+ * @param blockBindSig (a hex-string) Signature over the blockBind data.
  * @returns (bsv.Script) Script containing (1) - (5) data.
  */
 function createCoinbaseOpReturnScript2 (minerInfoTxId, blockBind, blockBindSig) {
@@ -75,7 +75,7 @@ function createCoinbaseOpReturnScript2 (minerInfoTxId, blockBind, blockBindSig) 
  * (4) miner-info document signature
  *
  * @param doc (string) A miner-info document
- * @param sig (hex-string) Signature of the miner-info document
+ * @param sig (a hex-string) Signature of the miner-info document
  * @returns (bsv.Script) Script containing (1) - (4) data.
  */
 function createMinerInfoOpReturnScript (doc, sig) {
@@ -83,6 +83,12 @@ function createMinerInfoOpReturnScript (doc, sig) {
   return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, doc, sig], 'hex')
 }
 
+/**
+ * Creates dataRefs output script.
+ *
+ * @param data (a json-string) Data to be contained in a new dataRefs transaction.
+ * @returns (bsv.Script) DataRefs output script.
+ */
 function createDataRefOpReturnScript (data) {
   data = Buffer.from(data).toString('hex')
   return bsv.Script.buildSafeDataOut([PROTOCOL_NAME, PROTOCOL_ID_VERSION, data], 'hex')
@@ -90,6 +96,12 @@ function createDataRefOpReturnScript (data) {
 
 /**
  * Make a coinbase tx from cb1 & cb2 parts.
+ *
+ * Note: The coinbase parts are compliant with the Stratum Protocol.
+ *
+ * @param cb1 (a hex-string) The first part of the coinbase transaction.
+ * @param cb2 (a hex-string) The second part of the coinbase transaction.
+ * @returns (a hex-string) The coinbase transaction.
  */
 function makeCoinbaseTx(cb1, cb2) {
   if (!Buffer.isBuffer(cb2)) {
@@ -100,7 +112,10 @@ function makeCoinbaseTx(cb1, cb2) {
 }
 
 /**
- * Creates a miner-info coinbase tx.
+ * Adds a miner-info output to the coinbase tx.
+ *
+ * @param ctx (a hex-string) The coinbase tx to be modified.
+ * @param minerInfoTxId (a hex-string) Miner-info transaction id.
  */
 function createMinerInfoCoinbaseTx(ctx, minerInfoTxId) {
   ctx.addOutput(new bsv.Transaction.Output({
@@ -111,7 +126,12 @@ function createMinerInfoCoinbaseTx(ctx, minerInfoTxId) {
 }
 
 /**
- * Creates a miner-info coinbase tx with the block binding support.
+ * Adds a miner-info output to the coinbase tx containing the block binding support.
+ *
+ * @param ctx (a hex-string) The coinbase tx to be modified.
+ * @param minerInfoTxId (a hex-string) Miner-info transaction id.
+ * @param blockBind (a hex-string) blockBind data.
+ * @param blockBindSig (a hex-string) blockBindSig signature.
  */
 function createMinerInfoCoinbaseTxWithBlockBind(ctx, minerInfoTxId, blockBind, blockBindSig) {
   ctx.addOutput(new bsv.Transaction.Output({

@@ -30,6 +30,14 @@ switch (network) {
 
 const cbdVersion = '0.3'
 
+/**
+ * Generates a new miner ID reputation chain.
+ *
+ * The function generates minerId & revocation key private keys.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @returns (boolean) 'true' when miner ID data have been successfully created; otherwise 'false'.
+ */
 function generateMinerId (aliasName) {
   // the first alias has an underscore 1 appended so other aliases increment
   const alias = aliasName + '_1'
@@ -108,10 +116,6 @@ function signHash (hash, alias) {
   return signature.toString('hex')
 }
 
-/* Create a new minerId
-   Don't return anything but the subsequent coinbase documents will contain both minerIds (now including the new one)
-*/
-
 function _checkAliasExists(aliasName) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
@@ -139,6 +143,12 @@ function _checkCurrentMinerIdPrivateKeyExists (aliasName) {
   return true
 }
 
+/**
+ * Rotates the current minerId key.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @returns (boolean) 'true' when the key has been successfully rotated; otherwise 'false'.
+ */
 function rotateMinerId (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
@@ -182,7 +192,14 @@ function _checkCurrentRevocationPrivateKeyExists (aliasName) {
   return true
 }
 
-// Rotate the current revocation key.
+/**
+ * Rotates the current revocation key.
+ *
+ * The function requires an access to the revocationKey private key.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @returns (boolean) 'true' when the key has been successfully rotated; otherwise 'false'.
+ */
 function rotateRevocationKey (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
@@ -211,7 +228,16 @@ function rotateRevocationKey (aliasName) {
   return true
 }
 
-// Revoke the given minerId public key.
+/**
+ * Revokes the specified minerId public key.
+ *
+ * The function requires an access to minerId & revocationKey private keys.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @param minerIdPubKey (a hex-string) minerId public key to be revoked.
+ * @param isCompleteRevocation (boolean) Flag indicating a partial or complete revocation.
+ * @returns (boolean) 'true' when revocation data have been successfully created; otherwise 'false'.
+ */
 async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
   // Call the node to invalidate the specified key and to broadcast a P2P revokemid message to the network.
   async function _revokeMinerIdNotification(aliasName, minerIdPubKey) {
@@ -281,7 +307,12 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
   return true
 }
 
-// Check if minerId protocol can be upgraded.
+/**
+ * Checks if the current miner ID protocol can be upgraded to the newest version.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @returns (boolean) 'true' if an upgrade is possible; otherwise 'false'.
+ */
 function canUpgradeMinerIdProtocol (aliasName) {
   if (!_checkAliasExists(aliasName)) {
     return false
@@ -307,6 +338,14 @@ function canUpgradeMinerIdProtocol (aliasName) {
   return true
 }
 
+/**
+ * Creates a miner-info document.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @param height (number) Block height in which Miner ID document is included.
+ * @param dataRefsTxId (hex string) DataRefs txid to be linked with Miner ID document.
+ * @returns (a hex-string) Miner-info document.
+ */
 async function createMinerInfoDocument (aliasName, height, dataRefsTxId) {
   async function _checkIfMinerIdRevocationOccurred(doc) {
     const minerIdRevocationData = fm.readMinerIdRevocationDataFromFile(aliasName)
@@ -375,6 +414,17 @@ async function createMinerInfoDocument (aliasName, height, dataRefsTxId) {
   return doc
 }
 
+/**
+ * Support for 'GET /opreturn/:alias/:blockHeight([0-9]+)' and
+ * 'GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId' requests.
+ *
+ * The function creates op_return script containing a miner-info document and its signature.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @param height (number) Block height in which Miner ID document is included.
+ * @param dataRefsTxId (a hex-string) DataRefs txid to be linked with Miner ID document.
+ * @returns (a hex-string) Miner-info op_return script.
+ */
 async function createMinerInfoOpReturn (aliasName, height, dataRefsTxId) {
   if (!aliasName || aliasName === '') {
     console.log('Must supply an alias')
@@ -403,6 +453,14 @@ async function createMinerInfoOpReturn (aliasName, height, dataRefsTxId) {
   return opReturnScript
 }
 
+/**
+ * Support for 'GET /datarefs/:alias/opreturns' requests.
+ *
+ * The function reads a dataRefs tx configuration and creates op_return script for each defined outpoint.
+ *
+ * @param aliasName (string) An existing Miner ID alias to use.
+ * @returns (an array of hex-strings) DataRefs op_return script(s).
+ */
 function createDataRefsOpReturns(aliasName) {
   let dataRefsOpReturnScripts = []
   const txData = fm.readDataRefsTxFile(aliasName)
@@ -424,11 +482,11 @@ function createDataRefsOpReturns(aliasName) {
  * (3) blockBindSig
  *
  * @param aliasName (string) An existing Miner ID alias to use.
- * @param minerInfoTxId (hex string) An existing miner-info transaction id.
- * @param prevhash (hex string) Hash of the previous block.
+ * @param minerInfoTxId (a hex-string) An existing miner-info transaction id.
+ * @param prevhash (a hex-string) Hash of the previous block.
  * @param merkleProof (list of hex strings) Merkle branches from the mining candidate.
- * @param coinbase2 (hex string) The 2nd part of the coinbase tx.
- * @returns (hex string) coinbase2 extended by (1)-(3) data.
+ * @param coinbase2 (a hex-string) The 2nd part of the coinbase tx.
+ * @returns (a hex-string) coinbase2 extended by (1)-(3) data.
  */
 async function createCoinbase2 (aliasName, minerInfoTxId, prevhash, merkleProof, coinbase2) {
   console.debug('minerInfoTxId: ' + minerInfoTxId)

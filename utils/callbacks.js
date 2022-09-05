@@ -9,7 +9,9 @@ function _checkRequiredDataField (data, field) {
 }
 
 /**
- * Make a JSON-RPC connection to the Node.
+ * Makes a JSON-RPC connection to the Node.
+ *
+ * @returns (an object) A valid connection to the node or null.
  */
 function rpcConnect () {
   const url = 'http://' + config.get('bitcoin.rpcHost')
@@ -27,7 +29,14 @@ function rpcConnect () {
 }
 
 /**
- * Call getmineridinfo rpc to check if minerId keys are confirmed in Miner ID DB.
+ * Calls getmineridinfo RPC to check if minerId public keys are confirmed in the Miner ID DB.
+ *
+ * @param minerId (a hex-string) minerId public key to be checked.
+ * @param prevMinerId (a hex-string) prevMinerId public key to be checked.
+ * @param minerIdState (string) An expected state of the minerId public key.
+ * @returns (boolean)
+ *  'true' indicates that the minerId public keys are confirmed;
+ *  'false' there is no match in the DB or an error has occurred during the request.
  */
 async function checkMinerIdKeysConfirmed (minerId, prevMinerId, minerIdState) {
   try {
@@ -56,7 +65,16 @@ async function checkMinerIdKeysConfirmed (minerId, prevMinerId, minerIdState) {
 }
 
 /**
- * Call getmineridinfo rpc to check if revocationKey keys are confirmed in Miner ID DB.
+ * Calls getmineridinfo RPC to check if revocationKey public keys are confirmed in the Miner ID DB.
+ *
+ * Note: The minerIdStatus must be set as 'CURRENT' in the DB.
+ *
+ * @param minerId (a hex-string) minerId public key to be checked.
+ * @param revocationKey (a hex-string) revocationKey public key to be checked.
+ * @param prevRevocationKey (a hex-string) prevRevocationKey public key to be checked.
+ * @returns (boolean)
+ *  'true' indicates that the revocation public keys are confirmed;
+ *  'false' there is no match in the DB or an error has occurred during the request.
  */
 async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocationKey) {
   try {
@@ -87,7 +105,17 @@ async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocat
 }
 
 /**
- * Check if minerId revocation is confirmed in Miner ID DB.
+ * Checks if minerId revocation is confirmed in the Miner ID DB
+ * based on checkMinerIdKeysConfirmed call.
+ *
+ * @param minerId (a hex-string) minerId public key to be checked.
+ * @param prevMinerId (a hex-string) prevMinerId public key to be checked.
+ * @param compromisedMinerid (a hex-string) compromisedMinerid public key only used to add a log message.
+ * @param minerIdState (string) An expected state of the minerId public key.
+ * @param revocationName (string) Revocation type only used to add a log message.
+ * @returns (boolean)
+ *  'true' indicates that the minerId revocation has been confirmed;
+ *  'false' there is no match in the DB or an error has occurred during the request.
  */
 async function isMinerIdRevocationConfirmed(minerId, prevMinerId, compromisedMinerid, minerIdState, revocationName) {
   console.debug(`${isMinerIdRevocationConfirmed.name}-parameters:
@@ -105,7 +133,7 @@ async function isMinerIdRevocationConfirmed(minerId, prevMinerId, compromisedMin
 }
 
 /**
- * Use revokeminerid rpc to revoke the given compromised minerId key.
+ * Uses revokeminerid RPC to revoke the given compromised minerId public key.
  *
  * The connected node will update its own Miner ID DB. After that,
  * it will send the revokemid P2P network message to the network.
@@ -122,6 +150,11 @@ async function isMinerIdRevocationConfirmed(minerId, prevMinerId, compromisedMin
  *          "sig2": xxxx
  *      }
  *  }
+ *
+ * @param input (a json-object) The input argument defined as above.
+ * @returns (boolean)
+ *  'true' indicates that the minerId public key has been revoked;
+ *  'false' the minerId public key has not been revoked or an error has occurred during the request.
  */
 async function revokeMinerId (input) {
   try {

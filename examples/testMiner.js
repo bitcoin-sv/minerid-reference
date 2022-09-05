@@ -1,53 +1,72 @@
 /**
  * This test aims to verify a basic communication between the Script, Miner ID Generator & Node.
  *
+ *
  * Prerequisities:
- * 1. BSV Node: Set up and run a node connected to the regtest (see config/default.json configuration file).
+ *
+ * 1. BSV Node.
+ *
+ * Set up and run a node connected to the regtest (see config/default.json configuration file).
  *   (a) Add 'standalone=1' to bitcoin.conf.
  *   (b) Make sure that funds to spend are available (generate 101)
- * 2. Miner ID Generator: Set up and run the web server (npm start).
+ *   (c) Configure the node to be capable to sign miner-info transactions:
+ *       (c1) Create a BIP-32 signing key to sign a miner-info tx:
+ *              bitcoin-cli makeminerinfotxsigningkey
+ *       (c2) Get the miner-info funding address:
+ *              bitcoin-cli getminerinfotxfundingaddress
+ *       (c3) Send some minimal BSV amount (0.1) to the generated miner-info funding address, e.g., using:
+ *              bitcoin-cli sendtoaddress address amount
+ *       (c4) Configure the node to use the miner-info funding outpoint:
+ *              bitcoin-cli setminerinfotxfundingoutpoint txid n
+ *
+ * 2. Miner ID Generator.
+ *
+ * Set up and run the web server.
  *   (a) create a new 'testMiner' alias via CLI interface (npm run cli -- generateminerid --name testMiner)
  *   (b) change the default port to 9003 and disable authentication
  *       (export NODE_CONFIG='{"port": 9003, "authentication": {"enabled": false}}')
- *   (c) to enable a dataRefs tx creation add the 'dataRefsTxData' data file with a sample configuration, e.g.:
- *       {
- *          "dataRefs": {
- *              "refs": [
- *                  {
- *                      "brfcIds": ["62b21572ca46", "a224052ad433"],
- *                       "data": {
- *                           "62b21572ca46": {
- *                               "alpha": 1
+ *   (c) (optional step) enable dataRefs support
+ *       (c1) to enable a dataRefs tx creation add the 'dataRefsTxData' data file with a sample configuration, e.g.:
+ *           {
+ *              "dataRefs": {
+ *                  "refs": [
+ *                      {
+ *                          "brfcIds": ["62b21572ca46", "a224052ad433"],
+ *                           "data": {
+ *                               "62b21572ca46": {
+ *                                   "alpha": 1
+ *                               },
+ *                               "a224052ad433": {
+ *                                   "omega": 800
+ *                               }
  *                           },
- *                           "a224052ad433": {
- *                               "omega": 800
- *                           }
- *                       },
- *                       "vout": 0
- *                  }
- *              ]
+ *                           "vout": 0
+ *                      }
+ *                  ]
+ *               }
  *           }
- *       }
  *
- *       Note:
- *       1. The example above allows to test a datarefs tx creation by this script.
- *       2. The outcome of the 'dataRefsTxData' configuration is a new 'dataRefs' data file created by the Generator.
+ *           Note:
+ *           1. The example above allows to test a datarefs tx creation by this script.
+ *           2. The outcome of the 'dataRefsTxData' configuration is a new 'dataRefs' data file created by the Generator.
  *
- *   (d) to enable only datarefs re-usage add the 'dataRefs' data file with a sample configuration, e.g.:
- *      {
- *          "dataRefs": {
- *              "refs": [
- *                  {
- *                      "brfcIds": [
- *                           "62b21572ca46",
- *                           "a224052ad433"
- *                      ],
- *                      "txid": "140a4ae78ae06ff24655be3c0d748ba8d8969ef492a411a700cdad45d9b780bf",
- *                      "vout": 0
- *                  }
- *              ]
+ *       (c2) to enable only datarefs re-usage add the 'dataRefs' data file with a sample configuration, e.g.:
+ *          {
+ *              "dataRefs": {
+ *                  "refs": [
+ *                      {
+ *                          "brfcIds": [
+ *                               "62b21572ca46",
+ *                               "a224052ad433"
+ *                          ],
+ *                          "txid": "140a4ae78ae06ff24655be3c0d748ba8d8969ef492a411a700cdad45d9b780bf",
+ *                          "vout": 0
+ *                      }
+ *                  ]
+ *              }
  *          }
- *      }
+ *   (d) npm start
+ *       Note: Start the server in the same terminal where the (b) step has been configured.
  *
  * The testing script performs the following operations:
  * 1. Calls the MID Generator and the Node to create a datarefs tx if the alias was configured to enable datarefs cretation.

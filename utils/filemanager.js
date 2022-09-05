@@ -152,7 +152,24 @@ function revocationKeyExists(alias) {
   return _checkIfKeyExists(alias, revocationKeystorePath)
 }
 
-// Write 'prevRevocationKey', 'revocationKey' public keys and 'prevRevocationKeySig' to the file.
+/**
+ * The function writes a revocation key related data into the REVOCATION_KEY_DATA_FILENAME file.
+ *
+ * The following data fields are stored in a json format:
+ * (a) 'prevRevocationKey' public key.
+ * (b) 'revocationKey' public key.
+ * (c) 'prevRevocationKeySig' signature.
+ * In the case of a revocation key rotation the private key is used to create (a)-(c) data
+ * for the next document what is necessary to normalise 'prevRevocationKey' data field.
+ *
+ * Note:
+ * The revocation private key should be kept offline. The key must be available only to:
+ * (a) rotate the current revocation key, or
+ * (b) sign a revocation message
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @param isKeyRotation (boolean) Flag indicates if a revocation key rotation occurs.
+ */
 function writeRevocationKeyDataToFile (aliasName, isKeyRotation) {
   let revocationKeyData = {}
   // prevRevocationKey
@@ -192,6 +209,17 @@ function _checkRequiredDataField (data, field, fileName) {
   }
 }
 
+/**
+ * The function reads a revocation key related data from the REVOCATION_KEY_DATA_FILENAME file.
+ *
+ * The required data fields are:
+ * (a) 'prevRevocationKey' public key.
+ * (b) 'revocationKey' public key.
+ * (c) 'prevRevocationKeySig' signature.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @returns (an object) Revocation key data fields.
+ */
 function readRevocationKeyDataFromFile (aliasName) {
   const revocationKeyData = _readDataFromJsonFile(aliasName, REVOCATION_KEY_DATA_FILENAME)
   if (!revocationKeyData) {
@@ -203,10 +231,20 @@ function readRevocationKeyDataFromFile (aliasName) {
   return revocationKeyData
 }
 
+/**
+ * This function is an extension to the readRevocationKeyDataFromFile function.
+ *
+ * Operations executed:
+ * 1. Reads a revocation key related data.
+ * 2. Checks if 'prevRevocationKey' data field needs to be normalised.
+ * 2.1 Normalises the data field if it is required.
+ * 3. Returns correct revocation key data.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @returns (an object) Revocation key data.
+ */
 async function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
   function _normalisePrevRevocationKey (aliasName, revocationKeyData) {
-    // Make sure that after the revocation document containing the key rotation is written on the blockchain
-    // the first miner-info doc (which comes after it) sets 'prevRevocationKey' and 'revocationKey' fields to the same value.
     let revocationKeyData2 = {}
     // Check if the 'nextDocData' section is available.
     _checkRequiredDataField(revocationKeyData, "nextDocData", REVOCATION_KEY_DATA_FILENAME)
@@ -233,7 +271,17 @@ async function readRevocationKeyDataAndUpdateKeysStatus (aliasName) {
   return revocationKeyData
 }
 
-// Creates data fields required by the miner ID revocation procedure.
+/**
+ * The function creates data required by the miner ID revocation procedure.
+ *
+ * The data are written into the MINERID_REVOCATION_DATA_FILENAME file.
+ *
+ * Note: At this stage the revocation key private key must be accessible.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @param compromisedMinerIdPubKey (a hex-string) The compromised minerId public key.
+ * @param isCompleteRevocation (boolean) 'true' indicates a complete revocation; 'false' a partial revocation.
+ */
 function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCompleteRevocation) {
   console.log('Compromised minerId to be revoked: ', compromisedMinerIdPubKey)
   // minerId revocation data to be written into the file.
@@ -275,6 +323,13 @@ function createMinerIdRevocationData (aliasName, compromisedMinerIdPubKey, isCom
   _writeJsonDataToFile(aliasName, revocationData, MINERID_REVOCATION_DATA_FILENAME)
 }
 
+/**
+ * The function reads data from the MINERID_REVOCATION_DATA_FILENAME file
+ * required to construct the miner-info revocation document.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @returns A null or an object containing minerId revocation data.
+ */
 function readMinerIdRevocationDataFromFile (aliasName) {
   const minerIdRevocationData = _readDataFromJsonFile(aliasName, MINERID_REVOCATION_DATA_FILENAME)
   if (!minerIdRevocationData) {
@@ -289,6 +344,7 @@ function readMinerIdRevocationDataFromFile (aliasName) {
   return minerIdRevocationData
 }
 
+// Removes the MINERID_REVOCATION_DATA_FILENAME file.
 function deleteMinerIdRevocationDataFile (aliasName) {
   const filePath = path.join(process.env.HOME, filedir, aliasName, MINERID_REVOCATION_DATA_FILENAME)
   fs.unlink(filePath, (err) => {
@@ -416,6 +472,13 @@ function updateMinerContactData (aliasName, name, value) {
   writeMinerContactDataToFile(aliasName, name, value)
 }
 
+/**
+ * The function writes minerContact details into the MINERID_OPTIONAL_DATA_FILENAME file.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @param name (string) Key to be added.
+ * @param value (string) Value assigned to the key.
+ */
 function writeMinerContactDataToFile (aliasName, name, value) {
   const homeDir = process.env.HOME
   const filePath = path.join(homeDir, filedir, aliasName, MINERID_OPTIONAL_DATA_FILENAME)
@@ -436,10 +499,12 @@ function writeMinerContactDataToFile (aliasName, name, value) {
   }
 }
 
+// Writes minerId data into the MINERID_DATA_FILENAME file.
 function writeMinerIdDataToFile(aliasName, minerIdData) {
   _writeJsonDataToFile(aliasName, minerIdData, MINERID_DATA_FILENAME)
 }
 
+// Updates the MINERID_DATA_FILENAME file based on the given arguments.
 function updateKeysInfoInMinerIdDataFile2 (aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig) {
   minerIdData["prevMinerId"] = prevMinerId
   minerIdData["minerId"] = minerId
@@ -448,6 +513,7 @@ function updateKeysInfoInMinerIdDataFile2 (aliasName, minerIdData, prevMinerId, 
   return minerIdData
 }
 
+// Updates the MINERID_DATA_FILENAME file.
 function updateKeysInfoInMinerIdDataFile (aliasName) {
   let minerIdData = {}
   minerIdData = readMinerIdDataFromFile(aliasName)
@@ -459,14 +525,28 @@ function updateKeysInfoInMinerIdDataFile (aliasName) {
   return updateKeysInfoInMinerIdDataFile2(aliasName, minerIdData, prevMinerId, minerId, prevMinerIdSig)
 }
 
+// Reads data from the MINERID_OPTIONAL_DATA_FILENAME file.
 function readOptionalMinerIdData (aliasName) {
   return _readDataFromJsonFile(aliasName, MINERID_OPTIONAL_DATA_FILENAME)
 }
 
+// Reads data from the MINERID_DATA_FILENAME file.
 function readMinerIdDataFromFile (aliasName) {
   return _readDataFromJsonFile(aliasName, MINERID_DATA_FILENAME)
 }
 
+/**
+ * This function is an extension to the readMinerIdDataFromFile function.
+ *
+ * Operations executed:
+ * 1. Reads a minerId key related data.
+ * 2. Checks if 'prevMinerId' data field needs to be normalised.
+ * 2.1 Normalises the data field if it is required.
+ * 3. Returns correct minerId key data.
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @returns (an object) minerId key data fields.
+ */
 async function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
   function _normalisePrevMinerId (aliasName, minerIdData) {
     // The first miner-info document (after the minerId key rotation) is forming a new Miner ID reputation chain.
@@ -496,18 +576,21 @@ async function readMinerIdDataAndUpdateMinerIdKeysStatus (aliasName) {
   return minerIdData
 }
 
+// Reads 'opreturn_status' from the MINERID_DATA_FILENAME file.
 function readOpReturnStatusFromFile (aliasName) {
   minerIdData = readMinerIdDataFromFile(aliasName)
   _checkRequiredDataField(minerIdData, "opreturn_status", MINERID_DATA_FILENAME)
   return minerIdData["opreturn_status"]
 }
 
+// Writes 'opreturn_status' into the MINERID_DATA_FILENAME file.
 function writeOpReturnStatusToFile (aliasName, opReturnStatus) {
   minerIdData = readMinerIdDataFromFile(aliasName)
   minerIdData["opreturn_status"] = opReturnStatus
   writeMinerIdDataToFile(aliasName, minerIdData)
 }
 
+// Reads dataRefs tx configuration from the DATAREFS_TX_DATA_FILENAME file.
 function readDataRefsTxFile(aliasName) {
   try {
     const txData = _readDataFromJsonFile(aliasName, DATAREFS_TX_DATA_FILENAME)
@@ -543,6 +626,14 @@ function readDataRefsTxFile(aliasName) {
   }
 }
 
+/**
+ * The function creates the DATAREFS_DATA_FILENAME file based on:
+ * (a) the DATAREFS_TX_DATA_FILENAME file configuration
+ * (b) specified dataRefsTxId argument
+ *
+ * @param aliasName (string) A Miner ID alias to use.
+ * @param dataRefsTxId (optional hex-string) DataRefs transaction id.
+ */
 function createDataRefsFile(aliasName, dataRefsTxId) {
   if (dataRefsTxId === undefined) {
     return
@@ -569,6 +660,7 @@ function createDataRefsFile(aliasName, dataRefsTxId) {
   }
 }
 
+// Reads configuration from the DATAREFS_DATA_FILENAME file.
 function readDataRefsFromFile(aliasName) {
   let data = {}
   try {

@@ -138,6 +138,11 @@ const fm = require('./utils/filemanager')
   }
   if (options.command) {
     try {
+        const confirmationMsg = "Wait for a new miner ID block(s) to confirm this operation on the blockchain."
+        const blocksNumberMsg = "The expected number of miner ID blocks to be mined is:"
+        const blocksNumberMsg_1 = blocksNumberMsg + " 1."
+        const blocksNumberMsg_2 = blocksNumberMsg + " 2."
+
 	switch (options.command[0].toLowerCase()) {
 	  case 'config': {
 	    if (options.command.length < 2 || options.command[1].indexOf('=') === -1) {
@@ -150,9 +155,9 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'generateminerid': {
 	    if (coinbaseDocService.generateMinerId(options.name)) {
-	      console.log('MinerId generation has succeeded.')
+	      console.log(`Miner ID generation has succeeded. ${confirmationMsg} ${blocksNumberMsg_1}`)
 	    } else {
-	      console.log('MinerId generation has failed!')
+	      console.log('Miner ID generation has failed!')
 	    }
 	    break
 	  }
@@ -162,7 +167,7 @@ const fm = require('./utils/filemanager')
 	    } else {
 	      const currentMinerId = coinbaseDocService.getCurrentMinerId(options.name)
 	      if (currentMinerId) {
-	        console.log('The current minerId is: ', currentMinerId)
+	        console.log(`The current minerId public key is: ${currentMinerId}. Check if the key is confirmed on the blockchain.`)
 	      } else {
 	        console.log('Error: Check if the minerId private key is in the keystore!')
 	      }
@@ -171,15 +176,15 @@ const fm = require('./utils/filemanager')
 	  }
 	  case 'rotateminerid': {
 	    if (coinbaseDocService.rotateMinerId(options.name)) {
-	      console.log('minerId key rotation has succeeded.')
+	      console.log(`Miner ID key rotation has succeeded. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
-	      console.log('minerId key rotation has failed!')
+	      console.log('Miner ID key rotation has failed!')
 	    }
 	    break
 	  }
 	  case 'rotaterevocationkey': {
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
-	      console.log('Revocation key rotation has succeeded.')
+	      console.log(`Revocation key rotation has succeeded. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
 	      console.log('Revocation key rotation has failed!')
 	    }
@@ -192,9 +197,9 @@ const fm = require('./utils/filemanager')
               process.exit(0)
 	    }
             if (await coinbaseDocService.revokeMinerId(options.name, options.minerid, false /* partial revocation */)) {
-              console.log("Revocation data has been created for the compromised minerId key.")
+              console.log(`Revocation data has been created for the compromised minerId key. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
-              console.log("MinerId partial revocation has failed!")
+              console.log('Miner ID partial revocation has failed!')
 	    }
 	    break
 	  }
@@ -205,7 +210,7 @@ const fm = require('./utils/filemanager')
               break
 	    }
             if (await coinbaseDocService.revokeMinerId(options.name, minerIdData["first_minerId"], true /* complete revocation */)) {
-              console.log("Revocation data has been created for the compromised minerId key.")
+              console.log(`Revocation data has been created for the compromised minerId key. ${confirmationMsg} ${blocksNumberMsg_1}`)
 	    }
 	    break
 	  }
@@ -224,7 +229,7 @@ const fm = require('./utils/filemanager')
 	      fm.saveRevocationKeyAlias(options.name, alias)
 	      fm.writeRevocationKeyDataToFile(options.name, false)
 	      fm.writeOpReturnStatusToFile(options.name, true)
-	      console.log('Miner ID protocol upgrade has succeeded.')
+	      console.log(`Miner ID protocol upgrade has succeeded. ${confirmationMsg} ${blocksNumberMsg_1}`)
 	    } else {
 	      console.log('Miner ID protocol upgrade has failed!')
 	    }

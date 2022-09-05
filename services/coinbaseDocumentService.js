@@ -253,12 +253,10 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
     if (!isCompleteRevocation) {
       const minerIdData = fm.readMinerIdDataFromFile(aliasName)
       if (!minerIdData.hasOwnProperty('first_minerId')) {
-        console.log('Cannot find "first_minerId" in the config file.')
-        return false
+        throw new Error('Cannot find "first_minerId" in the config file.')
       }
       if (minerIdData["first_minerId"] == minerIdPubKey) {
-        console.log('An attempt to terminate the entire Miner ID reputation chain.')
-        return false
+        throw new Error('An attempt to terminate the entire Miner ID reputation chain.')
       }
     }
     // Call the configured callback to revoke the specified minerId and to send
@@ -269,8 +267,7 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
       if (rotateMinerId(aliasName)) {
         console.log('The compromised minerId has been rotated successfully.')
       } else {
-        console.log("The compromised minerId key rotation has failed!")
-        return false
+        throw new Error("The compromised minerId key rotation has failed!")
       }
     }
     // Creates protocol data to be dynamically used during miner-info document's construction.
@@ -294,22 +291,17 @@ function canUpgradeMinerIdProtocol (aliasName) {
     if (!_checkCurrentMinerIdPrivateKeyExists(aliasName)) {
       return false
     }
-    // Check revocationKey conditions.
-    {
-      // get current revocation key alias
-      const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
-      if (currentAlias) {
-        console.log(`Error: minerId is already upgraded. The revocation key alias "${currentAlias}" does exist.`)
-        return false
-      }
-      // Check if the initial revocationKey private key is present in the revocation key store.
-      if (fm.revocationKeyExists(aliasName+'_1')) {
-        console.log(`Error: minerId is already upgraded. The "${aliasName}_1.key" revocation private key is available in the key store.`)
-	return false
-      }
+    // get current revocation key alias
+    const currentAlias = fm.getCurrentRevocationKeyAlias(aliasName)
+    if (currentAlias) {
+      throw new Error(`minerId is already upgraded. The revocation key alias "${currentAlias}" does exist.`)
+    }
+    // Check if the initial revocationKey private key is present in the revocation key store.
+    if (fm.revocationKeyExists(aliasName+'_1')) {
+      throw new Error(`minerId is already upgraded. The "${aliasName}_1.key" revocation private key is available in the key store.`)
     }
   } catch (err) {
-    console.log('Error upgrading minerId protocol data: ', err)
+    console.log('Error upgrading miner Id protocol data: ', err)
     return false
   }
   return true

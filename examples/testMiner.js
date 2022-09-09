@@ -15,16 +15,17 @@
  *       (c2) Get the miner-info funding address:
  *              bitcoin-cli getminerinfotxfundingaddress
  *       (c3) Send some minimal BSV amount (0.1) to the generated miner-info funding address, e.g., using:
- *              bitcoin-cli sendtoaddress address amount
+ *              bitcoin-cli sendtoaddress "address" "amount"
  *       (c4) Configure the node to use the miner-info funding outpoint:
- *              bitcoin-cli setminerinfotxfundingoutpoint txid n
+ *              bitcoin-cli setminerinfotxfundingoutpoint "txid" "n"
  *
  * 2. Miner ID Generator.
  *
  * Set up and run the web server.
  *   (a) create a new 'testMiner' alias via CLI interface (npm run cli -- generateminerid --name testMiner)
- *   (b) change the default port to 9003 and disable authentication
- *       (export NODE_CONFIG='{"port": 9003, "authentication": {"enabled": false}}')
+ *   (b) check if 'config/default.json' settings are correctly configured to allow rpc connection to the Node.
+ *       (b1) change the default port to 9003 and disable authentication
+ *            (for instance use: export NODE_CONFIG='{"port": 9003, "authentication": {"enabled": false}}')
  *   (c) (optional step) enable dataRefs support
  *       (c1) to enable a dataRefs tx creation add the 'dataRefsTxData' data file with a sample configuration, e.g.:
  *           {
@@ -47,8 +48,9 @@
  *           }
  *
  *           Note:
- *           1. The example above allows to test a datarefs tx creation by this script.
- *           2. The outcome of the 'dataRefsTxData' configuration is a new 'dataRefs' data file created by the Generator.
+ *            1. The expected location of this file is: ~/.minerid-client/testMiner/dataRefsTxData.
+ *            2. The example above allows to test a datarefs tx creation by this script.
+ *            3. The outcome of the 'dataRefsTxData' configuration is a new 'dataRefs' data file created by the Generator.
  *
  *       (c2) to enable only datarefs re-usage add the 'dataRefs' data file with a sample configuration, e.g.:
  *          {
@@ -65,18 +67,21 @@
  *                  ]
  *              }
  *          }
+ *
+ *          Note: The expected location of this file is: ~/.minerid-client/testMiner/dataRefs.
+ *
  *   (d) npm start
  *       Note: Start the server in the same terminal where the (b) step has been configured.
  *
  * The testing script performs the following operations:
  * 1. Calls the MID Generator and the Node to create a datarefs tx if the alias was configured to enable datarefs cretation.
  * 2. Calls the MID Generator to create a new miner-info output script for the given block height.
- * 3. Calls the Node to create a new miner-info tx containing the output script from the point 1.
+ * 3. Calls the Node to create a new miner-info tx containing the output script from the point 2.
  * 4. Calls the Node to get a mining candidate.
  * 5. Creates a coinbase transaction.
  * 6. Calls the MID Generator to update the coinbase2 part of the coinbase tx.
  * 7. Updates the coinbase tx and prints out its raw representation.
- * 8. Find PoW for the miner ID block and sends it to the Node.
+ * 8. Finds PoW for the miner ID block and sends it to the Node.
  *
  * Note: To run the test use: 'node examples/testMiner.js'
  */
@@ -211,29 +216,25 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
     // Initiate connection.
     const client = new RPCClient({ url, port, timeout, user, pass })
     if (client === undefined) {
-       console.log('RPClient: connection error')
-       return
+       throw new Error("RPClient: connection error")
     }
     // Check if regtest meets required conditions.
     const blockCount = await client.getblockcount()
     console.log(`Current block count: ${blockCount}`)
     if (blockCount < 101) {
-       const numBlocksToGenerate = 101 - blockCount
-       console.log(`Make sure that the node has sufficient funds in the wallet (generate ${numBlocksToGenerate})`)
-       return
+       throw new Error(`Make sure that the node has sufficient funds in the wallet (bitcoin-cli generate ${101 - blockCount})`)
     } else {
        const balance = await client.getbalance()
-       console.log('Funds availabe in the wallet: ', balance)
+       console.log('Funds available in the wallet: ', balance)
        if (!(balance > 0)) {
-          console.log('Error: Insufficient funds to proceed.')
-          return
+          throw new Error("Insufficient funds to proceed.")
        }
     }
 
     /**
      * Create a datarefs tx if the alias was configured to create one.
      *
-     * Interaction:
+     * Interactions:
      * (1) The testing script calls the MID Generator.
      * (2) The testing script calls the Node.
      */
@@ -242,7 +243,7 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
       console.log('\n#1. The script queries the MID Generator to get datarefs output scripts.')
       dataRefsOutputScripts = JSON.parse(await getDataRefsOutputScripts(ALIAS))
     } catch (e) {
-      console.log('Miner ID Generator: ', e)
+      console.error('MID Generator: ', e)
       return
     }
     let dataRefsTxId
@@ -267,7 +268,7 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
       console.log('\nMinerInfo Document: ', JSON.stringify(getMinerInfoJSONDocument(minerInfoOutputScript)))
       console.log('\nsig(MinerInfo Document): ', getMinerInfoDocSignature(minerInfoOutputScript))
     } catch (e) {
-      console.log('Miner ID Generator: ', e)
+      console.error('MID Generator: ', e)
       return
     }
 
@@ -279,15 +280,13 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
     console.log('\n#3. The script queries the Node to create a new miner-info tx with the miner-info output script.')
     const minerInfoTxId = await client.createminerinfotx({hexdata: minerInfoOutputScript})
     if (!minerInfoTxId) {
-       console.log("Error: createminerinfotx has failed!")
-       return
+       throw new Error("createminerinfotx has failed!")
     }
     console.log(`minerInfoTxId= ${minerInfoTxId} created`)
     // Check that the node returns a valid miner-info txid.
     const returnedMinerInfoTxId = await client.getminerinfotxid()
     if (minerInfoTxId != returnedMinerInfoTxId) {
-       console.log(`Error: Incorrect miner-info txid= ${returnedMinerInfoTxId} returned, expected-txid= ${minerInfoTxId}`)
-       return
+       throw new Error(`Incorrect miner-info txid= ${returnedMinerInfoTxId} returned, expected-txid= ${minerInfoTxId}`)
     }
 
     /**
@@ -328,22 +327,20 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
       updatedCoinbase2 = await modifyCoinbase2(ALIAS, minerInfoTxId, mc.prevhash, mc.merkleProof, getCoinbase2(coinbaseTx))
       console.log(`updatedCoinbase2= ${updatedCoinbase2}`)
     } catch (e) {
-      console.log('Miner ID Generator: ', e)
+      console.error('MID Generator: ', e)
       return
     }
 
     /**
      * Make the miner ID coinbase transaction (combine cb1 & modified cb2)
      */
-    const minerIdCoinbaseTx = new Transaction(mi.placeholderCB1 + updatedCoinbase2)
     console.log('\n#7. RAW miner ID coinbase transaction:')
-    console.log('minerIdCoinbaseTx.id= ', minerIdCoinbaseTx.id.toString())
+    const minerIdCoinbaseTx = new Transaction(mi.placeholderCB1 + updatedCoinbase2)
+    console.log('txid= ', minerIdCoinbaseTx.id.toString())
     console.log('raw= ', minerIdCoinbaseTx.toString())
     const cbTxOutput1MinerInfoTxid = getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx)
     if (minerInfoTxId !== cbTxOutput1MinerInfoTxid) {
-       console.log(`cbTxOutput1MinerInfoTxid= ${cbTxOutput1MinerInfoTxid}`)
-       console.log("Error: Miner-info txid linked with the Miner ID Coinbase tx output is incorrect")
-       return
+       throw new Error(`Miner-info txid linked with the Miner ID Coinbase tx output is incorrect: ${cbTxOutput1MinerInfoTxid}`)
     }
 
     /**
@@ -372,8 +369,8 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
        console.log(`The miner ID block ${bh.hash} has been accepted.`)
      }
   } catch (e) {
-    console.log(`Connection to ${network} error!`, e)
-    throw e
+    console.error(`${network} error!`, e)
+    return
   }
   console.log('\nThe script has been executed successfully.')
 })()

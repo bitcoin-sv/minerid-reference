@@ -105,7 +105,7 @@ const fm = require('./utils/filemanager')
   try {
     options = commandLineArgs(optionDefinitions)
   } catch (e) {
-    console.log('Unknown argument')
+    console.error('Unknown argument')
     console.log(usage)
     process.exit(0)
   }
@@ -157,19 +157,19 @@ const fm = require('./utils/filemanager')
 	    if (coinbaseDocService.generateMinerId(options.name)) {
 	      console.log(`Miner ID generation has succeeded. ${confirmationMsg} ${blocksNumberMsg_1}`)
 	    } else {
-	      console.log('Miner ID generation has failed!')
+	      console.error('Miner ID generation has failed!')
 	    }
 	    break
 	  }
 	  case 'getcurrentminerid': {
 	    if (!fm.aliasExists(options.name)) {
-	      console.log(`The given "${options.name}" alias doesn't exist.`)
+	      console.error(`The given "${options.name}" alias doesn't exist.`)
 	    } else {
 	      const currentMinerId = coinbaseDocService.getCurrentMinerId(options.name)
 	      if (currentMinerId) {
 	        console.log(`The current minerId public key is: ${currentMinerId}. Check if the key is confirmed on the blockchain.`)
 	      } else {
-	        console.log('Error: Check if the minerId private key is in the keystore!')
+	        console.error('Error: Check if the minerId private key is in the keystore!')
 	      }
 	    }
 	    break
@@ -178,7 +178,7 @@ const fm = require('./utils/filemanager')
 	    if (coinbaseDocService.rotateMinerId(options.name)) {
 	      console.log(`Miner ID key rotation has succeeded. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
-	      console.log('Miner ID key rotation has failed!')
+	      console.error('Miner ID key rotation has failed!')
 	    }
 	    break
 	  }
@@ -186,27 +186,27 @@ const fm = require('./utils/filemanager')
 	    if (coinbaseDocService.rotateRevocationKey(options.name)) {
 	      console.log(`Revocation key rotation has succeeded. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
-	      console.log('Revocation key rotation has failed!')
+	      console.error('Revocation key rotation has failed!')
 	    }
 	    break
 	  }
 	  case 'revokemineridpartially': {
             if (!options.minerid) {
-              console.log('Error: Specify the minerId public key to be revoked!')
+              console.error('Error: Specify the minerId public key to be revoked!')
               console.log('Use: --minerid [minerId]')
               process.exit(0)
 	    }
             if (await coinbaseDocService.revokeMinerId(options.name, options.minerid, false /* partial revocation */)) {
               console.log(`Revocation data has been created for the compromised minerId key. ${confirmationMsg} ${blocksNumberMsg_2}`)
 	    } else {
-              console.log('Miner ID partial revocation has failed!')
+              console.error('Miner ID partial revocation has failed!')
 	    }
 	    break
 	  }
 	  case 'revokemineridcompletely': {
             const minerIdData = fm.readMinerIdDataFromFile(options.name)
             if (!minerIdData.hasOwnProperty('first_minerId')) {
-              console.log('Cannot find "first_minerId" in the config file.')
+              console.error('Cannot find "first_minerId" in the config file.')
               break
 	    }
             if (await coinbaseDocService.revokeMinerId(options.name, minerIdData["first_minerId"], true /* complete revocation */)) {
@@ -217,7 +217,7 @@ const fm = require('./utils/filemanager')
 	  case 'upgrademinerid': {
 	    if (coinbaseDocService.canUpgradeMinerIdProtocol(options.name)) {
 	      if (!options.firstminerid) {
-	        console.log('Error: Specify the first minerId public key!')
+	        console.error('Error: Specify the first minerId public key!')
 	        console.log('Use: --firstminerid [minerId]')
 	        process.exit(0)
 	      }
@@ -231,12 +231,12 @@ const fm = require('./utils/filemanager')
 	      fm.writeOpReturnStatusToFile(options.name, true)
 	      console.log(`Miner ID protocol upgrade has succeeded. ${confirmationMsg} ${blocksNumberMsg_1}`)
 	    } else {
-	      console.log('Miner ID protocol upgrade has failed!')
+	      console.error('Miner ID protocol upgrade has failed!')
 	    }
 	    break
 	  }
 	  default: {
-	    console.log(`Unknown command: ${options.command}`)
+	    console.error(`Unknown command: ${options.command}`)
 	    console.log(usage)
 	    break
 	  }
@@ -246,7 +246,7 @@ const fm = require('./utils/filemanager')
     }
     process.exit(0)
   } else if (!options.height) {
-    console.log('You must specify a height')
+    console.error('You must specify a height')
     console.log('--height [heightNumber]')
     console.log('-h [heightNumber]')
     process.exit(0)

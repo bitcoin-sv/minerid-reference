@@ -74,7 +74,7 @@ function _getPublicKey (privateKey) {
 
 function _readDataFromJsonFile (aliasName, fileName) {
   if (!aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
+    console.error(`Name "${aliasName}" doesn't exist.`)
     return
   }
   const filePath = path.join(process.env.HOME, filedir, aliasName, fileName)
@@ -86,7 +86,7 @@ function _readDataFromJsonFile (aliasName, fileName) {
   try {
     data = JSON.parse(fs.readFileSync(filePath))
   } catch (err) {
-    console.log(`Error: Reading data from the file ${filePath}`, err)
+    console.error(`Reading data from the file ${filePath}`, err)
     return
   }
   return data
@@ -97,7 +97,8 @@ function _writeJsonDataToFile (aliasName, data, fileName) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (err) {
-    throw new Error(`Error: Writing json data to the file ${filePath}`)
+    console.error(err)
+    throw new Error(`Writing json data to the file ${filePath}`)
   }
 }
 
@@ -384,7 +385,7 @@ function _getAliases (aliasName, aliasFileName) {
   try {
     data = JSON.parse(fs.readFileSync(filePath))
   } catch (e) {
-    console.log('error getting aliases: ', e)
+    console.error('Getting aliases: ', e)
     return
   }
   return data
@@ -431,7 +432,7 @@ function _saveAlias (aliasName, alias, aliasFileName) {
       makeDirIfNotExists(folderPath)
     }
   } catch (e) {
-    console.log('error saving current alias: ', e)
+    console.error('Saving current alias: ', e)
     return
   }
   if (!data) {
@@ -441,8 +442,8 @@ function _saveAlias (aliasName, alias, aliasFileName) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (err) {
-    console.log(err)
-    throw new Error(`Error writing alias to file ${filePath}`)
+    console.error(err)
+    throw new Error(`Writing alias to file ${filePath}`)
   }
 }
 
@@ -465,7 +466,7 @@ function incrementAliasPrefix(currentAlias) {
 // MinerId optional data support.
 function updateMinerContactData (aliasName, name, value) {
   if (!aliasExists(aliasName)) {
-    console.log(`Name "${aliasName}" doesn't exist.`)
+    console.error(`Name "${aliasName}" doesn't exist.`)
     return
   }
   console.log(`updateMinerContactData: ${name}, ${value}`)
@@ -495,7 +496,8 @@ function writeMinerContactDataToFile (aliasName, name, value) {
     data.minerContact[name] = value
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (err) {
-    throw new Error(`Error writing config key to file ${filePath}`)
+    console.error(err)
+    throw new Error(`Writing config key to file ${filePath}`)
   }
 }
 
@@ -656,7 +658,7 @@ function createDataRefsFile(aliasName, dataRefsTxId) {
       _writeJsonDataToFile(aliasName, data, DATAREFS_DATA_FILENAME)
     }
   } catch (e) {
-    console.log('Error creating dataRefs configuration: ', e)
+    console.error('Creating dataRefs configuration: ', e)
   }
 }
 
@@ -691,7 +693,7 @@ function readDataRefsFromFile(aliasName) {
       })
     }
   } catch (e) {
-    console.log('Error reading dataRefs configuration: ', e)
+    console.error('Reading dataRefs configuration: ', e)
     return null
   }
   return data

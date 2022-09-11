@@ -36,6 +36,7 @@ describe('Coinbase Document Services', function () {
 
         beforeEach(() => {
           sandbox.stub(console, 'log')
+          sandbox.stub(console, 'error')
 
           getMinerIdPublicKey = sandbox.stub(fm, 'getMinerIdPublicKey').returns(false)
           createMinerId = sandbox.stub(fm, 'createMinerId')
@@ -210,6 +211,7 @@ describe('Coinbase Document Services', function () {
 
         beforeEach(async () => {
           sinon.stub(console, "log")
+          sinon.stub(console, "error")
           readMinerIdDataAndUpdateMinerIdKeysStatus = sandbox.stub(fm, 'readMinerIdDataAndUpdateMinerIdKeysStatus').returns('{}')
           readRevocationKeyDataAndUpdateKeysStatus = sandbox.stub(fm, 'readRevocationKeyDataAndUpdateKeysStatus').returns('{}')
           readOptionalMinerIdData = sandbox.stub(fm, 'readOptionalMinerIdData').returns({})
@@ -226,6 +228,7 @@ describe('Coinbase Document Services', function () {
         })
         afterEach(() => {
           console.log.restore()
+          console.error.restore()
         })
 
         it('calls "readMinerIdDataAndUpdateMinerIdKeysStatus" with right parameters', () => {

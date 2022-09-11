@@ -22,7 +22,7 @@ function rpcConnect () {
   // Initiate connection.
   const client = new RPCClient({ url, port, timeout, user, pass })
   if (client === undefined) {
-     console.log('RPClient: connection error')
+     console.error('RPClient: connection error')
      return
   }
   return client
@@ -47,7 +47,7 @@ async function checkMinerIdKeysConfirmed (minerId, prevMinerId, minerIdState) {
     const client = rpcConnect()
     const minerIdInfo = await client.getmineridinfo({hexdata: minerId})
     if (!minerIdInfo || JSON.stringify(minerIdInfo) === '{}') {
-      console.log('Empty result returned by getmineridinfo rpc.')
+      console.error('Empty result returned by getmineridinfo rpc.')
       return false
     }
     console.debug('Result: ', JSON.stringify(minerIdInfo))
@@ -59,7 +59,7 @@ async function checkMinerIdKeysConfirmed (minerId, prevMinerId, minerIdState) {
            (minerIdInfo["minerIdState"] == minerIdState) &&
            (minerIdInfo["prevMinerId"] == prevMinerId)
   } catch (e) {
-    console.log('RPC error: ', e)
+    console.error('RPC error: ', e)
     return false
   }
 }
@@ -85,7 +85,7 @@ async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocat
     const client = rpcConnect()
     const minerIdInfo = await client.getmineridinfo({hexdata: minerId})
     if (!minerIdInfo || JSON.stringify(minerIdInfo) === '{}') {
-      console.log('Empty result returned by getmineridinfo rpc.')
+      console.error('Empty result returned by getmineridinfo rpc.')
       return false
     }
     console.debug('Result: ', JSON.stringify(minerIdInfo))
@@ -99,7 +99,7 @@ async function checkRevocationKeysConfirmed (minerId, revocationKey, prevRevocat
            (minerIdInfo["revocationKey"] == revocationKey) &&
            (minerIdInfo["prevRevocationKey"] == prevRevocationKey)
   } catch (e) {
-    console.log('RPC error: ', e)
+    console.error('RPC error: ', e)
     return false
   }
 }
@@ -162,7 +162,7 @@ async function revokeMinerId (input) {
     const client = rpcConnect()
     await client.revokeminerid({input})
   } catch (e) {
-    console.log('RPC error: ', e)
+    console.error('RPC error: ', e)
     return false
   }
 }

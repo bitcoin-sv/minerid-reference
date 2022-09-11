@@ -200,7 +200,7 @@ function getMinerInfoTxidFromMinerIDCoinbaseTxOutput(minerIdCoinbaseTx) {
  */
 ; (async () => {
   if (network !== 'regtest') {
-    console.log('Connect to the "regtest" is required.')
+    console.error('Connect to the "regtest" is required.')
     return
   }
 

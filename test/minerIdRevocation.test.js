@@ -130,6 +130,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
       mockCallbacks()
     })
 
@@ -137,6 +138,7 @@ describe('Revoke minerId', function () {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
 
     it('can verify that the partial revocation is not possible for the non-rotated chain', async () => {
@@ -170,6 +172,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
       mockCallbacks()
     })
 
@@ -177,6 +180,7 @@ describe('Revoke minerId', function () {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
 
     it('can verify that the partial revocation is not possible for the non-rotated chain', async () => {
@@ -220,6 +224,7 @@ describe('Revoke minerId', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
       mockCallbacks()
     })
 
@@ -227,6 +232,7 @@ describe('Revoke minerId', function () {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
 
     it('can verify the partial revocation', async () => {

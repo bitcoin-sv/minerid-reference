@@ -44,11 +44,13 @@ describe('Key rolling', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
     })
     afterEach(() => {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
     it('can rotate the initial minerId for "unittest"', async () => {
       // The initial miner-info document with minerId keys (other fields are skipped in the example for simplicity).
@@ -141,11 +143,13 @@ describe('Key rolling', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
     })
     afterEach(() => {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
 
     it('can rotate the initial revocationKey for "unittest" and write/read its outcome from the result files', async () => {

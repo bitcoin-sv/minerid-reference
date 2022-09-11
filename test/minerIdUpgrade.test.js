@@ -24,11 +24,13 @@ describe('Upgrade Miner ID Protocol', function () {
       })
       sinon.stub(console, "log")
       sinon.stub(console, "debug")
+      sinon.stub(console, "error")
     })
     afterEach(() => {
       mock.restore()
       console.log.restore()
       console.debug.restore()
+      console.error.restore()
     })
     it('can upgrade minerId protocol data for "unittest"', async () => {
       // Check that the minerId key configuration does exist.
@@ -67,10 +69,12 @@ describe('Upgrade Miner ID Protocol', function () {
         }
       })
       sinon.stub(console, "log")
+      sinon.stub(console, "error")
     })
     afterEach(() => {
       mock.restore()
       console.log.restore()
+      console.error.restore()
     })
     it('cannot override revocation key data for the existing "unittest" alias', async () => {
       // Check that the minerId key configuration does exist.

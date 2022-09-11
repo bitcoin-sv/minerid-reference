@@ -26,7 +26,7 @@ app.get('/datarefs/:alias/opreturns', authenticateToken, async (req, res) => {
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', alias)
+    console.error('Bad request: non-existent alias: ', alias)
     return
   }
 
@@ -35,7 +35,7 @@ app.get('/datarefs/:alias/opreturns', authenticateToken, async (req, res) => {
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 }
 )
@@ -48,13 +48,13 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
 
   if (blockHeight < 1) {
     res.status(422).send('Must enter a valid height')
-    console.log('Bad request: invalid height: ', blockHeight)
+    console.error('Bad request: invalid height: ', blockHeight)
     return
   }
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', alias)
+    console.error('Bad request: non-existent alias: ', alias)
     return
   }
 
@@ -66,7 +66,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)', authenticateToken, async (req, 
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 }
 )
@@ -79,19 +79,19 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId', authenticateToken
 
   if (!/^[A-F0-9]{64}$/i.test(dataRefsTxId)) {
     res.status(422).send('dataRef txid must be a 64-characters hexadecimal string')
-    console.log('Bad request: invalid dataRefs txid: ', dataRefsTxId)
+    console.error('Bad request: invalid dataRefs txid: ', dataRefsTxId)
     return
   }
 
   if (blockHeight < 1) {
     res.status(422).send('Must enter a valid height')
-    console.log('Bad request: invalid height: ', blockHeight)
+    console.error('Bad request: invalid height: ', blockHeight)
     return
   }
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', alias)
+    console.error('Bad request: non-existent alias: ', alias)
     return
   }
 
@@ -104,7 +104,7 @@ app.get('/opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId', authenticateToken
     res.send(opReturn)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 }
 )
@@ -117,43 +117,43 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
 
   if (!alias) {
     res.status(400).send('Alias must be supplied')
-    console.log('Bad request: no alias supplied')
+    console.error('Bad request: no alias supplied')
     return
   }
 
   if (!fm.aliasExists(alias)) {
     res.status(422).send(`Alias "${alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', alias)
+    console.error('Bad request: non-existent alias: ', alias)
     return
   }
 
   if (!minerInfoTxId) {
     res.status(400).send('Miner-info txid must be supplied')
-    console.log('Bad request: no miner-info txid supplied')
+    console.error('Bad request: no miner-info txid supplied')
     return
   }
 
   if (!/^[A-F0-9]{64}$/i.test(minerInfoTxId)) {
     res.status(422).send('Miner-info txid must be a 64-characters hexadecimal string')
-    console.log('Bad request: invalid miner-info txid: ', minerInfoTxId)
+    console.error('Bad request: invalid miner-info txid: ', minerInfoTxId)
     return
   }
 
   if (!prevhash) {
     res.status(400).send('prevhash must be supplied')
-    console.log('Bad request: no prevhash supplied')
+    console.error('Bad request: no prevhash supplied')
     return
   }
 
   if (!/^[A-F0-9]{64}$/i.test(prevhash)) {
     res.status(422).send('prevhash must be a 64-characters hexadecimal string')
-    console.log('Bad request: invalid prevhash: ', prevhash)
+    console.error('Bad request: invalid prevhash: ', prevhash)
     return
   }
 
   if (!coinbase2) {
     res.status(400).send('Coinbase 2 must be supplied')
-    console.log('Bad request: no coinbase2 supplied')
+    console.error('Bad request: no coinbase2 supplied')
     return
   }
 
@@ -167,7 +167,7 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
     )
   } catch (error) {
     res.status(422).send('Invalid Coinbase 2')
-    console.log('Bad request: invalid coinbase2: ', coinbase2)
+    console.error('Bad request: invalid coinbase2: ', coinbase2)
     return
   }
 
@@ -182,7 +182,7 @@ app.post('/coinbase2', authenticateToken, async (req, res) => {
     res.send(cb2)
   } catch (err) {
     res.status(500).send(`Internal error:: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 })
 
@@ -192,7 +192,7 @@ app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', req.params.alias)
+    console.error('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
@@ -201,7 +201,7 @@ app.get('/opreturn/:alias/rotate', authenticateToken, (req, res) => {
     res.send('OK')
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 })
 
@@ -211,7 +211,7 @@ app.get('/opreturn/:alias/isvalid', authenticateToken, (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', req.params.alias)
+    console.error('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
@@ -219,7 +219,7 @@ app.get('/opreturn/:alias/isvalid', authenticateToken, (req, res) => {
     res.send(coinbaseDocService.opReturnStatus(req.params.alias))
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 })
 
@@ -229,7 +229,7 @@ app.get('/minerid/:alias', authenticateToken, (req, res) => {
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', req.params.alias)
+    console.error('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
@@ -238,7 +238,7 @@ app.get('/minerid/:alias', authenticateToken, (req, res) => {
     res.send(currentAlias)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 })
 
@@ -248,13 +248,13 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', req.params.alias)
+    console.error('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
   if (req.params.hash.length !== 64) {
     res.status(422).send('Hash must be 64 characters (32 byte hex string)')
-    console.log('Bad request: invalid hash: ', req.params.hash)
+    console.error('Bad request: invalid hash: ', req.params.hash)
     return
   }
 
@@ -266,7 +266,7 @@ app.get('/minerid/:alias/sign/:hash([0-9a-fA-F]+)', authenticateToken, (req, res
     res.send(signature)
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 }
 )
@@ -277,13 +277,13 @@ app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', authenticateToken, (req, r
 
   if (!fm.aliasExists(req.params.alias)) {
     res.status(422).send(`Alias "${req.params.alias}" doesn't exist`)
-    console.log('Bad request: non-existent alias: ', req.params.alias)
+    console.error('Bad request: non-existent alias: ', req.params.alias)
     return
   }
 
   if (req.params.hash.length !== 64) {
     res.status(422).send('Hash must be 64 characters (32 byte hex string)')
-    console.log('Bad request: invalid hash: ', req.params.hash)
+    console.error('Bad request: invalid hash: ', req.params.hash)
     return
   }
 
@@ -299,7 +299,7 @@ app.get('/minerid/:alias/pksign/:hash([0-9a-fA-F]+)', authenticateToken, (req, r
     res.send({ publicKey: currentAlias, signature })
   } catch (err) {
     res.status(500).send(`Internal error: ${err.message}`)
-    console.warn(`Internal error: ${err.message}`)
+    console.error(`Internal error: ${err.message}`)
   }
 }
 )

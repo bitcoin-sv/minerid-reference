@@ -1,21 +1,6 @@
 # Miner ID Generator - Reference Implementation
 
-More details available in the [BRFC Spec](https://github.com/bitcoin-sv-specs/brfc-minerid) for MinerId.  
-
-
-## Table of Contents
-- [Requirements](#requirements)
-  - [Node](#node)
-- [Install](#install)
-- [Configuration](#configuration)
-- [Running the project](#running-the-project)
-- [Testing](#testing)
-- [CLI](#cli)
-  - [Options](#options)
-  - [Examples](#examples)
-- [API](#api)
-- [Implementation](#implementation)
-- [Example Miner Code](#example-miner-code)
+More details available in the [BRFC Specification](https://github.com/bitcoin-sv-specs/brfc-minerid) for the Miner ID Protocol.
 
 ## Support
 
@@ -23,28 +8,28 @@ For support and general discussion of both standards and reference implementatio
 
 ## Requirements
 
-For development, you will only need Node.js (minimum 10.12.0) and a node global package, NPM, installed in your environment.
+For development, you will only need Node.js _(minimum 10.12.0)_ and a node global package, NPM, installed in your environment.
 
 ### Node
 
-- #### Node installation on Windows
+#### Node installation on Windows
 
-  Just go on [official Node.js website](https://nodejs.org/) and download the installer.
-Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/)).
+Just go on [official Node.js website](https://nodejs.org/) and download the installer. Also, be sure to have `git` available in the PATH environment variable, `npm` might need it (You can find git [here](https://git-scm.com/)).
 
-- #### Node installation on Ubuntu
+#### Node installation on Ubuntu
 
-  You can install nodejs and npm easily with apt install, just run the following commands.
+You can install `nodejs` and `npm` easily using `apt install`, just run the following commands.
 
-    ```console
-    $ sudo apt install nodejs
-    $ sudo apt install npm
-    ```
+```console
+$ sudo apt install nodejs
+$ sudo apt install npm
+```
 
-- #### Other Operating Systems
-  You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
+#### Other Operating Systems
 
-## Install
+You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
+
+## Installation
 
 ```console
 $ git clone https://github.com/bitcoin-sv/minerid-reference.git
@@ -56,20 +41,20 @@ $ npm install
 
 Open [config/default.json](config/default.json) and edit it with your settings:  
 
-- change (or leave) the default `port`
+- change _(or leave)_ the default `port`
 - set `debug=true` to enable debug logging
-- change (or leave) the default `minerIdDataPath` config which points to the user's minerIds location (interpreted as `~/${minerIdDataPath}`)
-- change (or leave) the default `keystorePath` config which points to the minerId private keys keystore (interpreted as `~/${keystorePath}`)
-- change (or leave) the default `revocationKeystorePath` config which points to the revocation private keys keystore (interpreted as `~/${revocationKeystorePath}`)
-- change the default `network` (mainnet="livenet" | testnet="testnet" | regtest="regtest")
+- change _(or leave)_ the default `minerIdDataPath` config which points to the user's minerIds location _(interpreted as `~/${minerIdDataPath}`)_
+- change _(or leave)_ the default `keystorePath` config which points to the minerId private keys keystore _(interpreted as `~/${keystorePath}`)_
+- change _(or leave)_ the default `revocationKeystorePath` config which points to the revocation private keys keystore _(interpreted as `~/${revocationKeystorePath}`)_
+- change the default `network` _(mainnet="livenet" | testnet="testnet" | regtest="regtest")_
 - change the default Bitcoin RPC parameters:
   - `rpcHost`
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
-- change the default authentication parameters (see [Authentication](#Authentication)):
+- change the default authentication parameters _(see [Authentication](#Authentication))_:
   - `enabled` which enables authentication checks on the api endpoints
-  - `jwtKey` the ECDSA private key (32 bytes hex-string) used to generate the JSON Web Token (JWT)
+  - `jwtKey` the ECDSA private key _(a 32 byte hex-string)_ used to generate the JSON Web Token _(JWT)_
 
 If you need to change the settings dynamically from the environment variables, you overwrite them using the environment variable *NODE_CONFIG*. Such as this:
 
@@ -81,7 +66,7 @@ npm start
 Or for docker:
 
 ```
-docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:1.1.1
+docker run --publish 9002:9002 --detach --name minerid --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' minerid:2.0.0
 ```
 
 For more information, you can read the [documentation](https://github.com/lorenwest/node-config/wiki/Environment-Variables#node_config) of the config package.
@@ -107,27 +92,26 @@ You can find the public Docker Hub repository for MinerId [here](https://hub.doc
 #### Build Image
 
 ```console
-$ docker build . -t minerid_reference:1.1.1
+$ docker build . -t minerid_reference:2.0.0
 ```
-
 
 #### Run
 
-To run MinerId you need to specify which network to run on (mainnet="livenet" | testnet="testnet" | regtest="regtest"), and if [`regtest`](https://github.com/jadwahab/regtest), then you will need to specify the Bitcoin RPC credentials in order to MinerId to have access to it.  
+To run MinerId you need to specify which network to run on _(mainnet="livenet" | testnet="testnet" | regtest="regtest")_, and if [`regtest`](https://github.com/jadwahab/regtest), then you will need to specify the Bitcoin RPC credentials in order to MinerId to have access to it.
 
-By default, it will run on regtest:
+By default, it will run on _regtest_:
 
 ```console
 docker run --publish 9002:9002 \
     --name minerid \
     --env NODE_CONFIG='{"bitcoin":{"rpcHost":"host.docker.internal"}}' \
     --detach \
-    bitcoinsv/minerid:1.1.1
+    bitcoinsv/minerid:2.0.0
 ```
 
 #### Volumes
 
-Since MinerId is essentially a service built around a private key (MinerId) we recommend running the container with volumes in order to avoid the situation where the container falls over for some reason and the private key is lost. In the environment variables, we are specifying which network (`livenet` (or mainnet), `testnet`, or `regtest`) and what Bitcoin node RPC parameters and credentials to use by passing them to `NODE_CONFIG`.  
+Since MinerId is essentially a service built around a private key _(MinerId)_ we recommend running the container with volumes in order to avoid the situation where the container falls over for some reason and the private key is lost. In the environment variables, we are specifying which network _(`livenet` (or mainnet), `testnet`, or `regtest`)_ and what Bitcoin node RPC parameters and credentials to use by passing them to `NODE_CONFIG`.
 
 #### Run with [docker-compose](docker-compose.yml)
 
@@ -275,7 +259,6 @@ $ npm run cli -- upgrademinerid --firstminerid minerId --name  foo
 $ npm run cli -- upgrademinerid -f minerId -n  foo
 ```
 
-
 ## API
 
 ## Implementation
@@ -286,7 +269,7 @@ The **REST API** has 9 endpoints:
 
 `alias`: MinerId alias
 
-**returns** An array of dataRefs output (locking) scripts (hex strings) for an `alias` MinerId
+**returns** An array of dataRefs output _(locking)_ scripts _(hex strings)_ for an `alias` MinerId
 
 #### Example
 
@@ -301,7 +284,7 @@ $ curl localhost:9002/datarefs/testMiner/opreturns
 `alias`: MinerId alias  
 `blockHeight`: block height which miner-info document is created for/at
 
-**returns** Miner-info output (locking) script hex string for an `alias` MinerId at height `blockHeight`
+**returns** Miner-info output _(locking)_ script hex string for an `alias` MinerId at height `blockHeight`
 
 #### Example
 
@@ -313,11 +296,11 @@ $ curl localhost:9002/opreturn/testMiner/1234
 
 ### 3. `GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId`
 
-`alias`: MinerId alias
+`alias`: MinerId alias  
 `blockHeight`: block height which miner-info document is created for/at
-`dataRefsTxId`: a new dataRefs transaction id to which the current miner-info document refers to. The dataRefs transaction will be contained in the same block as the current miner-info document
+`dataRefsTxId`: dataRefs transaction id to which the current miner-info document refers to. The dataRefs transaction must be contained in the same block as the current miner-info document
 
-**returns** Miner-info output (locking) script hex string for an `alias` MinerId at height `blockHeight` referencing `dataRefsTxId` transaction
+**returns** Miner-info output _(locking)_ script hex string for an `alias` MinerId at height `blockHeight` referencing `dataRefsTxId` transaction
 
 #### Example
 
@@ -351,15 +334,15 @@ body:
 **returns** updated coinbase2 with the miner-info coinbase output included
 
 
-|     Field     	|  Function  	|
-|------------	|-------	|
-| `alias` 	| Alias of the Miner ID 	|
-| `minerInfoTxId` 	|  Transaction ID of the transaction containing the miner-info document		|
-| `prevhash` 	| Hash of the previous block 	|
-| `merkleProof` 	| Merkle branch for the block 	|
-| `coinbase2` 	| Second part of the coinbase (`coinb2`) as shown in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) 	|
+| **Field** | **Function** |
+| :------------- | :--------------------------------------------------------------- |
+| `alias` 	  | Alias of the Miner ID. |
+| `minerInfoTxId` | Transaction ID of the transaction containing the miner-info document. |
+| `prevhash`      | Hash of the previous block. |
+| `merkleProof`   | Merkle branch for the block. |
+| `coinbase2`     | Second part of the coinbase _(coinb2)_ as shown in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) document. |
 
->Note: The coinbase transaction is split up in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) as follows:
+> Note: The coinbase transaction is split up in the [stratum protocol](https://slushpool.com/help/topic/stratum-protocol/) as follows:
 
 ![cb tx](https://i.imgur.com/Am8zt7a.png)
 
@@ -401,7 +384,7 @@ OK
 
 `alias`: MinerId alias  
 
-**returns** compressed public key (33 byte) hex string for an `alias` MinerId
+**returns** compressed public key _(a 33 byte hex string)_ for an `alias` MinerId
 
 #### Example
 
@@ -414,10 +397,10 @@ $ curl localhost:9002/minerid/testMiner
 ### 7. `GET /minerid/:alias/sign/:hash`
 
 `alias`: MinerId alias  
-`hash`: SHA256 hash (32 byte hex string) to be fed to ECDSA signing algorithm
+`hash`: SHA256 hash _(a 32 byte hex string)_ to be fed to ECDSA signing algorithm
 
 
-**returns**  signature (71-73 byte hex string) using an `alias` MinerId
+**returns**  signature _(a 71-73 byte hex string)_ using an `alias` MinerId
 
 #### Example
 
@@ -430,10 +413,10 @@ $ curl localhost:9002/minerid/testMiner/sign/02644f5000535bbc135f9c8613f86f10c66
 ### 8. `GET /minerid/:alias/pksign/:hash`
 
 `alias`: MinerId alias  
-`hash`: SHA256 hash (32 byte hex string) to be fed to ECDSA signing agorithm
+`hash`: SHA256 hash _(a 32 byte hex string)_ to be fed to ECDSA signing agorithm
 
 
-**returns** signature (71-73 byte hex string) using an `alias` MinerId and public key used
+**returns** signature _(a 71-73 byte hex string)_ using an `alias` MinerId and public key used
 
 #### Example
 
@@ -454,7 +437,7 @@ response:
 
 `alias`: MinerId alias
 
-**returns** 'true' if the last generated miner-info op_return script (using `GET /opreturn/:alias/:blockHeight([0-9]+)`) is still valid (a key rotation or revocation didn't occur) for an `alias` MinerId and 'false' otherwise.
+**returns** 'true' if the last generated miner-info op_return script _(using `GET /opreturn/:alias/:blockHeight([0-9]+)`)_ is still valid _(a key rotation or revocation didn't occur)_ for an `alias` MinerId and 'false' otherwise.
 
 #### Example
 
@@ -470,7 +453,7 @@ It is possible either to create a new dataRefs transaction or to refer to an exi
 
 ### dataRefsTxData config file
 
-The `dataRefsTxData` config file defines what must be contained in a new dataRefs transaction. Its expected location is the `~/.minerid-client/:alias` folder. If this config file exists, then the Generator is instructed to create and return a dataRefs op_return output script(s) through `GET /datarefs/:alias/opreturns` request. The first call to 'GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId' method creates a new `dataRefs` config file (or overwrites the existing one) based on the existing `dataRefsTxData` configuration and `dataRefsTxId` specified in the request. The entire content of the `dataRefs` config file is then added to the miner-info document under **extensions** section.
+The `dataRefsTxData` config file defines what must be contained in a new dataRefs transaction. Its expected location is the `~/.minerid-client/:alias` folder. If this config file exists, then the Generator is instructed to create and return a dataRefs op_return output script(s) through `GET /datarefs/:alias/opreturns` request. The first call to `GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId` method creates a new `dataRefs` config file _(or overwrites the existing one)_ based on the existing `dataRefsTxData` configuration and `dataRefsTxId` specified in the request. The entire content of the `dataRefs` config file is then added to the miner-info document under **extensions** section.
 
 #### Example
 ```console
@@ -496,9 +479,9 @@ The `dataRefsTxData` config file defines what must be contained in a new dataRef
 
 ### dataRefs config file
 
-An operator may want to link a minerId key with an existing dataRefs transaction(s). To do that the Generator requires to create and configure the `dataRefs` config file, only (its content will be added to the miner-info document under **extensions** section). The `dataRefs` file must be placed in the `~/.minerid-client/:alias` folder.
+An operator may want to link a minerId key with an existing dataRefs transaction(s). To do that the Generator requires to create and configure the `dataRefs` config file, only _(its content will be added to the miner-info document under **extensions** section)_. The `dataRefs` file must be placed in the `~/.minerid-client/:alias` folder.
 
-Note: A presence of the `dataRefsTxData` config file will cause the existing `dataRefs` config file to be overwritten during processing.
+> Note: A presence of the `dataRefsTxData` config file will cause the existing `dataRefs` config file to be overwritten during processing.
 
 #### Example
 ```console
@@ -520,14 +503,19 @@ Note: A presence of the `dataRefsTxData` config file will cause the existing `da
 
 ## Example Miner Code
 
-The [examples/testMiner.js](examples/testMiner.js) file contains basic code needed to generate a coinbase transaction that has a miner-info coinbase output in it by calling the first API [endpoint](#1-get-opreturnaliasblockheight0-9) and then adding that output to its coinbase transaction.
+The [examples/testMiner.js](examples/testMiner.js) script contains basic code needed to:
+- create dataRefs and miner-info transactions
+- generate a miner ID coinbase transaction that has a miner-info coinbase output in it
+- mine a miner ID block
+
+> Note: The script requires an extra configuration. Please, read the _Prerequisites_ section in the script.
 
 1. Generate MinerId:
     ```console
     $ npm run cli -- generateminerid -n testMiner
     ```
    
-2. Create Miner ID Coinbase Transaction:
+2. Create a miner ID coinbase transaction and mine a miner ID block:
     ```console
     $ node examples/testMiner.js
     ```

@@ -1,6 +1,6 @@
 {
-  "name": "builder",
-  "version": "0.3.0",
+  "name": "generator",
+  "version": "1.0.0",
   "description": "MinerId Generator - document builder",
   "main": "builder.js",
   "scripts": {

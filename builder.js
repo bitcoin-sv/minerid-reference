@@ -1,3 +1,5 @@
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const config = require('config')

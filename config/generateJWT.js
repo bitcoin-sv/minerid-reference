@@ -1,5 +1,6 @@
-// pass argument to npm run generate_JWT to add a username
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
 
+// pass argument to npm run generate_JWT to add a username
 const jwt = require('jsonwebtoken')
 const config = require('config')
 

@@ -1,3 +1,5 @@
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 const rewire = require('rewire')
 const coinbaseDocService = rewire('../services/coinbaseDocumentService')
 const mi = rewire('../utils/minerinfo')

@@ -1,5 +1,5 @@
-//const rewire = require('rewire')
-//const coinbaseDocService = rewire('../services/coinbaseDocumentService')
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 const fm = require('../utils/filemanager')
 
 const bsv = require('bsv')

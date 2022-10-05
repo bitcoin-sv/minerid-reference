@@ -1,3 +1,5 @@
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 const bsv = require('bsv')
 const fm = require('./filemanager')
 

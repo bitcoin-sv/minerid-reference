@@ -1,3 +1,5 @@
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 /**
  * This test aims to verify a basic communication between the Script, Miner ID Generator & Node.
  *

@@ -309,6 +309,9 @@ async function revokeMinerId (aliasName, minerIdPubKey, isCompleteRevocation) {
  * @returns (boolean) 'true' if an upgrade is possible; otherwise 'false'.
  */
 function canUpgradeMinerIdProtocol (aliasName) {
+  if (!fm.copyAliasesFile(aliasName)) {
+    return false
+  }
   if (!_checkAliasExists(aliasName)) {
     return false
   }

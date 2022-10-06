@@ -16,7 +16,7 @@ describe('Upgrade Miner ID Protocol', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
-          minerIdAliases: '[ { "name": "unittest_1" } ]'
+          aliases: '[ { "name": "unittest_1" } ]'
         },
         [`${os.homedir()}/.keystore`]: {
           'unittest_1.key': 'xprv9s21ZrQH143K44HDZDTUYyZHZfGhwM7R5oEGWzzLsQppjXNWU1MFFYD3YAcx9UTXThGKMTEc273HUyDBLZ9EYzdqEZiQfke2em2nbVQRxsQ'
@@ -33,12 +33,12 @@ describe('Upgrade Miner ID Protocol', function () {
       console.error.restore()
     })
     it('can upgrade minerId protocol data for "unittest"', async () => {
+      // There is no revocationKey data in the config folder so an upgrade can occur.
+      assert.strictEqual(coinbaseDocService.canUpgradeMinerIdProtocol('unittest'), true)
       // Check that the minerId key configuration does exist.
       assert.strictEqual(fm.getCurrentMinerIdAlias('unittest'), 'unittest_1')
       assert.strictEqual(fm.getPreviousMinerIdAlias('unittest'), 'unittest_1')
       assert.strictEqual(fm.minerIdKeyExists('unittest_1'), true)
-      // There is no revocationKey data in the config folder so an upgrade can occur.
-      assert.strictEqual(coinbaseDocService.canUpgradeMinerIdProtocol('unittest'), true)
       fm.createRevocationKey('unittest_1')
       fm.saveRevocationKeyAlias('unittest', 'unittest_1')
       fm.writeRevocationKeyDataToFile('unittest')
@@ -58,6 +58,7 @@ describe('Upgrade Miner ID Protocol', function () {
     beforeEach(() => {
       mock({
         [`${os.homedir()}/.minerid-client/unittest`]: {
+          aliases: '[ { "name": "unittest_1" } ]',
           minerIdAliases: '[ { "name": "unittest_1" } ]',
           revocationKeyAliases: '[ { "name": "unittest_1" } ]'
         },

@@ -699,6 +699,32 @@ function readDataRefsFromFile(aliasName) {
   return data
 }
 
+// Makes a copy of the old aliases file and gives the copy a new expected name
+// (only if the source file does exist and the target file doesn't).
+function copyAliasesFile(aliasName) {
+  const oldFilePath = path.join(process.env.HOME, filedir, aliasName, "aliases")
+  if (!fs.existsSync(oldFilePath)) {
+    console.error(`Old protocol data: file ${oldFilePath} doesn't exist.`)
+    return false
+  }
+  const newFilePath = path.join(process.env.HOME, filedir, aliasName, MINERID_ALIASES_FILENAME)
+  if (fs.existsSync(newFilePath)) {
+    console.error(`New protocol data: file ${newFilePath} does exist.`)
+    return false
+  }
+  try {
+    fs.copyFile(oldFilePath, newFilePath, (err) => {
+      if (err) {
+        throw err;
+      }
+    });
+  } catch (err) {
+    console.error(`Copy operation has failed: ${err}`)
+    return false
+  }
+  return true
+}
+
 module.exports = {
   aliasExists,
 
@@ -746,5 +772,7 @@ module.exports = {
 
   readDataRefsTxFile,
   createDataRefsFile,
-  readDataRefsFromFile
+  readDataRefsFromFile,
+
+  copyAliasesFile
 }

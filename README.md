@@ -14,7 +14,7 @@ For development, you will only need Node.js _(minimum 10.12.0)_ and a node globa
 
 #### Node installation on Windows
 
-Just go on [official Node.js website](https://nodejs.org/) and download the installer. Also, be sure to have `git` available in the PATH environment variable, `npm` might need it (You can find git [here](https://git-scm.com/)).
+Just go to [official Node.js website](https://nodejs.org/) and download the installer. Also, be sure to have `git` available in the PATH environment variable, `npm` might need it (You can find git [here](https://git-scm.com/)).
 
 #### Node installation on Ubuntu
 
@@ -41,18 +41,18 @@ $ npm install
 
 Open [config/default.json](config/default.json) and edit it with your settings:  
 
-- change _(or leave)_ the default `port`
+- specify the `port` number
 - set `debug=true` to enable debug logging
 - change _(or leave)_ the default `minerIdDataPath` config which points to the user's minerIds location _(interpreted as `~/${minerIdDataPath}`)_
 - change _(or leave)_ the default `keystorePath` config which points to the minerId private keys keystore _(interpreted as `~/${keystorePath}`)_
 - change _(or leave)_ the default `revocationKeystorePath` config which points to the revocation private keys keystore _(interpreted as `~/${revocationKeystorePath}`)_
-- change the default `network` _(mainnet="livenet" | testnet="testnet" | regtest="regtest")_
-- change the default Bitcoin RPC parameters:
+- specify the `network` _(mainnet="livenet" | testnet="testnet" | regtest="regtest")_
+- specify the Bitcoin RPC parameters:
   - `rpcHost`
   - `rpcPort`
   - `rpcUser`
   - `rpcPassword`
-- change the default authentication parameters _(see [Authentication](#Authentication))_:
+- specify the authentication parameters _(see [Authentication](#Authentication))_:
   - `enabled` which enables authentication checks on the api endpoints
   - `jwtKey` the ECDSA private key _(a 32 byte hex-string)_ used to generate the JSON Web Token _(JWT)_
 
@@ -437,7 +437,7 @@ response:
 
 `alias`: MinerId alias
 
-**returns** 'true' if the last generated miner-info op_return script _(using `GET /opreturn/:alias/:blockHeight([0-9]+)`)_ is still valid _(a key rotation or revocation didn't occur)_ for an `alias` MinerId and 'false' otherwise.
+**returns** 'true' if the last generated miner-info op_return script _(using `GET /opreturn/:alias/:blockHeight([0-9]+)` or `GET /opreturn/:alias/:blockHeight([0-9]+)/:dataRefsTxId`)_ is still valid _(a key rotation or revocation has not been executed by an administrator using CLI commands)_ for an `alias` MinerId and 'false' otherwise.
 
 #### Example
 
@@ -445,6 +445,29 @@ response:
 $ curl localhost:9002/opreturn/testMiner/isvalid
 
 true
+```
+
+## Extensions support
+
+Static extensions are expected to be defined in the `minerIdOptionalData` configuration data file. Its expected location is the `~/.minerid-client/:alias` folder.
+
+### minerIdOptionalData config file
+
+The `minerIdOptionalData` config file can contain any optional information which an operator wants to include in the miner-info document, e.g., minerContact or extensions.
+
+> Note: The file is created and the `minerContact` section is added automatically if an operator executes the `npm run cli -- config` CLI command. However, the `extensions` section must be added manually into the file.
+
+#### Example
+```console
+{
+  "minerContact": {
+    "email": "support@miner.com"
+  },
+  "extensions": {
+    "PublicIP":"127.0.0.1",
+    "PublicPort": 8888
+  }
+}
 ```
 
 ## DataRefs support

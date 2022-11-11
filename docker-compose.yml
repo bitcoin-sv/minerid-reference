@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
 services:
   minerid:
     build: .
@@ -14,6 +14,7 @@ services:
         }'
     volumes:
       - minerid:/root/.keystore
+      - minerid:/root/.revocationkeystore
       - minerid:/root/.minerid-client
 volumes:
   minerid:

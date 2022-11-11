@@ -1,3 +1,5 @@
+// Distributed under the Open BSV software license, see the accompanying file LICENSE.
+
 const config = require('config')
 const jwt = require('jsonwebtoken')
 
@@ -17,7 +19,7 @@ function authenticateToken (req, res, next) {
 
   jwt.verify(token, config.get('authentication.jwtKey'), (err, data) => {
     if (err) {
-      console.log('Bad request: invalid token: ', token)
+      console.error('Bad request: invalid token: ', token)
       return res.sendStatus(403)
     }
     console.log(`User ${data.username} authenticated`)

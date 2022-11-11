@@ -1,16 +1,19 @@
 {
+    "//NOTE": "THIS IS ONLY A SAMPLE CONFIGURATION. PLEASE CHECK THE README.md FILE FOR DETAILED INSTRUCTIONS HOW TO CONFIGURE THE MID GENERATOR.",
     "port": 9002,
+    "debug": false,
     "minerIdDataPath": ".minerid-client",
     "keystorePath": ".keystore",
+    "revocationKeystorePath": ".revocationkeystore",
     "network": "regtest",
     "bitcoin": {
         "rpcHost": "localhost",
         "rpcPort": 18332,
-        "rpcUser": "bitcoin",
-        "rpcPassword": "bitcoin"
+        "rpcUser": "bsvisbitcoin",
+        "rpcPassword": "bsvisbitcoin"
     },
     "authentication": {
         "enabled": true,
-        "jwtKey": "e4ef52bbc43782bcbb1dc6ac11bdfe978abccecb180ebd90820ea850fd3ff245"
+        "jwtKey": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     }
 }
